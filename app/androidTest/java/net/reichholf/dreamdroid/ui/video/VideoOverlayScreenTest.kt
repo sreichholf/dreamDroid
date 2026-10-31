@@ -6,6 +6,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.SemanticsNodeInteraction
@@ -18,6 +19,8 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performKeyInput
+import androidx.compose.ui.test.performSemanticsAction
+import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.pressKey
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
@@ -131,6 +134,76 @@ class VideoOverlayScreenTest {
         composeRule.onNodeWithContentDescription("Sleep Timer: 29 min. left")
             .assertIsDisplayed()
         composeRule.onNodeWithText("29").assertIsDisplayed()
+    }
+
+    @Test
+    fun sliderDragSeeksOnceOnReleaseAndIgnoresProgressWhileDragging() {
+        val state = seekableState(progress = 10)
+        val seeks = mutableListOf<Int>()
+        setSeekableOverlay(state) { seeks += it }
+        val slider = composeRule.onNodeWithContentDescription("Seek")
+
+        slider.performTouchInput {
+            down(percentOffset(0.1f, 0.5f))
+            for (i in 1..10) {
+                moveTo(percentOffset(0.1f + 0.065f * i, 0.5f))
+            }
+        }
+        composeRule.runOnIdle { state.progress = 20 }
+        composeRule.waitForIdle()
+        assertEquals(emptyList<Int>(), seeks)
+        assertTrue(
+            "thumb must stay under the finger, was ${slider.progress()}",
+            slider.progress() > 60f
+        )
+
+        slider.performTouchInput { up() }
+        composeRule.runOnIdle {
+            assertEquals(1, seeks.size)
+            assertTrue("seek ${seeks[0]} should be near the drop at 75", abs(seeks[0] - 75) <= 8)
+        }
+        val target = seeks[0]
+
+        composeRule.runOnIdle { state.progress = 20 }
+        composeRule.waitForIdle()
+        assertTrue(
+            "thumb must stay on the seek target $target until playback reaches it, " +
+                "was ${slider.progress()}",
+            abs(slider.progress() - target) <= 1f
+        )
+
+        composeRule.runOnIdle { state.progress = target }
+        composeRule.waitForIdle()
+        composeRule.runOnIdle { state.progress = 30 }
+        composeRule.waitUntil(timeoutMillis = 5_000) { slider.progress() == 30f }
+        composeRule.runOnIdle { assertEquals(1, seeks.size) }
+    }
+
+    @Test
+    fun sliderReturnsToProgressWhenSeekNeverLands() {
+        val state = seekableState(progress = 10)
+        setSeekableOverlay(state) {}
+        val slider = composeRule.onNodeWithContentDescription("Seek")
+        composeRule.mainClock.autoAdvance = false
+
+        slider.performSemanticsAction(SemanticsActions.SetProgress) { it(50f) }
+        composeRule.mainClock.advanceTimeByFrame()
+        assertEquals(50f, slider.progress())
+
+        composeRule.mainClock.advanceTimeBy(SEEK_SETTLE_TIMEOUT_MS + 100)
+        assertEquals(10f, slider.progress())
+    }
+
+    @Test
+    fun sliderAccessibilitySetProgressSeeksOnce() {
+        val state = seekableState(progress = 10)
+        val seeks = mutableListOf<Int>()
+        setSeekableOverlay(state) { seeks += it }
+
+        composeRule.onNodeWithContentDescription("Seek")
+            .performSemanticsAction(SemanticsActions.SetProgress) { it(50f) }
+
+        composeRule.runOnIdle { assertEquals(listOf(50), seeks) }
     }
 
     @Test
@@ -385,6 +458,37 @@ class VideoOverlayScreenTest {
         composeRule.onNodeWithTag(MOVIE_DETAIL_UNCAPPED_TAG).assertExists()
         composeRule.onNodeWithTag(MOVIE_DETAIL_CAPPED_TAG).assertDoesNotExist()
     }
+
+    private fun seekableState(progress: Int) = VideoOverlayUiState().apply {
+        title = "Recording"
+        showPvrControls = true
+        progressMax = 100
+        this.progress = progress
+        progressEnabled = true
+        seekable = true
+    }
+
+    private fun setSeekableOverlay(state: VideoOverlayUiState, onSeekChange: (Int) -> Unit) {
+        composeRule.setContent {
+            DreamDroidTheme {
+                VideoOverlayScreen(
+                    state = state,
+                    onPlay = {},
+                    onRewind = {},
+                    onForward = {},
+                    onInfo = {},
+                    onList = {},
+                    onAudio = {},
+                    onSubtitle = {},
+                    onSleepTimer = {},
+                    onSeekChange = onSeekChange
+                )
+            }
+        }
+    }
+
+    private fun SemanticsNodeInteraction.progress(): Float =
+        fetchSemanticsNode().config[SemanticsProperties.ProgressBarRangeInfo].current
 
     private fun SemanticsNodeInteraction.scrollOffset(): Float =
         fetchSemanticsNode().config[SemanticsProperties.VerticalScrollAxisRange].value()

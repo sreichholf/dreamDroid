@@ -24,6 +24,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -39,7 +40,10 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import kotlin.math.abs
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.withTimeoutOrNull
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Service
@@ -55,6 +59,9 @@ import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 
 /** Test tag for the seek/progress nest behind the overlay Slider. */
 const val VIDEO_OVERLAY_PROGRESS_CONTAINER_TAG = "video_overlay_progress_container"
+
+/** How long the Slider shows a seek target that playback progress never reaches. */
+internal const val SEEK_SETTLE_TIMEOUT_MS = 5_000L
 
 /**
  * Mutable overlay chrome state driven by [VideoOverlayController].
@@ -224,11 +231,28 @@ fun VideoOverlayScreen(
             if (state.progressMax > 0) {
                 val max = state.progressMax.coerceAtLeast(1).toFloat()
                 val value = state.progress.coerceIn(0, state.progressMax).toFloat()
+                // Playback keeps moving state.progress, and keeps reporting the old position
+                // until a seek lands: the thumb follows the drag, then the seek target.
+                var dragValue by remember(state.progressMax) { mutableStateOf<Float?>(null) }
+                var seekTarget by remember { mutableStateOf<Float?>(null) }
+                LaunchedEffect(seekTarget) {
+                    val target = seekTarget ?: return@LaunchedEffect
+                    // VLC lands on keyframes, not on the exact target.
+                    val tolerance = maxOf(2f, max * 0.01f)
+                    withTimeoutOrNull(SEEK_SETTLE_TIMEOUT_MS) {
+                        snapshotFlow { state.progress }.first { abs(it - target) <= tolerance }
+                    }
+                    seekTarget = null
+                }
                 Slider(
-                    value = value,
-                    onValueChange = { newValue ->
-                        if (state.seekable) {
-                            onSeekChange(newValue.toInt())
+                    value = dragValue ?: seekTarget ?: value,
+                    onValueChange = { newValue -> dragValue = newValue },
+                    onValueChangeFinished = {
+                        val target = dragValue
+                        dragValue = null
+                        if (target != null && state.seekable) {
+                            seekTarget = target
+                            onSeekChange(target.toInt())
                         }
                     },
                     valueRange = 0f..max,
