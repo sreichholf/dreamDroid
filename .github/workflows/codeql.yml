@@ -1,0 +1,65 @@
+name: CodeQL
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Weekly, so new queries and dependency changes are covered without a push.
+    - cron: "23 4 * * 1"
+
+concurrency:
+  group: codeql-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  analyze:
+    name: Analyze (${{ matrix.language }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Kotlin needs a build; there is no build-mode "none" for it.
+          - language: java-kotlin
+            build-mode: manual
+          # The workflows and composite actions are production code too.
+          - language: actions
+            build-mode: none
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      # JDK 25, SDK packages and the Maven Central mirror, as in android-ci.yml.
+      # It runs before init and does not compile anything.
+      - name: Set up build
+        if: matrix.language == 'java-kotlin'
+        uses: ./.github/actions/setup-build
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v4
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: ${{ matrix.build-mode }}
+
+      # CodeQL only sees code compiled under its tracer. --no-build-cache and
+      # --no-daemon keep Gradle from reusing outputs built outside this step.
+      - name: Build googleDebug
+        if: matrix.language == 'java-kotlin'
+        run: >-
+          ./gradlew --no-daemon --no-build-cache --no-configuration-cache
+          -Parm64Apk :app:assembleGoogleDebug
+
+      - name: Analyze
+        uses: github/codeql-action/analyze@v4
+        with:
+          category: /language:${{ matrix.language }}
