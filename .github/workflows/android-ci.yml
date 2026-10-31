@@ -27,6 +27,9 @@ concurrency:
   group: android-ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 # One emulator for androidTest and upgrade115; the AVD snapshot cache key is
 # derived from these and the runner's CPU vendor, so both jobs share one
 # cached, booted AVD per vendor.
