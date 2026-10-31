@@ -34,6 +34,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.plus
 import net.reichholf.dreamdroid.BuildConfig
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.ProfileRepository
@@ -59,7 +60,7 @@ class Media3Engine @Inject constructor(
     private var views: PlayerViews? = null
     private var listener: ((PlayerEvent) -> Unit)? = null
     private var progressJob: Job? = null
-    private var noVideoJob: Job? = null
+    private var playerListener: PlayerListener? = null
     private var preferredAudioLanguage = ""
     private var preferredAudioTrackSelected = false
 
@@ -109,7 +110,9 @@ class Media3Engine @Inject constructor(
         )
             .setLoadControl(loadControl(request.bufferMs))
             .build()
-        exo.addListener(PlayerListener(exo, VideoPlayback.noVideoTimeoutMs(request.bufferMs)))
+        val playerListener = PlayerListener(exo, VideoPlayback.noVideoTimeoutMs(request.bufferMs))
+        exo.addListener(playerListener)
+        this.playerListener = playerListener
         // Decoder names, formats, first frame and dropped frames in logcat, for field reports.
         if (BuildConfig.DEBUG) exo.addAnalyticsListener(EventLogger())
         views?.let { exo.setVideoSurfaceView(it.media3Surface) }
@@ -139,10 +142,11 @@ class Media3Engine @Inject constructor(
         exo.seekTo(max(0L, exo.currentPosition - REWIND_STEP_MS))
     }
 
-    override fun audioTracks(): List<MediaTrack>? = player?.let { tracksOf(it, C.TRACK_TYPE_AUDIO) }
+    override fun audioTracks(): List<MediaTrack>? =
+        reportingTracks()?.let { tracksOf(it, C.TRACK_TYPE_AUDIO) }
 
     override fun subtitleTracks(): List<MediaTrack>? {
-        val exo = player ?: return null
+        val exo = reportingTracks() ?: return null
         val off = MediaTrack(TRACK_OFF, context.getString(R.string.track_off))
         return listOf(off) + tracksOf(exo, C.TRACK_TYPE_TEXT)
     }
@@ -150,6 +154,9 @@ class Media3Engine @Inject constructor(
     override fun setAudioTrack(id: Int) = select(C.TRACK_TYPE_AUDIO, id)
 
     override fun setSubtitleTrack(id: Int) = select(C.TRACK_TYPE_TEXT, id)
+
+    /** The player once its stream has reported tracks. */
+    private fun reportingTracks(): ExoPlayer? = player?.takeUnless { it.currentTracks.isEmpty }
 
     private fun select(type: Int, id: Int) {
         val exo = player ?: return
@@ -203,7 +210,8 @@ class Media3Engine @Inject constructor(
 
     private fun releasePlayer() {
         progressJob?.cancel()
-        noVideoJob?.cancel()
+        playerListener?.firstPicture?.cancel()
+        playerListener = null
         val exo = player ?: return
         // Its listener drops what release() still reports.
         player = null
@@ -250,8 +258,16 @@ class Media3Engine @Inject constructor(
     ) : Player.Listener {
         /** Opening and Playing go out once per stream, as VLC sends them; not per rebuffer. */
         private var started = false
-        private var firstFrame = false
         private var tracksFound = false
+        val firstPicture = FirstPictureWatch(
+            scope + Dispatchers.Main.immediate,
+            noVideoTimeoutMs
+        ) { event ->
+            if (event == PlayerEvent.NoVideo) {
+                Log.i(LOG_TAG, "Video decoder showed no frame in $noVideoTimeoutMs ms")
+            }
+            emit(event)
+        }
 
         private fun emit(event: PlayerEvent) {
             if (player === exo) listener?.invoke(event)
@@ -310,37 +326,17 @@ class Media3Engine @Inject constructor(
             }
             if (Media3Streams.missingDecoder(support)) {
                 emit(PlayerEvent.Failed(unsupported = true))
-            } else if (firstFrame || noVideoJob != null) {
-                return
-            } else if (tracks.isTypeSelected(C.TRACK_TYPE_VIDEO)) {
-                watchForVideo()
             } else {
-                // Radio: nothing to wait for.
-                firstFrame = true
-                emit(PlayerEvent.PictureReady)
+                firstPicture.onTracks(hasVideo = tracks.isTypeSelected(C.TRACK_TYPE_VIDEO))
             }
         }
 
         override fun onRenderedFirstFrame() {
-            if (firstFrame) return
-            firstFrame = true
-            noVideoJob?.cancel()
-            emit(PlayerEvent.PictureReady)
-        }
-
-        /** Reports [PlayerEvent.NoVideo] when the video decoder shows no frame in time. */
-        private fun watchForVideo() {
-            noVideoJob = scope.launch(Dispatchers.Main.immediate) {
-                delay(noVideoTimeoutMs)
-                if (!firstFrame && player === exo) {
-                    Log.i(LOG_TAG, "Video decoder showed no frame in $noVideoTimeoutMs ms")
-                    emit(PlayerEvent.NoVideo)
-                }
-            }
+            if (player === exo) firstPicture.onFirstFrame()
         }
 
         override fun onVideoSizeChanged(videoSize: VideoSize) {
-            if (videoSize.width == 0 || videoSize.height == 0) return
+            if (player !== exo || videoSize.width == 0 || videoSize.height == 0) return
             views?.media3Frame?.setAspectRatio(
                 videoSize.width * videoSize.pixelWidthHeightRatio / videoSize.height
             )
