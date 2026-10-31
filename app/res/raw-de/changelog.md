@@ -1,19 +1,10 @@
 ### WICHTIG: Für https Verbindungen mit selbst signierten Zertifikaten muss ab sofort im jeweiligen Profil 'Alle Zertifikate' aktiviert werden!
 
 ## 2.0.471
+* UPD: Video-Player verbessert
 * FIX: Aufnahmen in sehr großen Ordnern werden nicht geladen
 
 ## 2.0.470
-* NEU: Player - Pause bei Anrufen, anderen Apps und getrennten Kopfhörern
-* NEU: Player - Bluetooth- und System-Medientasten, Bild-in-Bild-Steuerung
-* UPD: Player - Play/Pause-Taste zeigt ihren Zustand, auch bei Live-TV
-* UPD: Flüssigeres Bild-in-Bild
-* FIX: Player - erster Druck auf eine Lautstärketaste ignoriert
-* FIX: Player - erstes Wischen für die Helligkeit verdunkelt den Bildschirm
-* FIX: Player - Spulen in Aufnahmen ruckelt
-* FIX: Player - Medientasten Play und Pause schalteten um
-* FIX: Player - Ladeanzeige bleibt bei Radiosendern mit Media3
-* FIX: Player - Bedienelemente bleiben nach einem Tippen manchmal ausgeblendet
 * NEU: Sicherung im Einrichtungsassistenten wiederherstellen
 * NEU: Kanal-EPG aus der EPG-Detailansicht
 * UPD: TV - Profil- und Timer-Editor passen zum Hub

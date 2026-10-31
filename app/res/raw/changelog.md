@@ -1,19 +1,10 @@
 ### IMPORTANT: For https using self-signed certs, you now have to enable "All certificates" in the respective profile
 
 ## 2.0.471
+* UPD: Improve video player
 * FIX: Recordings in very large folders not loading
 
 ## 2.0.470
-* NEW: Player - pause on calls, other apps and unplugged headphones
-* NEW: Player - Bluetooth and system media keys, picture-in-picture controls
-* UPD: Player - play/pause button shows its state, also for live TV
-* UPD: Smoother picture-in-picture
-* FIX: Player - first press of a volume key ignored
-* FIX: Player - first brightness swipe darkens the screen
-* FIX: Player - seeking in recordings stutters
-* FIX: Player - Play and Pause media keys toggled
-* FIX: Player - loading spinner stays on radio channels with Media3
-* FIX: Player - controls sometimes stay hidden after a tap
 * NEW: Restore a backup in the setup assistant
 * NEW: Channel EPG from the EPG detail
 * UPD: TV - profile and timer editors match the hub
