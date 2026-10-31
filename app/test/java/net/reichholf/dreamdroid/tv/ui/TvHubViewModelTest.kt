@@ -127,7 +127,8 @@ class TvHubViewModelTest {
         viewModel.reload()
         viewModel.joinJobsSince(before)
 
-        val state = viewModel.uiState.value
+        // uiState combines the ViewModel state with the session, so it can trail the reload.
+        val state = awaitState(viewModel) { !it.loading && it.bouquetRows.isEmpty() }
         assertTrue(state.bouquetRows.isEmpty())
         assertEquals(emptyList<String>(), state.movieLocations)
         assertNull(state.errorText)
