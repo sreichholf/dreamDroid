@@ -87,7 +87,6 @@ class SetupAssistantViewModel @Inject constructor(
     private var searchJob: Job? = null
     private var checkJob: Job? = null
     private var saveJob: Job? = null
-    private var restoreJob: Job? = null
 
     init {
         viewModelScope.launch {
@@ -230,7 +229,7 @@ class SetupAssistantViewModel @Inject constructor(
             return
         }
         _uiState.update { it.copy(restoring = true, restoreError = null) }
-        restoreJob = viewModelScope.launch {
+        viewModelScope.launch {
             val opened = imports.open(uri)
             val hasProfiles = imports.review.value?.profiles?.isNotEmpty() == true
             if (!opened || !hasProfiles) {
@@ -270,7 +269,7 @@ class SetupAssistantViewModel @Inject constructor(
     fun setImportSettings(include: Boolean) = imports.setSettings(include)
 
     private fun restore() {
-        if (restoreJob?.isActive == true) {
+        if (_uiState.value.restoring) {
             return
         }
         val review = imports.review.value ?: return
@@ -279,7 +278,7 @@ class SetupAssistantViewModel @Inject constructor(
             return
         }
         _uiState.update { it.copy(restoring = true, restoreError = null) }
-        restoreJob = viewModelScope.launch {
+        viewModelScope.launch {
             if (!imports.confirm()) {
                 restoreFailed(R.string.setup_restore_failed)
                 return@launch
