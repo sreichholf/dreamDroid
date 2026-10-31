@@ -18,7 +18,7 @@ fun ConnectionStatus.allowsStreaming(): Boolean = session == ConnectionStatus.Se
 
 /**
  * TV [net.reichholf.dreamdroid.activities.VideoActivity] may stay up only
- * while Online, or after playback already started (a later Offline probe must
+ * while Online, or once the stream reached Playing (a later Offline probe must
  * not tear down the current stream). Phone is unchanged.
  */
 fun shouldKeepTvStreamingActivity(

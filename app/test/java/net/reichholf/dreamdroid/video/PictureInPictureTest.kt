@@ -37,4 +37,35 @@ class PictureInPictureTest {
             assertTrue(quantized <= 2.39f, "max bound became $quantized")
         }
     }
+
+    @Test
+    fun aWidePictureIsLetterboxedInATallContainer() {
+        val hint = pictureInPictureSourceRectHint(PipRect(0, 0, 1080, 2400), 1920, 1080)
+        assertEquals(PipRect(0, 896, 1080, 1504), hint)
+    }
+
+    @Test
+    fun aNarrowPictureIsPillarboxedInAWideContainer() {
+        val hint = pictureInPictureSourceRectHint(PipRect(0, 0, 2400, 1080), 768, 576)
+        assertEquals(PipRect(480, 0, 1920, 1080), hint)
+    }
+
+    @Test
+    fun theHintKeepsTheContainerOffset() {
+        val hint = pictureInPictureSourceRectHint(PipRect(100, 50, 1100, 1050), 1920, 1080)
+        assertEquals(PipRect(100, 268, 1100, 831), hint)
+    }
+
+    @Test
+    fun aMatchingPictureFillsTheContainer() {
+        val container = PipRect(0, 0, 1920, 1080)
+        assertEquals(container, pictureInPictureSourceRectHint(container, 1280, 720))
+    }
+
+    @Test
+    fun noReportedSizeOrAnEmptyContainerHasNoHint() {
+        assertNull(pictureInPictureSourceRectHint(PipRect(0, 0, 1080, 2400), 0, 1080))
+        assertNull(pictureInPictureSourceRectHint(PipRect(0, 0, 1080, 2400), 1920, 0))
+        assertNull(pictureInPictureSourceRectHint(PipRect(0, 0, 0, 0), 1920, 1080))
+    }
 }

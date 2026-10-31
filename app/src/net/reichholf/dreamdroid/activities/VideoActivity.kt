@@ -42,7 +42,6 @@ import net.reichholf.dreamdroid.enigma.ServiceNowNext
 import net.reichholf.dreamdroid.helpers.LocalNetworkPermissionRequest
 import net.reichholf.dreamdroid.helpers.getSerializableExtraCompat
 import net.reichholf.dreamdroid.helpers.isTelevision
-import net.reichholf.dreamdroid.tv.ui.allowsStreaming
 import net.reichholf.dreamdroid.tv.ui.shouldKeepTvStreamingActivity
 import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
@@ -54,15 +53,19 @@ import net.reichholf.dreamdroid.ui.video.VideoOverlayController
 import net.reichholf.dreamdroid.ui.video.VideoPlaybackViewModel
 import net.reichholf.dreamdroid.ui.video.VideoSnackbarHost
 import net.reichholf.dreamdroid.video.PIP_ASPECT_RATIO_SCALE
+import net.reichholf.dreamdroid.video.PipRect
 import net.reichholf.dreamdroid.video.PlayRequest
+import net.reichholf.dreamdroid.video.PlaybackPipState
 import net.reichholf.dreamdroid.video.PlayerEvent
 import net.reichholf.dreamdroid.video.PlayerViews
 import net.reichholf.dreamdroid.video.VideoLayout
 import net.reichholf.dreamdroid.video.VideoPlayer
 import net.reichholf.dreamdroid.video.VlcEngine
 import net.reichholf.dreamdroid.video.pictureInPictureAspectRatio
+import net.reichholf.dreamdroid.video.pictureInPictureSourceRectHint
 
 private const val TAG = "VideoActivity"
+private const val STATE_PLAYBACK_STARTED = "playbackStarted"
 
 /**
  * Created by reichi on 16/02/16.
@@ -94,7 +97,15 @@ class VideoActivity :
     private var videoHeight: Int = 0
 
     private val localNetworkPermissionRequest = LocalNetworkPermissionRequest(this)
-    private var playbackAlreadyStarted: Boolean = false
+
+    private var pip = PlaybackPipState()
+
+    private val containerLayoutListener =
+        View.OnLayoutChangeListener { _, l, t, r, b, oldL, oldT, oldR, oldB ->
+            val moved = l != oldL || t != oldT || r != oldR || b != oldB
+            // In PiP the container is the PiP window; its bounds are no source for the hint.
+            if (moved && !isInPictureInPictureMode) updatePipParams()
+        }
     private var tvStreamingRejected: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -105,11 +116,14 @@ class VideoActivity :
         )
         setFullScreen()
         super.onCreate(savedInstanceState)
+        pip = PlaybackPipState(
+            playbackStarted = savedInstanceState?.getBoolean(STATE_PLAYBACK_STARTED) ?: false
+        )
         val isTelevision = isTelevision()
         if (!shouldKeepTvStreamingActivity(
                 isTelevision,
                 sessions.status.value,
-                playbackAlreadyStarted
+                pip.playbackStarted
             )
         ) {
             tvStreamingRejected = true
@@ -152,16 +166,19 @@ class VideoActivity :
                     if (!shouldKeepTvStreamingActivity(
                             isTelevision(),
                             status,
-                            playbackAlreadyStarted
+                            pip.playbackStarted
                         )
                     ) {
                         finish()
-                        return@collect
                     }
-                    overlay?.setTvStreamingChromeEnabled(status.allowsStreaming())
                 }
             }
         }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putBoolean(STATE_PLAYBACK_STARTED, pip.playbackStarted)
     }
 
     override fun onStart() {
@@ -197,6 +214,7 @@ class VideoActivity :
         if (!tvStreamingRejected) {
             cleanup()
             player.release()
+            if (pip.onStopped()) updatePipParams()
         }
         super.onStop()
     }
@@ -239,7 +257,6 @@ class VideoActivity :
                 preferredAudioLanguage = values.preferredAudioLanguage
             )
         )
-        playbackAlreadyStarted = true
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
@@ -253,7 +270,9 @@ class VideoActivity :
     private fun initialize() {
         cleanup()
 
-        playerContainer = findViewById(R.id.player_container)
+        playerContainer = findViewById<View>(R.id.player_container).also {
+            it.addOnLayoutChangeListener(containerLayoutListener)
+        }
         player.attach(
             PlayerViews(
                 vlcLayout = findViewById(R.id.vlc_video_layout),
@@ -280,6 +299,7 @@ class VideoActivity :
     private fun cleanup() {
         if (!playerAttached) return
         playerAttached = false
+        playerContainer?.removeOnLayoutChangeListener(containerLayoutListener)
         player.detach()
         player.setEventListener(null)
     }
@@ -301,45 +321,63 @@ class VideoActivity :
         )
     }
 
-    private fun onMediaPlaying() {
-        updatePipParams()
-    }
-
     private fun updatePipParams() {
         if (!pictureInPictureSupported()) return
-        val params = getPipParams()
-        try {
-            setPictureInPictureParams(params)
-        } catch (e: IllegalArgumentException) {
-            Log.w(TAG, "PiP parameters rejected by the system", e)
-        } catch (e: IllegalStateException) {
-            // The system refuses PiP for this activity (device or task type); playback goes on.
-            Log.w(TAG, "PiP not available for this activity", e)
+        // A device that overrides the aspect ratio bounds rejects the ratio; keep auto-enter.
+        setPipParams(getPipParams()) ?: setPipParams(basePipParams().build())
+    }
+
+    /** True on success, null when the parameters were rejected, false when PiP is refused. */
+    private fun setPipParams(params: PictureInPictureParams): Boolean? = try {
+        setPictureInPictureParams(params)
+        true
+    } catch (e: IllegalArgumentException) {
+        Log.w(TAG, "PiP parameters rejected by the system", e)
+        null
+    } catch (e: IllegalStateException) {
+        // The system refuses PiP for this activity (device or task type); playback goes on.
+        Log.w(TAG, "PiP not available for this activity", e)
+        false
+    }
+
+    private fun basePipParams(): PictureInPictureParams.Builder {
+        val builder = PictureInPictureParams.Builder()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            builder.setAutoEnterEnabled(pip.autoEnter)
+            builder.setSeamlessResizeEnabled(false)
         }
+        return builder
     }
 
     private fun getPipParams(): PictureInPictureParams {
-        val builder = PictureInPictureParams.Builder()
+        val builder = basePipParams()
         pictureInPictureAspectRatio(videoWidth, videoHeight)?.let { ratio ->
             builder.setAspectRatio(
                 Rational((ratio * PIP_ASPECT_RATIO_SCALE).roundToInt(), PIP_ASPECT_RATIO_SCALE)
             )
         }
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.S_V2) {
-            val sourceRectHint = Rect()
-            // Writes the unclipped local bounds first, so only true gives a usable global rect.
-            if (playerContainer?.getGlobalVisibleRect(sourceRectHint) == true) {
-                builder.setSourceRectHint(sourceRectHint)
-            }
+            pictureSourceRectHint()?.let { builder.setSourceRectHint(it) }
         }
         return builder.build()
+    }
+
+    /** The picture's rect inside the container, in window coordinates. */
+    private fun pictureSourceRectHint(): Rect? {
+        val visible = Rect()
+        // Writes the unclipped local bounds first, so only true gives a usable global rect.
+        if (playerContainer?.getGlobalVisibleRect(visible) != true) return null
+        val container = PipRect(visible.left, visible.top, visible.right, visible.bottom)
+        val hint = pictureInPictureSourceRectHint(container, videoWidth, videoHeight)
+            ?: return null
+        return Rect(hint.left, hint.top, hint.right, hint.bottom)
     }
 
     private fun doEnterPip(): Boolean {
         if (!pictureInPictureSupported()) return false
         // A device that overrides the aspect ratio bounds rejects the ratio, not the entry.
         return enterPip(getPipParams())
-            ?: enterPip(PictureInPictureParams.Builder().build())
+            ?: enterPip(basePipParams().build())
             ?: false
     }
 
@@ -361,9 +399,12 @@ class VideoActivity :
     @TargetApi(Build.VERSION_CODES.R)
     override fun onPictureInPictureRequested(): Boolean = doEnterPip()
 
+    /** From S on, the params set by [updatePipParams] auto-enter PiP instead. */
     override fun onUserLeaveHint() {
         super.onUserLeaveHint()
-        if (!isInPictureInPictureMode) doEnterPip()
+        if (pip.shouldEnterOnLeaveHint(Build.VERSION.SDK_INT, isInPictureInPictureMode)) {
+            doEnterPip()
+        }
     }
 
     fun setFullScreen() {
@@ -386,7 +427,7 @@ class VideoActivity :
         videoWidth = (layout.visibleWidth * sar).toInt()
         videoHeight = layout.visibleHeight
         if (playerAttached) {
-            // The size arrives after Playing; PiP needs it for the aspect ratio.
+            // The size arrives after Playing; PiP needs it for the aspect ratio and hint.
             updatePipParams()
         }
     }
@@ -409,21 +450,15 @@ class VideoActivity :
     }
 
     private fun onPlayerEvent(event: PlayerEvent) {
-        if (event == PlayerEvent.Playing) {
-            playbackAlreadyStarted = true
-            rememberLiveStream()
-        }
+        if (pip.onEvent(event)) updatePipParams()
+        if (event == PlayerEvent.Playing) rememberLiveStream()
         // The engine reports the size while views are attached, the overlay or not.
         if (event is PlayerEvent.Layout) {
             onVideoLayout(event.layout)
             return
         }
         val chrome = overlay ?: return
-        when (event) {
-            PlayerEvent.Playing -> onMediaPlaying()
-            PlayerEvent.Ended -> finish()
-            else -> Unit
-        }
+        if (event == PlayerEvent.Ended) finish()
         chrome.onEvent(event)
     }
 }
