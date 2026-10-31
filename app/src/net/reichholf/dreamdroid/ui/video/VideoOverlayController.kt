@@ -8,6 +8,7 @@ import android.media.AudioManager
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.provider.Settings
 import android.util.Log
 import android.view.GestureDetector
 import android.view.KeyEvent
@@ -104,6 +105,9 @@ class VideoOverlayController(
     private var tvChannelListBound: Boolean = false
     private var phoneZapListBound: Boolean = false
     private var savedScreenBrightness: Float? = null
+
+    /** Views fading out stay VISIBLE until their animation ends. */
+    private val fadingOut = mutableSetOf<View>()
     private var backCallback: OnBackPressedCallback? = null
 
     fun attach(extras: Bundle?) {
@@ -592,8 +596,19 @@ class VideoOverlayController(
         if (savedScreenBrightness == null) {
             savedScreenBrightness = layoutParams.screenBrightness
         }
-        layoutParams.screenBrightness = min(max(layoutParams.screenBrightness + delta, 0.01f), 1f)
+        layoutParams.screenBrightness =
+            brightnessAfterSwipe(
+                layoutParams.screenBrightness,
+                if (layoutParams.screenBrightness < 0f) systemBrightness() else null,
+                delta
+            )
         window.attributes = layoutParams
+    }
+
+    private fun systemBrightness(): Int? = try {
+        Settings.System.getInt(activity.contentResolver, Settings.System.SCREEN_BRIGHTNESS)
+    } catch (_: Settings.SettingNotFoundException) {
+        null
     }
 
     private fun restoreBrightness() {
@@ -1001,24 +1016,24 @@ class VideoOverlayController(
     }
 
     private fun fadeInView(v: View?) {
-        if (v == null || v.visibility == View.VISIBLE) return
-        v.visibility = View.VISIBLE
-        v.alpha = 0.0f
-        val alpha = if (tvOverlay) 1f else overlayAlpha
-        v.animate().alpha(alpha).setListener(
-            object : AnimatorListenerAdapter() {
-                override fun onAnimationEnd(animation: Animator) {
-                    v.alpha = alpha
-                }
-            }
-        )
+        if (v == null || (v.visibility == View.VISIBLE && v !in fadingOut)) return
+        fadingOut.remove(v)
+        v.animate().setListener(null).cancel()
+        if (v.visibility != View.VISIBLE) {
+            v.alpha = 0.0f
+            v.visibility = View.VISIBLE
+        }
+        v.animate().alpha(if (tvOverlay) 1f else overlayAlpha)
     }
 
     private fun fadeOutView(v: View?) {
-        if (v == null || v.visibility == View.GONE) return
+        if (v == null || v in fadingOut || v.visibility != View.VISIBLE) return
+        fadingOut.add(v)
+        v.animate().setListener(null).cancel()
         v.animate().alpha(0.0f).setListener(
             object : AnimatorListenerAdapter() {
                 override fun onAnimationEnd(animation: Animator) {
+                    fadingOut.remove(v)
                     v.visibility = View.GONE
                 }
             }
@@ -1036,7 +1051,7 @@ class VideoOverlayController(
     private fun isOverlaysVisible(): Boolean {
         val root = rootView ?: return false
         val sdroot = root.findViewById<View>(R.id.overlay_root)
-        return sdroot.visibility == View.VISIBLE
+        return sdroot.visibility == View.VISIBLE && sdroot !in fadingOut
     }
 
     fun onEvent(event: PlayerEvent) {
@@ -1090,6 +1105,7 @@ class VideoOverlayController(
     }
 
     fun onKeyDown(keyCode: Int): Boolean {
+        if (isSystemKey(keyCode)) return false
         var ret = false
         autohide()
         if (tvOverlay && onTvPlayerKey(keyCode)) {
@@ -1140,7 +1156,9 @@ class VideoOverlayController(
                 }
             }
 
-            KeyEvent.KEYCODE_MEDIA_PLAY, KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE -> {
+            KeyEvent.KEYCODE_MEDIA_PLAY,
+            KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE,
+            KeyEvent.KEYCODE_HEADSETHOOK -> {
                 player.play()
                 ret = true
             }

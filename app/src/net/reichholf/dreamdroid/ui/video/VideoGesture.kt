@@ -36,3 +36,17 @@ class VideoChannelSwipe {
         fired = false
     }
 }
+
+/**
+ * A negative [windowOverride] is BRIGHTNESS_OVERRIDE_NONE: the swipe then starts from the system
+ * brightness (0..255), or from the middle when that cannot be read.
+ */
+fun brightnessAfterSwipe(windowOverride: Float, systemBrightness: Int?, delta: Float): Float {
+    val start =
+        when {
+            windowOverride >= 0f -> windowOverride
+            systemBrightness != null -> systemBrightness.coerceIn(0, 255) / 255f
+            else -> 0.5f
+        }
+    return (start + delta).coerceIn(0.01f, 1f)
+}

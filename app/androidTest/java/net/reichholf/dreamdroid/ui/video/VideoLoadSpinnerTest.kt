@@ -1,6 +1,7 @@
 package net.reichholf.dreamdroid.ui.video
 
 import android.content.Intent
+import android.view.KeyEvent
 import android.view.View
 import androidx.compose.ui.test.junit4.v2.createEmptyComposeRule
 import androidx.test.core.app.ActivityScenario
@@ -19,13 +20,17 @@ import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import okhttp3.mockwebserver.RecordedRequest
 import org.junit.After
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
-/** The load spinner stays while the controls hide on Playing, until the first picture. */
+/**
+ * The load spinner stays while the controls hide on Playing, until the first picture, and a
+ * reconnect's Opening brings it back even while it still fades out.
+ */
 @HiltAndroidTest
 @RunWith(AndroidJUnit4::class)
 class VideoLoadSpinnerTest {
@@ -84,6 +89,43 @@ class VideoLoadSpinnerTest {
             }
             composeRule.waitUntil(5_000) { !isShown(scenario, R.id.video_load_progress) }
         }
+    }
+
+    @Test
+    fun theSpinnerComesBackOnOpeningRightAfterThePicture() {
+        val intent = Intent(context, VideoActivity::class.java)
+        ActivityScenario.launch<VideoActivity>(intent).use { scenario ->
+            scenario.onActivity { activity ->
+                val overlay = checkNotNull(activity.overlay)
+                overlay.onEvent(PlayerEvent.Opening)
+                overlay.onEvent(PlayerEvent.PictureReady)
+                overlay.onEvent(PlayerEvent.Opening)
+            }
+            composeRule.waitUntil(5_000) {
+                spinnerAlpha(scenario) >= VideoOverlayController.overlayAlpha - 0.001f
+            }
+            assertTrue(isShown(scenario, R.id.video_load_progress))
+        }
+    }
+
+    @Test
+    fun volumeKeysReachTheSystemWhileTheOverlayIsHidden() {
+        val intent = Intent(context, VideoActivity::class.java)
+        ActivityScenario.launch<VideoActivity>(intent).use { scenario ->
+            scenario.onActivity { checkNotNull(it.overlay).hideOverlays() }
+            composeRule.waitUntil(5_000) { !isShown(scenario, R.id.overlay_root) }
+            scenario.onActivity { activity ->
+                val down = KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_VOLUME_UP)
+                assertFalse(activity.onKeyDown(KeyEvent.KEYCODE_VOLUME_UP, down))
+                assertFalse(activity.findViewById<View>(R.id.overlay_root).isShown)
+            }
+        }
+    }
+
+    private fun spinnerAlpha(scenario: ActivityScenario<VideoActivity>): Float {
+        var alpha = 0f
+        scenario.onActivity { alpha = it.findViewById<View>(R.id.video_load_progress).alpha }
+        return alpha
     }
 
     private fun isShown(scenario: ActivityScenario<VideoActivity>, id: Int): Boolean {
