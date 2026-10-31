@@ -57,6 +57,12 @@ class VlcEngine @Inject constructor(
      * main-thread call would wait for it.
      */
     private val switching: Boolean get() = startedGeneration != generation
+
+    /**
+     * Whether the stream should play, as [start], [play] and [pause] last asked; main thread
+     * only. A pause before setMedia returns or before libVLC reports Playing still holds.
+     */
+    private var playWhenReady = false
     private var listener: ((PlayerEvent) -> Unit)? = null
 
     /** How the next stream's first picture is awaited; set by [start], used on Playing. */
@@ -94,6 +100,8 @@ class VlcEngine @Inject constructor(
             return
         }
         generation++
+        playWhenReady = false
+        stateFlow.update { it.copy(isPlaying = false, rewinding = false) }
         mp.detachViews()
         hideViews()
         commands.post { mp.stop() }
@@ -123,7 +131,8 @@ class VlcEngine @Inject constructor(
     override fun start(request: PlayRequest) {
         val mp = mediaPlayer()
         val gen = ++generation
-        stateFlow.value = PlayerState()
+        playWhenReady = true
+        stateFlow.value = PlayerState(isPlaying = true)
         tracksFound = false
         preferredAudioLanguage = request.preferredAudioLanguage
         val isHwAccel = request.hwAccelFlags and MEDIA_HWACCEL_ENABLED > 0
@@ -161,19 +170,25 @@ class VlcEngine @Inject constructor(
             startedGeneration = gen
             mp.setEventListener(eventListener(mp, gen))
             mp.rate = 1.0f
-            mp.play()
+            if (playWhenReady) mp.play()
         }
     }
 
     override fun play() {
         val mp = mediaPlayer ?: return
+        playWhenReady = true
+        stateFlow.update { it.copy(isPlaying = true, rewinding = false) }
         if (switching || !mp.hasMedia()) return
-        if (VideoPlayback.shouldTogglePause(mp.isPlaying, mp.rate)) {
-            mp.pause()
-        } else {
-            mp.play()
-        }
+        if (!mp.isPlaying) mp.play()
         mp.rate = 1.0f
+    }
+
+    override fun pause() {
+        val mp = mediaPlayer ?: return
+        playWhenReady = false
+        stateFlow.update { it.copy(isPlaying = false) }
+        if (switching || !mp.hasMedia()) return
+        mp.pause()
     }
 
     override fun setPosition(position: Float) {
@@ -192,6 +207,7 @@ class VlcEngine @Inject constructor(
                 rate = -1.0f
             }
             mp.rate = max(rate * 2, -64f)
+            stateFlow.update { it.copy(rewinding = true) }
         }
     }
 
@@ -239,7 +255,15 @@ class VlcEngine @Inject constructor(
                 refreshTrackCounts(mp)
                 selectPreferredAudioTrack(mp, gen)
                 watchForVideo(mp, gen)
+                // A pause that libVLC ignored while the stream was still opening.
+                if (!playWhenReady) mp.pause()
+                stateFlow.update { it.copy(isPlaying = playWhenReady) }
                 PlayerEvent.Playing
+            }
+
+            MediaPlayer.Event.Stopped -> {
+                stateFlow.update { it.copy(isPlaying = false) }
+                null
             }
 
             MediaPlayer.Event.TimeChanged -> {
@@ -287,9 +311,15 @@ class VlcEngine @Inject constructor(
                 null
             }
 
-            MediaPlayer.Event.EncounteredError -> PlayerEvent.Failed()
+            MediaPlayer.Event.EncounteredError -> {
+                stateFlow.update { it.copy(isPlaying = false) }
+                PlayerEvent.Failed()
+            }
 
-            MediaPlayer.Event.EndReached -> PlayerEvent.Ended
+            MediaPlayer.Event.EndReached -> {
+                stateFlow.update { it.copy(isPlaying = false) }
+                PlayerEvent.Ended
+            }
 
             else -> null
         }

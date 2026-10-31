@@ -47,13 +47,6 @@ class VideoPlaybackTest {
     }
 
     @Test
-    fun pausesOnlyWhilePlayingAtNormalSpeed() {
-        assertTrue(VideoPlayback.shouldTogglePause(true, 1.0f))
-        assertFalse(VideoPlayback.shouldTogglePause(false, 1.0f))
-        assertFalse(VideoPlayback.shouldTogglePause(true, 2.0f))
-    }
-
-    @Test
     fun detachIsNoOpWhenPlayerMissingOrViewsAlreadyDetached() {
         assertFalse(VideoPlayback.shouldDetachViews(playerPresent = false, viewsAttached = true))
         assertFalse(VideoPlayback.shouldDetachViews(playerPresent = true, viewsAttached = false))

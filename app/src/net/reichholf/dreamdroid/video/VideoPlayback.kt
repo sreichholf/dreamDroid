@@ -56,8 +56,6 @@ object VideoPlayback {
             Engine.Vlc
         }
 
-    fun shouldTogglePause(isPlaying: Boolean, rate: Float): Boolean = isPlaying && rate == 1.0f
-
     /**
      * [org.videolan.libvlc.interfaces.IVLCVout.detachViews] is not idempotent.
      * Skip it when the player is already gone or views are already detached.

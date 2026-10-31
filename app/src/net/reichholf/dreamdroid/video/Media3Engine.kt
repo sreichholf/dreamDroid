@@ -82,6 +82,7 @@ class Media3Engine @Inject constructor(
         views?.let { unbind(it) }
         views = null
         releasePlayer()
+        stateFlow.update { it.copy(isPlaying = false) }
     }
 
     override fun release() {
@@ -93,7 +94,7 @@ class Media3Engine @Inject constructor(
 
     override fun start(request: PlayRequest) {
         releasePlayer()
-        stateFlow.value = PlayerState()
+        stateFlow.value = PlayerState(isPlaying = true)
         preferredAudioLanguage = request.preferredAudioLanguage
         preferredAudioTrackSelected = false
         val (url, authorization) = HttpUserInfo.toBasicAuth(request.url)
@@ -116,15 +117,19 @@ class Media3Engine @Inject constructor(
         // Decoder names, formats, first frame and dropped frames in logcat, for field reports.
         if (BuildConfig.DEBUG) exo.addAnalyticsListener(EventLogger())
         views?.let { exo.setVideoSurfaceView(it.media3Surface) }
+        // Before prepare: the listener drops what a player other than [player] reports.
+        player = exo
         exo.setMediaSource(source)
         exo.playWhenReady = true
         exo.prepare()
-        player = exo
     }
 
     override fun play() {
-        val exo = player ?: return
-        exo.playWhenReady = !exo.playWhenReady
+        player?.playWhenReady = true
+    }
+
+    override fun pause() {
+        player?.playWhenReady = false
     }
 
     override fun setPosition(position: Float) {
@@ -273,7 +278,19 @@ class Media3Engine @Inject constructor(
             if (player === exo) listener?.invoke(event)
         }
 
+        /** [Player.isPlaying] drops while buffering; the overlay shows what was asked for. */
+        private fun updatePlaying() {
+            if (player !== exo) return
+            val playing = exo.playWhenReady &&
+                exo.playbackState != Player.STATE_ENDED &&
+                exo.playerError == null
+            stateFlow.update { it.copy(isPlaying = playing) }
+        }
+
+        override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) = updatePlaying()
+
         override fun onPlaybackStateChanged(playbackState: Int) {
+            updatePlaying()
             when (playbackState) {
                 Player.STATE_BUFFERING -> if (!started) emit(PlayerEvent.Opening)
 
