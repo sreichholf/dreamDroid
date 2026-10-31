@@ -9,6 +9,8 @@ import android.graphics.Color
 import android.graphics.Rect
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.util.Rational
 import android.view.KeyEvent
@@ -31,9 +33,11 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.media3.session.MediaSession
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlin.math.roundToInt
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.LastLiveStream
@@ -55,11 +59,13 @@ import net.reichholf.dreamdroid.ui.video.VideoSnackbarHost
 import net.reichholf.dreamdroid.video.PIP_ASPECT_RATIO_SCALE
 import net.reichholf.dreamdroid.video.PipRect
 import net.reichholf.dreamdroid.video.PlayRequest
+import net.reichholf.dreamdroid.video.PlaybackAudioFocus
 import net.reichholf.dreamdroid.video.PlaybackPipState
 import net.reichholf.dreamdroid.video.PlayerEvent
 import net.reichholf.dreamdroid.video.PlayerViews
 import net.reichholf.dreamdroid.video.VideoLayout
 import net.reichholf.dreamdroid.video.VideoPlayer
+import net.reichholf.dreamdroid.video.VideoSessionPlayer
 import net.reichholf.dreamdroid.video.VlcEngine
 import net.reichholf.dreamdroid.video.pictureInPictureAspectRatio
 import net.reichholf.dreamdroid.video.pictureInPictureSourceRectHint
@@ -95,6 +101,13 @@ class VideoActivity :
     /** The picture's display size, for the PiP aspect ratio; 0 until the engine reports it. */
     private var videoWidth: Int = 0
     private var videoHeight: Int = 0
+
+    /** Audio focus and the media session live while [playerAttached]. */
+    private var audioFocus: PlaybackAudioFocus? = null
+    private var sessionPlayer: VideoSessionPlayer? = null
+    private var mediaSession: MediaSession? = null
+    private var sessionTitleJob: Job? = null
+    private val mainHandler = Handler(Looper.getMainLooper())
 
     private val localNetworkPermissionRequest = LocalNetworkPermissionRequest(this)
 
@@ -213,6 +226,7 @@ class VideoActivity :
     override fun onStop() {
         if (!tvStreamingRejected) {
             cleanup()
+            releasePlaybackSession()
             player.release()
             if (pip.onStopped()) updatePipParams()
         }
@@ -283,9 +297,45 @@ class VideoActivity :
         )
         player.setEventListener(::onPlayerEvent)
         playerAttached = true
+        startPlaybackSession()
 
         handleIntent(intent)
         setFullScreen()
+    }
+
+    private fun startPlaybackSession() {
+        if (mediaSession != null) return
+        audioFocus = PlaybackAudioFocus(this, player).also { it.start(lifecycleScope) }
+        val sessionPlayer = VideoSessionPlayer(
+            player = player,
+            // Not inside the session's own command dispatch: finish releases the session.
+            onStop = { mainHandler.post(::finish) },
+            onUserPlayPause = { audioFocus?.onUserPlayPause() }
+        )
+        sessionPlayer.start(lifecycleScope)
+        this.sessionPlayer = sessionPlayer
+        sessionTitleJob = lifecycleScope.launch {
+            playbackViewModel.uiState.collect { state ->
+                sessionPlayer.setTitle(
+                    state.title ?: intent.getStringExtra(VideoOverlayController.TITLE).orEmpty()
+                )
+            }
+        }
+        // Each instance needs its own ID: a stream in PiP may live on beside a new player.
+        mediaSession = MediaSession.Builder(this, sessionPlayer)
+            .setId("video-${System.identityHashCode(this)}")
+            .build()
+    }
+
+    private fun releasePlaybackSession() {
+        sessionTitleJob?.cancel()
+        sessionTitleJob = null
+        mediaSession?.release()
+        mediaSession = null
+        sessionPlayer?.close()
+        sessionPlayer = null
+        audioFocus?.release()
+        audioFocus = null
     }
 
     private fun initializeOverlay() {
@@ -447,10 +497,12 @@ class VideoActivity :
     override fun finish() {
         super.finish()
         cleanup()
+        releasePlaybackSession()
     }
 
     private fun onPlayerEvent(event: PlayerEvent) {
         if (pip.onEvent(event)) updatePipParams()
+        sessionPlayer?.onEvent(event)
         if (event == PlayerEvent.Playing) rememberLiveStream()
         // The engine reports the size while views are attached, the overlay or not.
         if (event is PlayerEvent.Layout) {
