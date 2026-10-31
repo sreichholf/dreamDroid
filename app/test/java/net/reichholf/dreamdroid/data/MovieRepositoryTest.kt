@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.enigma.Movie
+import net.reichholf.dreamdroid.helpers.EnigmaHttp
 import net.reichholf.dreamdroid.testutil.MovieTestReceiver
 import net.reichholf.dreamdroid.testutil.MovieTestReceiver.Companion.HDD
 import net.reichholf.dreamdroid.testutil.MovieTestReceiver.Companion.PROFILE_ID
@@ -68,6 +69,13 @@ class MovieRepositoryTest {
         repository.movies("", emptyList()).last()
 
         assertNull(receiver.server.takeRequest().requestUrl!!.queryParameter("dirname"))
+    }
+
+    @Test
+    fun movieListAllowsALongerAnswerThanOtherCalls() {
+        assertTrue(
+            MovieRepository.MOVIE_LIST_TIMEOUT_MS > EnigmaHttp.DEFAULT_CONNECTION_TIMEOUT_MILLIS
+        )
     }
 
     @Test
