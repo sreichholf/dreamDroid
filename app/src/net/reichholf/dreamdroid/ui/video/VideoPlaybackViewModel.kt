@@ -20,6 +20,7 @@ import net.reichholf.dreamdroid.data.LiveStream
 import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.data.ReceiverRepository
 import net.reichholf.dreamdroid.data.ServiceRepository
+import net.reichholf.dreamdroid.data.SettingsRepository
 import net.reichholf.dreamdroid.enigma.Bouquets
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.ServiceNowNext
@@ -29,18 +30,22 @@ import net.reichholf.dreamdroid.ui.text.UiText
 /**
  * Zap list, zap position, and now/next for the player overlay, with their loads.
  * Scoped to [net.reichholf.dreamdroid.activities.VideoActivity] so a recreate keeps
- * the loaded list. [VideoOverlayController] observes [uiState] and keeps libVLC and
- * the views.
+ * the loaded list. [VideoOverlayController] observes [uiState] and drives the player and
+ * the overlay views.
  */
 @HiltViewModel
 class VideoPlaybackViewModel @Inject constructor(
     private val services: ServiceRepository,
     private val receiver: ReceiverRepository,
     private val profiles: ProfileRepository,
-    private val lastStreams: LastLiveStreamRepository
+    private val lastStreams: LastLiveStreamRepository,
+    private val settings: SettingsRepository
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(VideoPlaybackUiState())
     val uiState: StateFlow<VideoPlaybackUiState> = _uiState.asStateFlow()
+
+    /** Swipes change volume, brightness and channel; read per gesture, so a change applies. */
+    val gesturesEnabled: Boolean get() = settings.current().videoEnableGestures
 
     private var loadJob: Job? = null
     private var bouquetJob: Job? = null

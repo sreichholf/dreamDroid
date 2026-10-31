@@ -102,16 +102,35 @@ class VideoOverlayUiState {
     var bouquets by mutableStateOf<List<Service>>(emptyList())
     var selectedBouquetRef by mutableStateOf<String?>(null)
 
-    /** Phase 2.1g-ii-d: in-composition detail sheet (EPG or movie). */
+    /** The open detail sheet: an EPG event or a movie, at most one. */
     var epgDetailContent by mutableStateOf<EpgDetailContent?>(null)
     var movieDetailContent by mutableStateOf<MovieDetailContent?>(null)
 
-    /** Phase 2.1g-ii-e: in-composition simple choice (audio/subtitle tracks). */
+    /** The open choice dialog (audio or subtitle track, sleep timer); null title when closed. */
     var choiceTitle by mutableStateOf<String?>(null)
     var choiceItems by mutableStateOf<List<String>>(emptyList())
     var choiceActionIds by mutableStateOf<IntArray>(intArrayOf())
     var choiceDialogTag by mutableStateOf<String?>(null)
     var onChoiceAction: ((actionId: Int, dialogTag: String) -> Unit)? = null
+
+    fun showChrome(chrome: OverlayChrome) {
+        title = chrome.title
+        showInfoButton = chrome.showInfoButton
+        showPvrControls = chrome.showPvrControls
+        seekable = chrome.seekable
+        nowStart = chrome.now?.start.orEmpty()
+        nowTitle = chrome.now?.title.orEmpty()
+        nowDuration = chrome.now?.duration.orEmpty()
+        showNow = chrome.now != null
+        nowEvent = chrome.nowEvent
+        nextStart = chrome.next?.start.orEmpty()
+        nextTitle = chrome.next?.title.orEmpty()
+        nextDuration = chrome.next?.duration.orEmpty()
+        hasNext = chrome.next != null
+        progressEnabled = chrome.progress != null
+        progressMax = chrome.progress?.max ?: 0
+        progress = chrome.progress?.position ?: 0
+    }
 
     fun showChoice(title: String, items: List<String>, actionIds: IntArray, dialogTag: String) {
         choiceTitle = title

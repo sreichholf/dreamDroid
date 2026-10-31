@@ -63,6 +63,12 @@ class VlcEngine @Inject constructor(
      * only. A pause before setMedia returns or before libVLC reports Playing still holds.
      */
     private var playWhenReady = false
+
+    /** The rate [slower] last set, 1 while playing forward; main thread only. */
+    private var rewindRate = 1f
+
+    /** Counts [play] calls, so a [slower] still waiting for libVLC does not undo one. */
+    private var rewindEpoch = 0
     private var listener: ((PlayerEvent) -> Unit)? = null
 
     /** How the next stream's first picture is awaited; set by [start], used on Playing. */
@@ -96,13 +102,14 @@ class VlcEngine @Inject constructor(
 
     override fun detach() {
         val mp = mediaPlayer ?: return
-        if (!VideoPlayback.shouldDetachViews(true, mp.vlcVout.areViewsAttached())) {
-            return
-        }
         generation++
         playWhenReady = false
+        rewindRate = 1f
         stateFlow.update { it.copy(isPlaying = false, rewinding = false) }
-        mp.detachViews()
+        // detachViews is not idempotent.
+        if (mp.vlcVout.areViewsAttached()) {
+            mp.detachViews()
+        }
         hideViews()
         commands.post { mp.stop() }
     }
@@ -132,6 +139,7 @@ class VlcEngine @Inject constructor(
         val mp = mediaPlayer()
         val gen = ++generation
         playWhenReady = true
+        rewindRate = 1f
         stateFlow.value = PlayerState(isPlaying = true)
         tracksFound = false
         preferredAudioLanguage = request.preferredAudioLanguage
@@ -177,6 +185,8 @@ class VlcEngine @Inject constructor(
     override fun play() {
         val mp = mediaPlayer ?: return
         playWhenReady = true
+        rewindRate = 1f
+        rewindEpoch++
         stateFlow.update { it.copy(isPlaying = true, rewinding = false) }
         if (switching || !mp.hasMedia()) return
         if (!mp.isPlaying) mp.play()
@@ -197,16 +207,27 @@ class VlcEngine @Inject constructor(
         commands.post { mp.position = position }
     }
 
-    /** Rewinds faster each call, down to -64x, while a seekable stream plays. */
+    /**
+     * Rewinds faster each call, down to -64x, while a seekable stream plays. libVLC is asked
+     * off the main thread whether it can; the rate is set on the main thread, unless a [play]
+     * or another stream came in between.
+     */
     override fun slower() {
         val mp = mediaPlayer ?: return
-        commands.post {
-            if (!mp.isSeekable || !mp.isPlaying) return@post
-            var rate = mp.rate
-            if (rate == 1.0f) {
-                rate = -1.0f
+        val gen = generation
+        val epoch = rewindEpoch
+        scope.launch(Dispatchers.Main.immediate) {
+            val canRewind = try {
+                commands.call { mp.isSeekable && mp.isPlaying }
+            } catch (e: Exception) {
+                Log.w(LOG_TAG, "Rewind check failed", e)
+                false
             }
-            mp.rate = max(rate * 2, -64f)
+            if (!canRewind || gen != generation || epoch != rewindEpoch || switching) {
+                return@launch
+            }
+            rewindRate = max(if (rewindRate < 0f) rewindRate * 2 else -2f, -64f)
+            mp.rate = rewindRate
             stateFlow.update { it.copy(rewinding = true) }
         }
     }
