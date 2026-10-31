@@ -84,7 +84,8 @@ class MovieRepository @Inject constructor(
         tags: List<String>
     ): EnigmaResponse<List<Movie>> {
         val profile = profiles.current.value ?: return EnigmaResponse(null)
-        return clients.forProfile(profile).movies(location, tags).also { response ->
+        val api = clients.forProfile(profile, MOVIE_LIST_TIMEOUT_MS)
+        return api.movies(location, tags).also { response ->
             val live = response.value
             val profileId = profile.id
             if (live != null && tags.isEmpty() && profileId != null) {
@@ -208,6 +209,15 @@ class MovieRepository @Inject constructor(
             location,
             movies.mapIndexed { index, movie -> movie.toListEntity(profileId, location, index) }
         )
+    }
+
+    companion object {
+        /**
+         * The box builds the whole list before it answers, with a file stat and description
+         * lookup per recording; a large folder on a network mount can outlast the 15 s
+         * default.
+         */
+        internal const val MOVIE_LIST_TIMEOUT_MS = 60_000
     }
 }
 

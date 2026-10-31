@@ -1,5 +1,8 @@
 ### WICHTIG: Für https Verbindungen mit selbst signierten Zertifikaten muss ab sofort im jeweiligen Profil 'Alle Zertifikate' aktiviert werden!
 
+## 2.0.471
+* FIX: Aufnahmen in sehr großen Ordnern werden nicht geladen
+
 ## 2.0.470
 * NEU: Sicherung im Einrichtungsassistenten wiederherstellen
 * NEU: Kanal-EPG aus der EPG-Detailansicht
