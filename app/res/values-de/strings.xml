@@ -539,4 +539,5 @@
     </string-array>
     <string name="tv_minutes_left">noch %1$d Min.</string>
     <string name="tv_now_playing">Läuft</string>
+    <string name="pause">Pause</string>
 </resources>

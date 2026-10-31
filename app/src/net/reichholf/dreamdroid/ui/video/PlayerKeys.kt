@@ -28,3 +28,34 @@ private val systemKeys =
 
 /** Keys the system acts on; the player leaves them alone so they work on the first press. */
 fun isSystemKey(keyCode: Int): Boolean = keyCode in systemKeys
+
+/** What a media key asks the player to do. */
+enum class PlayerMediaKey {
+    Play,
+    Pause,
+    TogglePlayPause,
+
+    /** Closes the player, on phones (headset, car) as on TV remotes. */
+    Stop,
+
+    /** A held toggle or stop key's auto-repeat: consumed, does nothing. */
+    Repeat,
+    None
+}
+
+fun playerMediaKey(keyCode: Int, repeatCount: Int): PlayerMediaKey {
+    val key = when (keyCode) {
+        KeyEvent.KEYCODE_MEDIA_PLAY -> PlayerMediaKey.Play
+
+        KeyEvent.KEYCODE_MEDIA_PAUSE -> PlayerMediaKey.Pause
+
+        KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE,
+        KeyEvent.KEYCODE_HEADSETHOOK -> PlayerMediaKey.TogglePlayPause
+
+        KeyEvent.KEYCODE_MEDIA_STOP -> PlayerMediaKey.Stop
+
+        else -> PlayerMediaKey.None
+    }
+    val toggles = key == PlayerMediaKey.TogglePlayPause || key == PlayerMediaKey.Stop
+    return if (toggles && repeatCount > 0) PlayerMediaKey.Repeat else key
+}

@@ -56,6 +56,7 @@ import net.reichholf.dreamdroid.ui.epg.EpgDetailModalSheet
 import net.reichholf.dreamdroid.ui.movies.MovieDetailContent
 import net.reichholf.dreamdroid.ui.movies.MovieDetailModalSheet
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
+import net.reichholf.dreamdroid.video.PlayerState
 
 /** Test tag for the seek/progress nest behind the overlay Slider. */
 const val VIDEO_OVERLAY_PROGRESS_CONTAINER_TAG = "video_overlay_progress_container"
@@ -84,6 +85,9 @@ class VideoOverlayUiState {
     var progress by mutableIntStateOf(0)
     var progressEnabled by mutableStateOf(false)
     var seekable by mutableStateOf(false)
+
+    /** Playing forward, so the play/pause button pauses; false while paused or rewinding. */
+    var isPlaying by mutableStateOf(false)
     var showAudioButton by mutableStateOf(false)
     var showSubtitleButton by mutableStateOf(false)
     var showListButton by mutableStateOf(false)
@@ -124,6 +128,9 @@ class VideoOverlayUiState {
     }
 }
 
+/** What the play/pause button shows: Pause only while play/pause would pause. */
+val PlayerState.playingForward: Boolean get() = isPlaying && !rewinding
+
 @Composable
 fun VideoOverlayScreen(
     state: VideoOverlayUiState,
@@ -139,7 +146,7 @@ fun VideoOverlayScreen(
     modifier: Modifier = Modifier,
     firstControlFocusRequester: FocusRequester? = null
 ) {
-    val playLabel = stringResource(R.string.play)
+    val playLabel = stringResource(if (state.isPlaying) R.string.pause else R.string.play)
     val rewindLabel = stringResource(R.string.rewind)
     val forwardLabel = stringResource(R.string.forward)
     val infoLabel = stringResource(R.string.info)
@@ -198,14 +205,14 @@ fun VideoOverlayScreen(
                 .testTag(VIDEO_OVERLAY_PROGRESS_CONTAINER_TAG),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            if (state.showPvrControls) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .focusGroup(),
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .focusGroup(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                if (state.showPvrControls) {
                     RepeatIconButton(
                         onClick = onRewind,
                         painter = painterResource(R.drawable.ic_fast_rewind_dark),
@@ -213,13 +220,21 @@ fun VideoOverlayScreen(
                         modifier = firstControlFocusRequester?.let { Modifier.focusRequester(it) }
                             ?: Modifier
                     )
-                    IconButton(onClick = onPlay) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_play_circle_outline_dark),
-                            contentDescription = playLabel,
-                            tint = onSurface
-                        )
-                    }
+                }
+                IconButton(onClick = onPlay) {
+                    Icon(
+                        painter = painterResource(
+                            if (state.isPlaying) {
+                                R.drawable.ic_pause_circle_outline_dark
+                            } else {
+                                R.drawable.ic_play_circle_outline_dark
+                            }
+                        ),
+                        contentDescription = playLabel,
+                        tint = onSurface
+                    )
+                }
+                if (state.showPvrControls) {
                     RepeatIconButton(
                         onClick = onForward,
                         painter = painterResource(R.drawable.ic_fast_forward_dark),

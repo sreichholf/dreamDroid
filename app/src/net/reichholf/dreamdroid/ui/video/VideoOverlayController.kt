@@ -223,11 +223,12 @@ class VideoOverlayController(
         }
         playerStateJob = activity.lifecycleScope.launch {
             player.state
-                .map { (it.audioTracks > 0) to (it.subtitleTracks > 0) }
+                .map { Triple(it.audioTracks > 0, it.subtitleTracks > 0, it.playingForward) }
                 .distinctUntilChanged()
-                .collect { (audio, subtitles) ->
+                .collect { (audio, subtitles, playing) ->
                     overlayUiState.showAudioButton = audio
                     overlayUiState.showSubtitleButton = subtitles
+                    overlayUiState.isPlaying = playing
                 }
         }
         autohide()
@@ -462,7 +463,7 @@ class VideoOverlayController(
     }
 
     private fun onPlay() {
-        player.play()
+        player.togglePlayPause()
         autohide()
     }
 
@@ -1104,7 +1105,7 @@ class VideoOverlayController(
         }
     }
 
-    fun onKeyDown(keyCode: Int): Boolean {
+    fun onKeyDown(keyCode: Int, repeatCount: Int): Boolean {
         if (isSystemKey(keyCode)) return false
         var ret = false
         autohide()
@@ -1156,11 +1157,30 @@ class VideoOverlayController(
                 }
             }
 
-            KeyEvent.KEYCODE_MEDIA_PLAY,
-            KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE,
-            KeyEvent.KEYCODE_HEADSETHOOK -> {
-                player.play()
-                ret = true
+            else -> when (playerMediaKey(keyCode, repeatCount)) {
+                PlayerMediaKey.Play -> {
+                    player.play()
+                    ret = true
+                }
+
+                PlayerMediaKey.Pause -> {
+                    player.pause()
+                    ret = true
+                }
+
+                PlayerMediaKey.TogglePlayPause -> {
+                    player.togglePlayPause()
+                    ret = true
+                }
+
+                PlayerMediaKey.Stop -> {
+                    activity.finish()
+                    return true
+                }
+
+                PlayerMediaKey.Repeat -> ret = true
+
+                PlayerMediaKey.None -> Unit
             }
         }
         if (!isOverlaysVisible()) {

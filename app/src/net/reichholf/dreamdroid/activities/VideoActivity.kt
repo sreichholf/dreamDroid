@@ -263,7 +263,7 @@ class VideoActivity :
         if (tvStreamingRejected) {
             return super.onKeyDown(keyCode, event)
         }
-        return overlay?.onKeyDown(keyCode) == true ||
+        return overlay?.onKeyDown(keyCode, event.repeatCount) == true ||
             super.onKeyDown(keyCode, event)
     }
 

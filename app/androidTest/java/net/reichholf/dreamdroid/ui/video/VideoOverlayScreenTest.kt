@@ -36,6 +36,7 @@ import net.reichholf.dreamdroid.ui.epg.EPG_DETAIL_CAPPED_TAG
 import net.reichholf.dreamdroid.ui.movies.MOVIE_DETAIL_CAPPED_TAG
 import net.reichholf.dreamdroid.ui.movies.MOVIE_DETAIL_UNCAPPED_TAG
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
+import net.reichholf.dreamdroid.video.PlayerState
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
@@ -104,6 +105,64 @@ class VideoOverlayScreenTest {
         composeRule.onNodeWithContentDescription("Subtitles").assertIsDisplayed()
         composeRule.onNodeWithContentDescription("Now").assertIsDisplayed()
         composeRule.onNodeWithContentDescription("Next").assertIsDisplayed()
+    }
+
+    @Test
+    fun playButtonShowsPauseOnlyWhilePlayingForward() {
+        val state = VideoOverlayUiState().apply {
+            title = "Tatort: Recording"
+            showPvrControls = true
+            isPlaying = PlayerState(isPlaying = true).playingForward
+        }
+        setOverlay(state)
+        assertPlayPauseShows("Pause", absent = "Play")
+
+        composeRule.runOnIdle {
+            state.isPlaying = PlayerState(isPlaying = true, rewinding = true).playingForward
+        }
+        assertPlayPauseShows("Play", absent = "Pause")
+
+        composeRule.runOnIdle { state.isPlaying = PlayerState(isPlaying = false).playingForward }
+        assertPlayPauseShows("Play", absent = "Pause")
+    }
+
+    @Test
+    fun liveShowsPlayPauseWithoutSeekButtons() {
+        val state = VideoOverlayUiState().apply {
+            title = "Das Erste HD"
+            isPlaying = true
+        }
+        setOverlay(state)
+        assertPlayPauseShows("Pause", absent = "Play")
+        composeRule.onNodeWithContentDescription("Rewind").assertDoesNotExist()
+        composeRule.onNodeWithContentDescription("Forward").assertDoesNotExist()
+
+        composeRule.runOnIdle { state.isPlaying = false }
+        assertPlayPauseShows("Play", absent = "Pause")
+    }
+
+    private fun setOverlay(state: VideoOverlayUiState) {
+        composeRule.setContent {
+            DreamDroidTheme {
+                VideoOverlayScreen(
+                    state = state,
+                    onPlay = {},
+                    onRewind = {},
+                    onForward = {},
+                    onInfo = {},
+                    onList = {},
+                    onAudio = {},
+                    onSubtitle = {},
+                    onSleepTimer = {},
+                    onSeekChange = {}
+                )
+            }
+        }
+    }
+
+    private fun assertPlayPauseShows(label: String, absent: String) {
+        composeRule.onNodeWithContentDescription(label).assertIsDisplayed()
+        composeRule.onNodeWithContentDescription(absent).assertDoesNotExist()
     }
 
     @Test
@@ -221,7 +280,7 @@ class VideoOverlayScreenTest {
             nowStart = "16:10"
             nowTitle = "Die Rosenheim-Cops"
             nowDuration = "50"
-            // Live-style chrome: progress only (no PVR buttons) — the blue nest was most obvious.
+            // Live-style chrome: progress and play only (no seek buttons) — the blue nest was most obvious.
             progressMax = 100
             progress = 20
             progressEnabled = true
