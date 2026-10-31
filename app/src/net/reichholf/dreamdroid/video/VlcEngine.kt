@@ -57,6 +57,18 @@ class VlcEngine @Inject constructor(
      * main-thread call would wait for it.
      */
     private val switching: Boolean get() = startedGeneration != generation
+
+    /**
+     * Whether the stream should play, as [start], [play] and [pause] last asked; main thread
+     * only. A pause before setMedia returns or before libVLC reports Playing still holds.
+     */
+    private var playWhenReady = false
+
+    /** The rate [slower] last set, 1 while playing forward; main thread only. */
+    private var rewindRate = 1f
+
+    /** Counts [play] calls, so a [slower] still waiting for libVLC does not undo one. */
+    private var rewindEpoch = 0
     private var listener: ((PlayerEvent) -> Unit)? = null
 
     /** How the next stream's first picture is awaited; set by [start], used on Playing. */
@@ -90,11 +102,14 @@ class VlcEngine @Inject constructor(
 
     override fun detach() {
         val mp = mediaPlayer ?: return
-        if (!VideoPlayback.shouldDetachViews(true, mp.vlcVout.areViewsAttached())) {
-            return
-        }
         generation++
-        mp.detachViews()
+        playWhenReady = false
+        rewindRate = 1f
+        stateFlow.update { it.copy(isPlaying = false, rewinding = false) }
+        // detachViews is not idempotent.
+        if (mp.vlcVout.areViewsAttached()) {
+            mp.detachViews()
+        }
         hideViews()
         commands.post { mp.stop() }
     }
@@ -123,7 +138,9 @@ class VlcEngine @Inject constructor(
     override fun start(request: PlayRequest) {
         val mp = mediaPlayer()
         val gen = ++generation
-        stateFlow.value = PlayerState()
+        playWhenReady = true
+        rewindRate = 1f
+        stateFlow.value = PlayerState(isPlaying = true)
         tracksFound = false
         preferredAudioLanguage = request.preferredAudioLanguage
         val isHwAccel = request.hwAccelFlags and MEDIA_HWACCEL_ENABLED > 0
@@ -161,19 +178,27 @@ class VlcEngine @Inject constructor(
             startedGeneration = gen
             mp.setEventListener(eventListener(mp, gen))
             mp.rate = 1.0f
-            mp.play()
+            if (playWhenReady) mp.play()
         }
     }
 
     override fun play() {
         val mp = mediaPlayer ?: return
+        playWhenReady = true
+        rewindRate = 1f
+        rewindEpoch++
+        stateFlow.update { it.copy(isPlaying = true, rewinding = false) }
         if (switching || !mp.hasMedia()) return
-        if (VideoPlayback.shouldTogglePause(mp.isPlaying, mp.rate)) {
-            mp.pause()
-        } else {
-            mp.play()
-        }
+        if (!mp.isPlaying) mp.play()
         mp.rate = 1.0f
+    }
+
+    override fun pause() {
+        val mp = mediaPlayer ?: return
+        playWhenReady = false
+        stateFlow.update { it.copy(isPlaying = false) }
+        if (switching || !mp.hasMedia()) return
+        mp.pause()
     }
 
     override fun setPosition(position: Float) {
@@ -182,16 +207,28 @@ class VlcEngine @Inject constructor(
         commands.post { mp.position = position }
     }
 
-    /** Rewinds faster each call, down to -64x, while a seekable stream plays. */
+    /**
+     * Rewinds faster each call, down to -64x, while a seekable stream plays. libVLC is asked
+     * off the main thread whether it can; the rate is set on the main thread, unless a [play]
+     * or another stream came in between.
+     */
     override fun slower() {
         val mp = mediaPlayer ?: return
-        commands.post {
-            if (!mp.isSeekable || !mp.isPlaying) return@post
-            var rate = mp.rate
-            if (rate == 1.0f) {
-                rate = -1.0f
+        val gen = generation
+        val epoch = rewindEpoch
+        scope.launch(Dispatchers.Main.immediate) {
+            val canRewind = try {
+                commands.call { mp.isSeekable && mp.isPlaying }
+            } catch (e: Exception) {
+                Log.w(LOG_TAG, "Rewind check failed", e)
+                false
             }
-            mp.rate = max(rate * 2, -64f)
+            if (!canRewind || gen != generation || epoch != rewindEpoch || switching) {
+                return@launch
+            }
+            rewindRate = max(if (rewindRate < 0f) rewindRate * 2 else -2f, -64f)
+            mp.rate = rewindRate
+            stateFlow.update { it.copy(rewinding = true) }
         }
     }
 
@@ -239,7 +276,15 @@ class VlcEngine @Inject constructor(
                 refreshTrackCounts(mp)
                 selectPreferredAudioTrack(mp, gen)
                 watchForVideo(mp, gen)
+                // A pause that libVLC ignored while the stream was still opening.
+                if (!playWhenReady) mp.pause()
+                stateFlow.update { it.copy(isPlaying = playWhenReady) }
                 PlayerEvent.Playing
+            }
+
+            MediaPlayer.Event.Stopped -> {
+                stateFlow.update { it.copy(isPlaying = false) }
+                null
             }
 
             MediaPlayer.Event.TimeChanged -> {
@@ -287,9 +332,15 @@ class VlcEngine @Inject constructor(
                 null
             }
 
-            MediaPlayer.Event.EncounteredError -> PlayerEvent.Failed()
+            MediaPlayer.Event.EncounteredError -> {
+                stateFlow.update { it.copy(isPlaying = false) }
+                PlayerEvent.Failed()
+            }
 
-            MediaPlayer.Event.EndReached -> PlayerEvent.Ended
+            MediaPlayer.Event.EndReached -> {
+                stateFlow.update { it.copy(isPlaying = false) }
+                PlayerEvent.Ended
+            }
 
             else -> null
         }

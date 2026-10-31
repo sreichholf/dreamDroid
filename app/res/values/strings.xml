@@ -403,6 +403,7 @@
     <string name="sleep_timer_extend">+%1$d min.</string>
     <string name="sleep_timer_closing">Closing the player in %1$d s</string>
     <string name="play">Play</string>
+    <string name="pause">Pause</string>
     <string name="rewind">Rewind</string>
     <string name="forward">Forward</string>
     <string name="info">Info</string>

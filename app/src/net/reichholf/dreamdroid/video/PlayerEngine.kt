@@ -8,8 +8,14 @@ import androidx.media3.ui.SubtitleView
 import kotlinx.coroutines.flow.StateFlow
 import org.videolan.libvlc.util.VLCVideoLayout
 
-/** What the overlay shows of the playing stream, kept from the engine's events. */
+/**
+ * What the overlay shows of the playing stream, kept from the engine's events.
+ * [isPlaying]: the stream is meant to play, buffering included; false once paused, ended or
+ * failed. [rewinding]: [PlayerEngine.slower] plays it backwards; [PlayerEngine.play] stops that.
+ */
 data class PlayerState(
+    val isPlaying: Boolean = false,
+    val rewinding: Boolean = false,
     val seekable: Boolean = false,
     val lengthMs: Long = 0,
     val timeMs: Long = 0,
@@ -126,8 +132,10 @@ interface PlayerEngine {
 
     fun start(request: PlayRequest)
 
-    /** Pauses a stream playing at normal speed; otherwise plays at normal speed. */
+    /** Plays the stream at normal speed; does nothing to one already playing at it. */
     fun play()
+
+    fun pause()
 
     fun setPosition(position: Float)
 

@@ -24,6 +24,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -39,7 +40,10 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import kotlin.math.abs
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.withTimeoutOrNull
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Service
@@ -52,9 +56,13 @@ import net.reichholf.dreamdroid.ui.epg.EpgDetailModalSheet
 import net.reichholf.dreamdroid.ui.movies.MovieDetailContent
 import net.reichholf.dreamdroid.ui.movies.MovieDetailModalSheet
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
+import net.reichholf.dreamdroid.video.PlayerState
 
 /** Test tag for the seek/progress nest behind the overlay Slider. */
 const val VIDEO_OVERLAY_PROGRESS_CONTAINER_TAG = "video_overlay_progress_container"
+
+/** How long the Slider shows a seek target that playback progress never reaches. */
+internal const val SEEK_SETTLE_TIMEOUT_MS = 5_000L
 
 /**
  * Mutable overlay chrome state driven by [VideoOverlayController].
@@ -77,6 +85,9 @@ class VideoOverlayUiState {
     var progress by mutableIntStateOf(0)
     var progressEnabled by mutableStateOf(false)
     var seekable by mutableStateOf(false)
+
+    /** Playing forward, so the play/pause button pauses; false while paused or rewinding. */
+    var isPlaying by mutableStateOf(false)
     var showAudioButton by mutableStateOf(false)
     var showSubtitleButton by mutableStateOf(false)
     var showListButton by mutableStateOf(false)
@@ -91,16 +102,35 @@ class VideoOverlayUiState {
     var bouquets by mutableStateOf<List<Service>>(emptyList())
     var selectedBouquetRef by mutableStateOf<String?>(null)
 
-    /** Phase 2.1g-ii-d: in-composition detail sheet (EPG or movie). */
+    /** The open detail sheet: an EPG event or a movie, at most one. */
     var epgDetailContent by mutableStateOf<EpgDetailContent?>(null)
     var movieDetailContent by mutableStateOf<MovieDetailContent?>(null)
 
-    /** Phase 2.1g-ii-e: in-composition simple choice (audio/subtitle tracks). */
+    /** The open choice dialog (audio or subtitle track, sleep timer); null title when closed. */
     var choiceTitle by mutableStateOf<String?>(null)
     var choiceItems by mutableStateOf<List<String>>(emptyList())
     var choiceActionIds by mutableStateOf<IntArray>(intArrayOf())
     var choiceDialogTag by mutableStateOf<String?>(null)
     var onChoiceAction: ((actionId: Int, dialogTag: String) -> Unit)? = null
+
+    fun showChrome(chrome: OverlayChrome) {
+        title = chrome.title
+        showInfoButton = chrome.showInfoButton
+        showPvrControls = chrome.showPvrControls
+        seekable = chrome.seekable
+        nowStart = chrome.now?.start.orEmpty()
+        nowTitle = chrome.now?.title.orEmpty()
+        nowDuration = chrome.now?.duration.orEmpty()
+        showNow = chrome.now != null
+        nowEvent = chrome.nowEvent
+        nextStart = chrome.next?.start.orEmpty()
+        nextTitle = chrome.next?.title.orEmpty()
+        nextDuration = chrome.next?.duration.orEmpty()
+        hasNext = chrome.next != null
+        progressEnabled = chrome.progress != null
+        progressMax = chrome.progress?.max ?: 0
+        progress = chrome.progress?.position ?: 0
+    }
 
     fun showChoice(title: String, items: List<String>, actionIds: IntArray, dialogTag: String) {
         choiceTitle = title
@@ -117,6 +147,9 @@ class VideoOverlayUiState {
     }
 }
 
+/** What the play/pause button shows: Pause only while play/pause would pause. */
+val PlayerState.playingForward: Boolean get() = isPlaying && !rewinding
+
 @Composable
 fun VideoOverlayScreen(
     state: VideoOverlayUiState,
@@ -132,7 +165,7 @@ fun VideoOverlayScreen(
     modifier: Modifier = Modifier,
     firstControlFocusRequester: FocusRequester? = null
 ) {
-    val playLabel = stringResource(R.string.play)
+    val playLabel = stringResource(if (state.isPlaying) R.string.pause else R.string.play)
     val rewindLabel = stringResource(R.string.rewind)
     val forwardLabel = stringResource(R.string.forward)
     val infoLabel = stringResource(R.string.info)
@@ -191,14 +224,14 @@ fun VideoOverlayScreen(
                 .testTag(VIDEO_OVERLAY_PROGRESS_CONTAINER_TAG),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            if (state.showPvrControls) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .focusGroup(),
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .focusGroup(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                if (state.showPvrControls) {
                     RepeatIconButton(
                         onClick = onRewind,
                         painter = painterResource(R.drawable.ic_fast_rewind_dark),
@@ -206,13 +239,21 @@ fun VideoOverlayScreen(
                         modifier = firstControlFocusRequester?.let { Modifier.focusRequester(it) }
                             ?: Modifier
                     )
-                    IconButton(onClick = onPlay) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_play_circle_outline_dark),
-                            contentDescription = playLabel,
-                            tint = onSurface
-                        )
-                    }
+                }
+                IconButton(onClick = onPlay) {
+                    Icon(
+                        painter = painterResource(
+                            if (state.isPlaying) {
+                                R.drawable.ic_pause_circle_outline_dark
+                            } else {
+                                R.drawable.ic_play_circle_outline_dark
+                            }
+                        ),
+                        contentDescription = playLabel,
+                        tint = onSurface
+                    )
+                }
+                if (state.showPvrControls) {
                     RepeatIconButton(
                         onClick = onForward,
                         painter = painterResource(R.drawable.ic_fast_forward_dark),
@@ -224,11 +265,28 @@ fun VideoOverlayScreen(
             if (state.progressMax > 0) {
                 val max = state.progressMax.coerceAtLeast(1).toFloat()
                 val value = state.progress.coerceIn(0, state.progressMax).toFloat()
+                // Playback keeps moving state.progress, and keeps reporting the old position
+                // until a seek lands: the thumb follows the drag, then the seek target.
+                var dragValue by remember(state.progressMax) { mutableStateOf<Float?>(null) }
+                var seekTarget by remember { mutableStateOf<Float?>(null) }
+                LaunchedEffect(seekTarget) {
+                    val target = seekTarget ?: return@LaunchedEffect
+                    // VLC lands on keyframes, not on the exact target.
+                    val tolerance = maxOf(2f, max * 0.01f)
+                    withTimeoutOrNull(SEEK_SETTLE_TIMEOUT_MS) {
+                        snapshotFlow { state.progress }.first { abs(it - target) <= tolerance }
+                    }
+                    seekTarget = null
+                }
                 Slider(
-                    value = value,
-                    onValueChange = { newValue ->
-                        if (state.seekable) {
-                            onSeekChange(newValue.toInt())
+                    value = dragValue ?: seekTarget ?: value,
+                    onValueChange = { newValue -> dragValue = newValue },
+                    onValueChangeFinished = {
+                        val target = dragValue
+                        dragValue = null
+                        if (target != null && state.seekable) {
+                            seekTarget = target
+                            onSeekChange(target.toInt())
                         }
                     },
                     valueRange = 0f..max,

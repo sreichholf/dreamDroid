@@ -109,6 +109,7 @@ fun TvPlayerInfobar(
             state = state,
             firstAction = firstAction,
             firstControlFocusRequester = firstControlFocusRequester,
+            onPlay = if (recording) null else onPlay,
             onInfo = onInfo,
             onList = onList,
             onAudio = onAudio,
@@ -283,9 +284,8 @@ private fun InfobarTransport(
             expandOnFocus = false,
             interactionSource = rewindSource
         )
-        InfobarButton(
-            label = stringResource(R.string.play),
-            painter = painterResource(R.drawable.ic_play_circle_outline_dark),
+        PlayPauseButton(
+            playing = state.isPlaying,
             onClick = onPlay,
             expandOnFocus = false,
             modifier = playFocusRequester?.let { Modifier.focusRequester(it) } ?: Modifier
@@ -321,10 +321,33 @@ private fun InfobarTransport(
 }
 
 @Composable
+private fun PlayPauseButton(
+    playing: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    expandOnFocus: Boolean = true
+) {
+    InfobarButton(
+        label = stringResource(if (playing) R.string.pause else R.string.play),
+        painter = painterResource(
+            if (playing) {
+                R.drawable.ic_pause_circle_outline_dark
+            } else {
+                R.drawable.ic_play_circle_outline_dark
+            }
+        ),
+        onClick = onClick,
+        modifier = modifier,
+        expandOnFocus = expandOnFocus
+    )
+}
+
+@Composable
 private fun InfobarActions(
     state: VideoOverlayUiState,
     firstAction: InfobarAction?,
     firstControlFocusRequester: FocusRequester?,
+    onPlay: (() -> Unit)?,
     onInfo: () -> Unit,
     onList: () -> Unit,
     onAudio: () -> Unit,
@@ -342,6 +365,10 @@ private fun InfobarActions(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
+        // Live: recordings carry it in the transport row.
+        if (onPlay != null) {
+            PlayPauseButton(playing = state.isPlaying, onClick = onPlay)
+        }
         if (state.showAudioButton) {
             InfobarButton(
                 label = stringResource(R.string.audio_tracks),

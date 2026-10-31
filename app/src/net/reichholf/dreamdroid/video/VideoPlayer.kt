@@ -48,6 +48,15 @@ class VideoPlayer(
     private var awaitingTracks = false
 
     /**
+     * True from [pause] to [play]. A paused live stream stalls the receiver's connection, so
+     * it is not watched or reconnected, and [play] opens it again instead of resuming.
+     */
+    private var paused = false
+
+    /** The stream ended or failed for good; [play] opens it again. */
+    private var finished = false
+
+    /**
      * True once a hardware decoder showed no picture: the device's decoder fails on this
      * receiver's streams, so later streams of the session start in software right away.
      */
@@ -74,6 +83,7 @@ class VideoPlayer(
 
     /** Detaches the views and stops the stream; [release] also frees the decoder. */
     fun detach() {
+        paused = false
         reconnectJob?.cancel()
         stopStartWatch()
         views = null
@@ -81,6 +91,7 @@ class VideoPlayer(
     }
 
     fun release() {
+        paused = false
         reconnectJob?.cancel()
         stopStartWatch()
         request = null
@@ -91,13 +102,42 @@ class VideoPlayer(
         reconnectJob?.cancel()
         val request = if (softwareVideo) requested.inSoftware() else requested
         this.request = request
+        paused = false
         reconnect = LiveReconnect()
         val target = VideoPlayback.engineFor(request.engine, request.url.substringBefore("://"))
         use(if (target == Engine.Media3) media3 else vlc)
         startStream(request, reopened = false)
     }
 
-    fun play() = engine.play()
+    /**
+     * Plays at normal speed. A paused live stream, and a stream that ended or failed, start
+     * afresh; a paused recording resumes.
+     */
+    fun play() {
+        val request = request
+        if (request != null && (finished || (paused && request.live))) {
+            paused = false
+            reconnect = LiveReconnect()
+            startStream(request, reopened = false)
+            return
+        }
+        paused = false
+        engine.play()
+    }
+
+    fun pause() {
+        if (request == null) return
+        paused = true
+        reconnectJob?.cancel()
+        stopStartWatch()
+        engine.pause()
+    }
+
+    /** Pauses a stream playing at normal speed; otherwise [play]s. */
+    fun togglePlayPause() {
+        val state = state.value
+        if (!paused && state.isPlaying && !state.rewinding) pause() else play()
+    }
 
     fun setPosition(position: Float) = engine.setPosition(position)
 
@@ -134,6 +174,12 @@ class VideoPlayer(
         ) {
             return
         }
+        // The receiver may drop a paused live stream; play() opens it again.
+        if (paused && request?.live == true &&
+            (event is PlayerEvent.Failed || event == PlayerEvent.Ended)
+        ) {
+            return
+        }
         when (event) {
             PlayerEvent.TracksFound -> {
                 val request = request
@@ -154,14 +200,18 @@ class VideoPlayer(
 
             PlayerEvent.Ended -> if (reconnectLive()) return
 
+            // A paused decoder shows no frame either.
             PlayerEvent.NoVideo -> {
-                decodeInSoftware()
+                if (!paused) decodeInSoftware()
                 return
             }
 
             else -> Unit
         }
-        if (event is PlayerEvent.Failed || event == PlayerEvent.Ended) stopStartWatch()
+        if (event is PlayerEvent.Failed || event == PlayerEvent.Ended) {
+            stopStartWatch()
+            finished = true
+        }
         listener?.invoke(event)
     }
 
@@ -170,6 +220,7 @@ class VideoPlayer(
      * play in time is opened again; a [reopened] one gets longer for its tracks.
      */
     private fun startStream(request: PlayRequest, reopened: Boolean = true) {
+        finished = false
         engine.start(request)
         stopStartWatch()
         if (request.live) watchStart(VideoPlayback.tracksTimeoutMs(reopened), tracks = true)
@@ -185,7 +236,10 @@ class VideoPlayer(
                 if (tracks) "Live stream showed no track" else "Live stream did not play"
             )
             awaitingTracks = false
-            if (!reconnectLive()) listener?.invoke(PlayerEvent.Failed())
+            if (!reconnectLive()) {
+                finished = true
+                listener?.invoke(PlayerEvent.Failed())
+            }
         }
     }
 
@@ -198,10 +252,7 @@ class VideoPlayer(
         val request = request ?: return false
         if (engine !== media3) return false
         Log.i(LOG_TAG, "Media3 cannot decode the stream, playing it with VLC")
-        val fallback = request.copy(engine = Engine.Vlc)
-        this.request = fallback
-        use(vlc)
-        startStream(fallback)
+        switchTo(vlc, request.copy(engine = Engine.Vlc))
         listener?.invoke(PlayerEvent.FellBackToVlc)
         return true
     }
@@ -211,11 +262,23 @@ class VideoPlayer(
         val request = request ?: return
         Log.i(LOG_TAG, "No picture from the hardware decoder, decoding in software")
         softwareVideo = true
-        val software = request.inSoftware()
-        this.request = software
-        use(vlc)
-        startStream(software)
+        switchTo(vlc, request.inSoftware())
         listener?.invoke(PlayerEvent.SoftwareDecoding)
+    }
+
+    /**
+     * Plays [request] on [target] from now on. While paused nothing gets audible: a live stream
+     * waits for [play], a recording starts paused.
+     */
+    private fun switchTo(target: PlayerEngine, request: PlayRequest) {
+        this.request = request
+        use(target)
+        if (!paused) {
+            startStream(request)
+        } else if (!request.live) {
+            startStream(request)
+            engine.pause()
+        }
     }
 
     private fun PlayRequest.inSoftware() = copy(engine = Engine.Vlc, hwAccelFlags = 0)

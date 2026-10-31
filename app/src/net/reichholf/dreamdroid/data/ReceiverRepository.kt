@@ -19,7 +19,6 @@ import net.reichholf.dreamdroid.enigma.Volume
 import net.reichholf.dreamdroid.enigma.VolumeCommand
 import net.reichholf.dreamdroid.enigma.userMessageText
 import net.reichholf.dreamdroid.ui.text.UiText
-import net.reichholf.dreamdroid.video.ZapAndStream
 
 /**
  * Whether a live service of the active profile can be streamed, from
@@ -65,13 +64,14 @@ class ReceiverRepository @Inject constructor(
     }
 
     /**
-     * The stream of the live service [reference]. A zap-and-stream profile ([ZapAndStream])
+     * The stream of the live service [reference]. A zap-and-stream profile
+     * ([Profile.zapAndStream]: a single-tuner box streams only the transponder it is tuned to)
      * zaps first; a failed zap streams nothing, as does a missing profile.
      */
     suspend fun liveStream(reference: String): LiveStream {
         val profile = profiles.current.value
             ?: return LiveStream.Failed(UiText.Resource(R.string.no_profile_body))
-        if (ZapAndStream.required(profile)) {
+        if (profile.zapAndStream) {
             if (reference.isEmpty()) {
                 return LiveStream.Failed(UiText.Resource(R.string.get_content_error))
             }

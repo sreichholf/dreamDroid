@@ -15,6 +15,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -245,6 +246,213 @@ class VideoPlayerTest {
         assertEquals(1, vlc.started.size)
     }
 
+    @Test
+    fun playPauseAndToggleReachThePlayingEngine() = scope.runTest {
+        player.playUri(request(Engine.Media3, live = false))
+        runCurrent()
+
+        player.pause()
+        runCurrent()
+        assertFalse(player.state.value.isPlaying)
+        player.togglePlayPause()
+        runCurrent()
+        assertTrue(player.state.value.isPlaying)
+        player.togglePlayPause()
+        player.play()
+
+        assertEquals(listOf("pause", "play", "pause", "play"), media3.commands)
+        assertEquals(emptyList<String>(), vlc.commands)
+        assertEquals(1, media3.started.size)
+    }
+
+    @Test
+    fun playOnAPlayingStreamGoesToTheEngineWithoutRestarting() {
+        player.playUri(request(Engine.Vlc))
+
+        player.play()
+
+        assertEquals(listOf("play"), vlc.commands)
+        assertEquals(1, vlc.started.size)
+    }
+
+    @Test
+    fun aPausedLiveStreamStartsAfreshOnPlay() = scope.runTest {
+        player.playUri(request(Engine.Vlc))
+        vlc.emit(PlayerEvent.Progress)
+
+        player.pause()
+        player.play()
+
+        assertEquals(listOf("pause"), vlc.commands)
+        assertEquals(listOf(request(Engine.Vlc), request(Engine.Vlc)), vlc.started)
+
+        // Started afresh: three seconds for the tracks, not the reopened ten.
+        advanceTimeBy(4_001)
+        assertEquals(3, vlc.started.size)
+    }
+
+    @Test
+    fun theToggleStartsAPausedLiveStreamAfresh() = scope.runTest {
+        player.playUri(request(Engine.Vlc))
+        runCurrent()
+
+        player.togglePlayPause()
+        runCurrent()
+        player.togglePlayPause()
+
+        assertEquals(listOf("pause"), vlc.commands)
+        assertEquals(2, vlc.started.size)
+    }
+
+    @Test
+    fun aPausedRecordingResumesInPlace() {
+        player.playUri(request(Engine.Vlc, live = false))
+
+        player.pause()
+        player.play()
+
+        assertEquals(listOf("pause", "play"), vlc.commands)
+        assertEquals(1, vlc.started.size)
+    }
+
+    @Test
+    fun aPausedLiveStreamIsNeitherWatchedNorReconnected() = scope.runTest {
+        player.playUri(request(Engine.Vlc))
+        vlc.emit(PlayerEvent.TracksFound)
+
+        player.pause()
+        advanceUntilIdle()
+        vlc.emit(PlayerEvent.Failed())
+        vlc.emit(PlayerEvent.Ended)
+        advanceUntilIdle()
+
+        assertEquals(1, vlc.started.size)
+        assertEquals(listOf<PlayerEvent>(PlayerEvent.TracksFound), events)
+    }
+
+    @Test
+    fun pausingCancelsAPendingReconnect() = scope.runTest {
+        player.playUri(request(Engine.Vlc))
+        vlc.emit(PlayerEvent.Failed())
+
+        player.pause()
+        advanceUntilIdle()
+
+        assertEquals(1, vlc.started.size)
+    }
+
+    @Test
+    fun aRecordingThatFailsWhilePausedStillReportsIt() = scope.runTest {
+        player.playUri(request(Engine.Vlc, live = false))
+        player.pause()
+
+        vlc.emit(PlayerEvent.Failed())
+
+        assertEquals(listOf<PlayerEvent>(PlayerEvent.Failed()), events)
+    }
+
+    @Test
+    fun noPictureWhilePausedStartsNothing() = scope.runTest {
+        player.playUri(request(Engine.Vlc))
+        player.pause()
+
+        vlc.emit(PlayerEvent.NoVideo)
+
+        assertEquals(1, vlc.started.size)
+        assertTrue(events.isEmpty())
+        player.play()
+        assertEquals(listOf(request(Engine.Vlc), request(Engine.Vlc)), vlc.started)
+    }
+
+    @Test
+    fun aPausedRecordingMedia3CannotDecodeStartsPausedOnVlc() = scope.runTest {
+        player.playUri(request(Engine.Media3, live = false))
+        player.pause()
+
+        media3.emit(PlayerEvent.Failed(unsupported = true))
+        runCurrent()
+
+        assertEquals(listOf(request(Engine.Vlc, live = false)), vlc.started)
+        assertEquals(listOf("pause"), vlc.commands)
+        assertFalse(player.state.value.isPlaying)
+        assertEquals(listOf<PlayerEvent>(PlayerEvent.FellBackToVlc), events)
+    }
+
+    @Test
+    fun aPausedLiveStreamMedia3CannotDecodeWaitsForPlay() = scope.runTest {
+        player.playUri(request(Engine.Media3))
+        player.pause()
+
+        media3.emit(PlayerEvent.Failed(unsupported = true))
+
+        player.play()
+
+        assertEquals(emptyList<PlayRequest>(), vlc.started)
+        assertEquals(listOf(request(Engine.Media3), request(Engine.Media3)), media3.started)
+    }
+
+    @Test
+    fun aLiveStreamPlayedAfterAPauseReconnectsAgain() = scope.runTest {
+        player.playUri(request(Engine.Vlc))
+        player.pause()
+        player.play()
+
+        vlc.emit(PlayerEvent.Failed())
+        advanceTimeBy(1_001)
+
+        assertEquals(3, vlc.started.size)
+    }
+
+    @Test
+    fun theToggleResumesAPauseTheEngineHasNotTakenYet() = scope.runTest {
+        vlc.ignoresPause = true
+        player.playUri(request(Engine.Vlc, live = false))
+        runCurrent()
+
+        player.togglePlayPause()
+        runCurrent()
+        assertTrue(player.state.value.isPlaying)
+        player.togglePlayPause()
+
+        assertEquals(listOf("pause", "play"), vlc.commands)
+    }
+
+    @Test
+    fun theToggleWhileRewindingPlaysAtNormalSpeed() = scope.runTest {
+        player.playUri(request(Engine.Vlc, live = false))
+        vlc.stateFlow.value = PlayerState(isPlaying = true, rewinding = true)
+        runCurrent()
+
+        player.togglePlayPause()
+
+        assertEquals(listOf("play"), vlc.commands)
+    }
+
+    @Test
+    fun playAfterARecordingEndedStartsItAgain() {
+        player.playUri(request(Engine.Vlc, live = false))
+        vlc.emit(PlayerEvent.Ended)
+
+        player.play()
+
+        assertEquals(2, vlc.started.size)
+        assertEquals(emptyList<String>(), vlc.commands)
+    }
+
+    @Test
+    fun playAfterTheReconnectsRanOutStartsTheLiveStreamAgain() = scope.runTest {
+        player.playUri(request(Engine.Vlc))
+        advanceUntilIdle()
+        assertEquals(4, vlc.started.size)
+
+        player.play()
+        assertEquals(5, vlc.started.size)
+
+        // A fresh count of attempts.
+        advanceTimeBy(4_001)
+        assertEquals(6, vlc.started.size)
+    }
+
     private fun software() = request(Engine.Vlc).copy(hwAccelFlags = 0)
 
     private fun request(
@@ -260,6 +468,7 @@ private class FakeEngine : PlayerEngine {
     val stateFlow = MutableStateFlow(PlayerState())
     override val state: StateFlow<PlayerState> = stateFlow
     val started = mutableListOf<PlayRequest>()
+    val commands = mutableListOf<String>()
     var released = 0
     private var listener: ((PlayerEvent) -> Unit)? = null
 
@@ -281,9 +490,21 @@ private class FakeEngine : PlayerEngine {
 
     override fun start(request: PlayRequest) {
         started += request
+        stateFlow.value = PlayerState(isPlaying = true)
     }
 
-    override fun play() = Unit
+    override fun play() {
+        commands += "play"
+        stateFlow.value = stateFlow.value.copy(isPlaying = true, rewinding = false)
+    }
+
+    /** Like a player still opening its stream: takes the pause but keeps playing. */
+    var ignoresPause = false
+
+    override fun pause() {
+        commands += "pause"
+        if (!ignoresPause) stateFlow.value = stateFlow.value.copy(isPlaying = false)
+    }
 
     override fun setPosition(position: Float) = Unit
 

@@ -10,11 +10,13 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.LastLiveStream
 import net.reichholf.dreamdroid.data.LastLiveStreamRepository
 import net.reichholf.dreamdroid.data.LiveStream
 import net.reichholf.dreamdroid.data.ReceiverRepository
+import net.reichholf.dreamdroid.data.SettingsRepository
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.enigma.contentErrorText
 import net.reichholf.dreamdroid.helpers.EnigmaHttpError
@@ -42,8 +44,9 @@ import org.junit.jupiter.api.Test
 class VideoPlaybackViewModelTest {
     private val receiver = EpgTestReceiver()
     private val viewModels = mutableListOf<VideoPlaybackViewModel>()
+    private val preferences = MemorySharedPreferences()
     private val lastStreams =
-        LastLiveStreamRepository(MemorySharedPreferences(), receiver.profiles.repository)
+        LastLiveStreamRepository(preferences, receiver.profiles.repository)
 
     /** `/web/zap` answer. */
     private var zapReply = MockResponse().setBody(simpleResult(true, "Active service changed"))
@@ -69,6 +72,16 @@ class VideoPlaybackViewModelTest {
         viewModel().onLiveStreamPlaying(stream)
 
         assertEquals(stream, runBlocking { lastStreams.lastStream.first() })
+    }
+
+    @Test
+    fun gesturesFollowTheSetting() {
+        val viewModel = viewModel()
+        assertTrue(viewModel.gesturesEnabled)
+
+        preferences.edit().putBoolean(DreamDroid.PREFS_KEY_VIDEO_ENABLE_GESTURES, false).commit()
+
+        assertFalse(viewModel.gesturesEnabled)
     }
 
     @Test
@@ -262,7 +275,8 @@ class VideoPlaybackViewModelTest {
                 on.profiles.repository
             ),
             on.profiles.repository,
-            lastStreams
+            lastStreams,
+            SettingsRepository(preferences)
         ).also { viewModels += it }
 
     private fun routes(request: RecordedRequest): MockResponse = when (request.path()) {

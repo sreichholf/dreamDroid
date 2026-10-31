@@ -61,6 +61,14 @@ class ProfileFormTest {
     }
 
     @Test
+    fun zapAndStreamIsASettingsChange() {
+        val profile = Profile.getDefault()
+
+        assertFalse(profile.zapAndStream)
+        assertFalse(profile.hasSameSettings(Profile.getDefault().apply { zapAndStream = true }))
+    }
+
+    @Test
     fun editedVpsDefaultIsSaved() = runTest {
         val profile = Profile.getDefault()
         val fields = ProfileTextFields(backgroundScope).apply { fill(profile) }

@@ -2,12 +2,12 @@ package net.reichholf.dreamdroid.ui.video
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
-import android.annotation.SuppressLint
 import android.content.Context
 import android.media.AudioManager
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.provider.Settings
 import android.util.Log
 import android.view.GestureDetector
 import android.view.KeyEvent
@@ -20,7 +20,6 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.preference.PreferenceManager
 import java.io.Serializable
 import kotlin.math.abs
 import kotlin.math.max
@@ -29,7 +28,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.activities.VideoActivity
 import net.reichholf.dreamdroid.data.LiveStream
@@ -37,7 +35,6 @@ import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Movie as EnigmaMovie
 import net.reichholf.dreamdroid.enigma.Service as BouquetService
 import net.reichholf.dreamdroid.enigma.ServiceNowNext
-import net.reichholf.dreamdroid.helpers.DateTime
 import net.reichholf.dreamdroid.helpers.enigma2.Service
 import net.reichholf.dreamdroid.helpers.getSerializableCompat
 import net.reichholf.dreamdroid.helpers.isTelevision
@@ -50,7 +47,6 @@ import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import net.reichholf.dreamdroid.ui.text.UiText
 import net.reichholf.dreamdroid.video.MediaTrack
 import net.reichholf.dreamdroid.video.PlayerEvent
-import net.reichholf.dreamdroid.video.VideoPlayback
 import net.reichholf.dreamdroid.video.VideoPlayer
 
 /**
@@ -104,6 +100,9 @@ class VideoOverlayController(
     private var tvChannelListBound: Boolean = false
     private var phoneZapListBound: Boolean = false
     private var savedScreenBrightness: Float? = null
+
+    /** Views fading out stay VISIBLE until their animation ends. */
+    private val fadingOut = mutableSetOf<View>()
     private var backCallback: OnBackPressedCallback? = null
 
     fun attach(extras: Bundle?) {
@@ -219,11 +218,12 @@ class VideoOverlayController(
         }
         playerStateJob = activity.lifecycleScope.launch {
             player.state
-                .map { (it.audioTracks > 0) to (it.subtitleTracks > 0) }
+                .map { Triple(it.audioTracks > 0, it.subtitleTracks > 0, it.playingForward) }
                 .distinctUntilChanged()
-                .collect { (audio, subtitles) ->
+                .collect { (audio, subtitles, playing) ->
                     overlayUiState.showAudioButton = audio
                     overlayUiState.showSubtitleButton = subtitles
+                    overlayUiState.isPlaying = playing
                 }
         }
         autohide()
@@ -379,20 +379,7 @@ class VideoOverlayController(
                         distanceX: Float,
                         distanceY: Float
                     ): Boolean {
-                        if (e1 == null) return true
-                        val isGesturesEnabled =
-                            PreferenceManager.getDefaultSharedPreferences(activity)
-                                .getBoolean(DreamDroid.PREFS_KEY_VIDEO_ENABLE_GESTURES, true)
-                        if (!isGesturesEnabled) return true
-
-                        Log.d(
-                            LOG_TAG,
-                            String.format(
-                                "distanceY=%s, DeltaY=%s",
-                                distanceY,
-                                e1.y - e2.y
-                            )
-                        )
+                        if (e1 == null || !playback.gesturesEnabled) return true
                         val metrics = activity.resources.displayMetrics
                         val isRight = e1.rawX > (4 * metrics.widthPixels / 7)
                         val isLeft = e1.rawX < (3 * metrics.widthPixels / 7)
@@ -458,7 +445,7 @@ class VideoOverlayController(
     }
 
     private fun onPlay() {
-        player.play()
+        player.togglePlayPause()
         autohide()
     }
 
@@ -592,8 +579,19 @@ class VideoOverlayController(
         if (savedScreenBrightness == null) {
             savedScreenBrightness = layoutParams.screenBrightness
         }
-        layoutParams.screenBrightness = min(max(layoutParams.screenBrightness + delta, 0.01f), 1f)
+        layoutParams.screenBrightness =
+            brightnessAfterSwipe(
+                layoutParams.screenBrightness,
+                if (layoutParams.screenBrightness < 0f) systemBrightness() else null,
+                delta
+            )
         window.attributes = layoutParams
+    }
+
+    private fun systemBrightness(): Int? = try {
+        Settings.System.getInt(activity.contentResolver, Settings.System.SCREEN_BRIGHTNESS)
+    } catch (_: Settings.SettingNotFoundException) {
+        null
     }
 
     private fun restoreBrightness() {
@@ -695,16 +693,10 @@ class VideoOverlayController(
 
     fun applyPlaybackExtras(extras: Bundle?) {
         if (extras == null) return
-        val incoming =
-            VideoPlayback.overlayExtrasForActionView(
-                extras.getString(TITLE),
-                extras.getString(SERVICE_REFERENCE),
-                extras.getString(BOUQUET_REFERENCE)
-            )
         val changed = playback.applyExtras(
-            incoming.title,
-            incoming.serviceRef,
-            incoming.bouquetRef,
+            extras.getString(TITLE),
+            extras.getString(SERVICE_REFERENCE),
+            extras.getString(BOUQUET_REFERENCE),
             extras.getSerializableCompat<Serializable>(SERVICE_INFO)
         )
         if (rootView == null) return
@@ -779,7 +771,7 @@ class VideoOverlayController(
     private fun seek(pos: Int) {
         val fpos = pos.toFloat()
         var length = player.state.value.lengthMs
-        length = if (length > 0) length / 1000 else FAKE_LENGTH.toLong()
+        length = if (length > 0) length / 1000 else FAKE_PROGRESS_LENGTH_SEC.toLong()
         player.setPosition(fpos / length)
     }
 
@@ -793,114 +785,15 @@ class VideoOverlayController(
 
     private fun updateViews() {
         if (rootView == null) return
-
-        val title = session.title
-        overlayUiState.title = title ?: ""
-        overlayUiState.showPvrControls = !isLive() && player.state.value.seekable
-
-        if (movie != null || currentService != null) {
-            overlayUiState.showInfoButton = true
-            if (isRecording()) {
-                val movieTitle = movie?.title
-                overlayUiState.title =
-                    if (!movieTitle.isNullOrEmpty()) movieTitle else (title ?: "")
-            } else if (currentService != null) {
-                val serviceName = currentService!!.serviceName
-                overlayUiState.title =
-                    if (serviceName.isNotEmpty()) serviceName else (title ?: "")
-                val now = currentService!!.now
-                overlayUiState.nowStart = now?.startTimeReadable ?: ""
-                overlayUiState.nowTitle = now?.title ?: ""
-                overlayUiState.nowDuration = now?.durationReadable ?: ""
-                overlayUiState.nowEvent = now
-                overlayUiState.showNow = true
-            }
-
-            val nextEvent = currentService?.next
-            if (nextEvent != null && nextEvent.title.isNotEmpty()) {
-                overlayUiState.nextStart = nextEvent.startTimeReadable
-                overlayUiState.nextTitle = nextEvent.title
-                overlayUiState.nextDuration = nextEvent.durationReadable
-                overlayUiState.hasNext = true
-            } else {
-                overlayUiState.hasNext = false
-            }
-        } else {
-            overlayUiState.showNow = false
-            overlayUiState.hasNext = false
-            overlayUiState.showInfoButton = false
-        }
-        if (currentService == null || isRecording()) {
-            overlayUiState.nowEvent = null
-        }
-        updateProgress()
+        updateChrome()
         overlayUiState.zapCurrentRef = session.serviceRef
     }
 
-    @SuppressLint("ClickableViewAccessibility")
-    private fun updateProgress() {
+    private fun updateChrome() {
         if (rootView == null) return
-        val playerState = player.state.value
-        val isSeekable = !isLive() && playerState.seekable
-        overlayUiState.seekable = isSeekable
-        var len = -1L
-        var cur = -1L
-        if (movie != null || currentService != null) {
-            if (isRecording()) {
-                var duration = playerState.lengthMs / 1000
-                if (duration <= 0) {
-                    val textLen =
-                        if (movie != null && !movie!!.length.isNullOrEmpty()) {
-                            movie!!.length
-                        } else {
-                            "00:00"
-                        }
-                    val l = textLen.split(":")
-                    try {
-                        duration = (l[0].toLong() * 60) + l[1].toLong()
-                    } catch (nex: NumberFormatException) {
-                        Log.w(LOG_TAG, "parse failed", nex)
-                    } catch (iobex: IndexOutOfBoundsException) {
-                        Log.w(LOG_TAG, "parse failed", iobex)
-                    }
-                }
-                if (duration > 0) {
-                    val pos = (duration * playerState.position).toLong()
-                    overlayUiState.nowStart = DateTime.minutesAndSeconds(pos.toInt())
-                    overlayUiState.nowTitle = movie?.serviceName ?: ""
-                    overlayUiState.nowDuration = DateTime.minutesAndSeconds(duration.toInt())
-                    overlayUiState.showNow = true
-                } else {
-                    overlayUiState.showNow = false
-                }
-                overlayUiState.hasNext = false
-            } else {
-                // The player's time on a live stream is the stream's, not the programme's.
-                eventProgress(currentService?.now, System.currentTimeMillis())?.let {
-                    len = it.totalSec
-                    cur = it.elapsedSec
-                }
-            }
-        }
-        if (len <= 0 && !isLive()) {
-            len = playerState.lengthMs / 1000
-            cur = playerState.timeMs / 1000
-        }
-
-        if (len <= 0 && isSeekable) {
-            len = FAKE_LENGTH.toLong()
-            cur = (len * playerState.position).toLong()
-        }
-
-        if (len > 0 && cur >= 0) {
-            overlayUiState.progressEnabled = true
-            overlayUiState.progressMax = len.toInt()
-            overlayUiState.progress = cur.toInt()
-        } else {
-            overlayUiState.progressEnabled = false
-            overlayUiState.progressMax = 0
-            overlayUiState.progress = 0
-        }
+        overlayUiState.showChrome(
+            overlayChrome(session, player.state.value, System.currentTimeMillis())
+        )
     }
 
     fun autohide() {
@@ -1001,24 +894,24 @@ class VideoOverlayController(
     }
 
     private fun fadeInView(v: View?) {
-        if (v == null || v.visibility == View.VISIBLE) return
-        v.visibility = View.VISIBLE
-        v.alpha = 0.0f
-        val alpha = if (tvOverlay) 1f else overlayAlpha
-        v.animate().alpha(alpha).setListener(
-            object : AnimatorListenerAdapter() {
-                override fun onAnimationEnd(animation: Animator) {
-                    v.alpha = alpha
-                }
-            }
-        )
+        if (v == null || (v.visibility == View.VISIBLE && v !in fadingOut)) return
+        fadingOut.remove(v)
+        v.animate().setListener(null).cancel()
+        if (v.visibility != View.VISIBLE) {
+            v.alpha = 0.0f
+            v.visibility = View.VISIBLE
+        }
+        v.animate().alpha(if (tvOverlay) 1f else overlayAlpha)
     }
 
     private fun fadeOutView(v: View?) {
-        if (v == null || v.visibility == View.GONE) return
+        if (v == null || v in fadingOut || v.visibility != View.VISIBLE) return
+        fadingOut.add(v)
+        v.animate().setListener(null).cancel()
         v.animate().alpha(0.0f).setListener(
             object : AnimatorListenerAdapter() {
                 override fun onAnimationEnd(animation: Animator) {
+                    fadingOut.remove(v)
                     v.visibility = View.GONE
                 }
             }
@@ -1036,7 +929,7 @@ class VideoOverlayController(
     private fun isOverlaysVisible(): Boolean {
         val root = rootView ?: return false
         val sdroot = root.findViewById<View>(R.id.overlay_root)
-        return sdroot.visibility == View.VISIBLE
+        return sdroot.visibility == View.VISIBLE && sdroot !in fadingOut
     }
 
     fun onEvent(event: PlayerEvent) {
@@ -1048,7 +941,7 @@ class VideoOverlayController(
             // The spinner stays until a picture shows: audio often plays first.
             // TV leaves the infobar of a fresh zap to the auto-hide timer.
             PlayerEvent.Playing -> {
-                updateProgress()
+                updateChrome()
                 if (!tvOverlay) {
                     hideOverlays()
                 }
@@ -1056,7 +949,7 @@ class VideoOverlayController(
 
             PlayerEvent.PictureReady -> fadeOutView(spinner)
 
-            PlayerEvent.Progress -> updateProgress()
+            PlayerEvent.Progress -> updateChrome()
 
             is PlayerEvent.Failed -> {
                 fadeOutView(spinner)
@@ -1089,21 +982,17 @@ class VideoOverlayController(
         }
     }
 
-    fun onKeyDown(keyCode: Int): Boolean {
+    fun onKeyDown(keyCode: Int, repeatCount: Int): Boolean {
+        if (isSystemKey(keyCode)) return false
         var ret = false
         autohide()
         if (tvOverlay && onTvPlayerKey(keyCode)) {
             return true
         }
         when (keyCode) {
-            KeyEvent.KEYCODE_BACK, KeyEvent.KEYCODE_BUTTON_B -> {
-                if (isOverlaysVisible()) {
-                    hideOverlays()
-                    ret = true
-                } else {
-                    return false
-                }
-            }
+            // backCallback handles back. Below API 33 KEYCODE_BACK still arrives here, and an
+            // unhandled gamepad B falls back to it.
+            KeyEvent.KEYCODE_BACK, KeyEvent.KEYCODE_BUTTON_B -> return false
 
             KeyEvent.KEYCODE_DPAD_LEFT -> {
                 if (isOverlaysVisible()) return false
@@ -1140,9 +1029,30 @@ class VideoOverlayController(
                 }
             }
 
-            KeyEvent.KEYCODE_MEDIA_PLAY, KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE -> {
-                player.play()
-                ret = true
+            else -> when (playerMediaKey(keyCode, repeatCount)) {
+                PlayerMediaKey.Play -> {
+                    player.play()
+                    ret = true
+                }
+
+                PlayerMediaKey.Pause -> {
+                    player.pause()
+                    ret = true
+                }
+
+                PlayerMediaKey.TogglePlayPause -> {
+                    player.togglePlayPause()
+                    ret = true
+                }
+
+                PlayerMediaKey.Stop -> {
+                    activity.finish()
+                    return true
+                }
+
+                PlayerMediaKey.Repeat -> ret = true
+
+                PlayerMediaKey.None -> Unit
             }
         }
         if (!isOverlaysVisible()) {
@@ -1178,7 +1088,6 @@ class VideoOverlayController(
         const val DIALOG_TAG_SLEEP_TIMER: String = "dialog_sleep_timer"
 
         private const val AUTOHIDE_DEFAULT_TIMEOUT: Int = 7000
-        private const val FAKE_LENGTH: Int = 10000
 
         private val LOG_TAG: String = VideoOverlayController::class.java.simpleName
 

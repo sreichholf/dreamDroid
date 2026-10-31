@@ -45,6 +45,8 @@ import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTvTheme
 import net.reichholf.dreamdroid.ui.video.SleepTimer
 import net.reichholf.dreamdroid.ui.video.VideoOverlayUiState
+import net.reichholf.dreamdroid.ui.video.playingForward
+import net.reichholf.dreamdroid.video.PlayerState
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNotNull
@@ -188,7 +190,10 @@ class TvPlayerInfobarTest {
         composeRule.onNodeWithContentDescription(context.getString(R.string.sleeptimer))
             .assertIsDisplayed()
         composeRule.onNodeWithContentDescription(context.getString(R.string.play))
-            .assertDoesNotExist()
+            .assertIsDisplayed()
+        listOf(R.string.rewind, R.string.forward).forEach { res ->
+            composeRule.onNodeWithContentDescription(context.getString(res)).assertDoesNotExist()
+        }
     }
 
     @Test
@@ -234,6 +239,59 @@ class TvPlayerInfobarTest {
         }
         composeRule.onNodeWithContentDescription(context.getString(R.string.play))
             .assertIsFocused()
+    }
+
+    @Test
+    fun transportShowsPauseOnlyWhilePlayingForward() {
+        val state = VideoOverlayUiState().apply {
+            title = "Tatort: Recording"
+            showPvrControls = true
+            isPlaying = PlayerState(isPlaying = true).playingForward
+        }
+        setInfobar(state)
+        assertPlayPauseShows(R.string.pause, absent = R.string.play)
+
+        composeRule.runOnIdle {
+            state.isPlaying = PlayerState(isPlaying = true, rewinding = true).playingForward
+        }
+        assertPlayPauseShows(R.string.play, absent = R.string.pause)
+
+        composeRule.runOnIdle { state.isPlaying = PlayerState(isPlaying = false).playingForward }
+        assertPlayPauseShows(R.string.play, absent = R.string.pause)
+    }
+
+    @Test
+    fun liveShowsPlayPauseBesideTheActionsAndFocusesTheFirstAction() {
+        val requester = FocusRequester()
+        val clicks = mutableListOf<String>()
+        val state = liveState().apply { isPlaying = true }
+        val inputModeManager = setInfobar(
+            state,
+            requester = requester,
+            onPlay = { clicks += "play" }
+        )
+        enterKeyboardMode(inputModeManager)
+
+        assertPlayPauseShows(R.string.pause, absent = R.string.play)
+        composeRule.onNodeWithContentDescription(context.getString(R.string.pause))
+            .assertHasClickAction()
+            .assertWidthIsAtLeast(48.dp)
+            .assertHeightIsAtLeast(48.dp)
+            .performSemanticsAction(SemanticsActions.OnClick)
+        composeRule.runOnIdle {
+            assertEquals(listOf("play"), clicks)
+            assertTrue(requester.requestFocus())
+        }
+        composeRule.onNodeWithContentDescription(context.getString(R.string.audio_tracks))
+            .assertIsFocused()
+
+        composeRule.runOnIdle { state.isPlaying = false }
+        assertPlayPauseShows(R.string.play, absent = R.string.pause)
+    }
+
+    private fun assertPlayPauseShows(label: Int, absent: Int) {
+        composeRule.onNodeWithContentDescription(context.getString(label)).assertIsDisplayed()
+        composeRule.onNodeWithContentDescription(context.getString(absent)).assertDoesNotExist()
     }
 
     @Test
