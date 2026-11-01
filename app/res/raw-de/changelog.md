@@ -3,6 +3,7 @@
 ## 2.0.471
 * UPD: Video-Player verbessert
 * FIX: Aufnahmen in sehr großen Ordnern werden nicht geladen
+* FIX: Timer-Bereinigung mit aktivierter erweiterter Sicherheit fehlgeschlagen
 
 ## 2.0.470
 * NEU: Sicherung im Einrichtungsassistenten wiederherstellen
