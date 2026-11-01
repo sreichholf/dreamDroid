@@ -186,6 +186,33 @@ class HubViewModelTest {
     }
 
     @Test
+    fun aBouquetTheReceiverAddsLaterIsVisibleWhileTheHiddenOneStaysHidden() = runBlocking<Unit> {
+        val profile = profiles.current.value!!
+        receiver.profiles.database.profileDao().addProfile(profile)
+        val viewModel = viewModel()
+
+        assertEquals(listOf(FAVOURITES, SPORTS), viewModel.loaded().tvBouquets)
+
+        // The visibility screen saves a row read back from Room.
+        val edited = checkNotNull(profiles.profile(EpgTestReceiver.PROFILE_ID))
+        edited.setHiddenBouquets(listOf(SPORTS.reference))
+        profiles.save(edited)
+        withTimeout(5_000L) {
+            viewModel.uiState.first { it.tvBouquets == listOf(FAVOURITES) }
+        }
+
+        // The receiver now lists a bouquet the profile never hid.
+        tvBouquets = listOf(FAVOURITES, SPORTS, DOCUMENTARIES)
+        receiver.services.onBouquetsEdited(listOf(TV_ROOTS[0]))
+
+        val state = withTimeout(5_000L) {
+            viewModel.uiState.first { it.tvBouquets == listOf(FAVOURITES, DOCUMENTARIES) }
+        }
+
+        assertEquals(listOf(FAVOURITES, DOCUMENTARIES), state.tvBouquets)
+    }
+
+    @Test
     fun editInsideABouquetKeepsTheStrip() = runBlocking {
         val viewModel = viewModel()
         viewModel.loaded()
@@ -441,6 +468,10 @@ class HubViewModelTest {
         val SPORTS = Service(
             "1:7:1:0:0:0:0:0:0:0:FROM BOUQUET \"userbouquet.sports.tv\" ORDER BY bouquet",
             "Sports"
+        )
+        val DOCUMENTARIES = Service(
+            "1:7:1:0:0:0:0:0:0:0:FROM BOUQUET \"userbouquet.documentaries.tv\" ORDER BY bouquet",
+            "Documentaries"
         )
         val RADIO = Service(
             "1:7:2:0:0:0:0:0:0:0:FROM BOUQUET \"userbouquet.favourites.radio\" ORDER BY bouquet",

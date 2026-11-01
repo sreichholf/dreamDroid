@@ -271,6 +271,32 @@ class ServiceRepositoryTest {
     }
 
     @Test
+    fun theVisibilityListShowsABouquetTheReceiverAddsLater() = runBlocking {
+        lists[TV_ROOTS[0]] = serviceList(FAVOURITES to "Favourites", SPORTS to "Sports")
+        lists[RADIO_ROOTS[0]] = serviceList(RADIO to "Radio")
+        val profile = receiver.profiles.repository.current.value!!
+        profile.setHiddenBouquets(listOf(SPORTS))
+
+        val live = services.bouquetsForVisibility(profile).value!!
+
+        assertEquals(listOf(FAVOURITES, SPORTS), live.tv.map { it.reference })
+        assertEquals(setOf(SPORTS), profile.hiddenBouquets())
+
+        lists[TV_ROOTS[0]] = serviceList(
+            FAVOURITES to "Favourites",
+            SPORTS to "Sports",
+            DOCUMENTARIES to "Documentaries"
+        )
+        services.bouquets(forceRefresh = true).last()
+        receiver.goOffline()
+
+        val cached = services.bouquetsForVisibility(profile).value!!
+
+        assertEquals(listOf(FAVOURITES, SPORTS, DOCUMENTARIES), cached.tv.map { it.reference })
+        assertEquals(setOf(SPORTS), profile.hiddenBouquets())
+    }
+
+    @Test
     fun visibilityBouquetsListUserBouquetsAndFallBackToTheStrip() = runBlocking {
         lists[TV_ROOTS[0]] = serviceList(FAVOURITES to "Favourites", TV_ROOTS[1] to "Provider")
         lists[RADIO_ROOTS[0]] = serviceList(RADIO to "Radio")

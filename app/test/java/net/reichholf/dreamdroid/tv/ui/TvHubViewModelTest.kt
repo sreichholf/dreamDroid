@@ -117,6 +117,29 @@ class TvHubViewModelTest {
     }
 
     @Test
+    fun aBouquetTheReceiverAddsLaterStaysVisibleWhileTheHiddenOneStaysHidden() = runBlocking<Unit> {
+        bouquets = listOf(FAVOURITES to "Favourites", OTHER to "Other")
+        receiver.profiles.repository.current.value!!.setHiddenBouquets(listOf(OTHER))
+        val viewModel = viewModel()
+
+        assertEquals(listOf(FAVOURITES), awaitLoaded(viewModel).rowRefs())
+
+        // The receiver now lists a bouquet the profile never hid.
+        bouquets = listOf(
+            FAVOURITES to "Favourites",
+            OTHER to "Other",
+            DOCUMENTARIES to "Documentaries"
+        )
+        viewModel.reload()
+
+        val state = awaitState(viewModel) {
+            !it.loading && it.rowRefs() == listOf(FAVOURITES, DOCUMENTARIES)
+        }
+
+        assertEquals(listOf(FAVOURITES, DOCUMENTARIES), state.rowRefs())
+    }
+
+    @Test
     fun withoutAnActiveProfileTheHubSettlesEmptyAndAsksNothing() = runBlocking<Unit> {
         val viewModel = viewModel()
         awaitLoaded(viewModel)
@@ -665,6 +688,8 @@ class TvHubViewModelTest {
             "1:7:1:0:0:0:0:0:0:0:FROM BOUQUET \"userbouquet.favourites.tv\" ORDER BY bouquet"
         const val OTHER =
             "1:7:1:0:0:0:0:0:0:0:FROM BOUQUET \"userbouquet.other.tv\" ORDER BY bouquet"
+        const val DOCUMENTARIES =
+            "1:7:1:0:0:0:0:0:0:0:FROM BOUQUET \"userbouquet.documentaries.tv\" ORDER BY bouquet"
         const val CHANNEL = "1:0:1:6DCA:44D:1:C00000:0:0:0:"
         const val MARKER = "1:64:1:0:0:0:0:0:0:0:"
         const val HDD = "/media/hdd/movie/"

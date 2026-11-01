@@ -29,6 +29,8 @@ class ProfileBouquetsViewModelTest {
     private val profiles = receiver.profiles.repository
     private val viewModels = mutableListOf<ViewModel>()
 
+    private val tvBouquets = mutableListOf(FAVOURITES to "Favourites", SPORTS to "Sports")
+
     @BeforeEach
     fun setUp() {
         Dispatchers.setMain(UnconfinedTestDispatcher())
@@ -77,6 +79,30 @@ class ProfileBouquetsViewModelTest {
     }
 
     @Test
+    fun aBouquetTheReceiverAddsLaterIsVisibleWhileTheHiddenOneStaysHidden() = runTest {
+        val stored = checkNotNull(profiles.profile(EpgTestReceiver.PROFILE_ID))
+        stored.setHiddenBouquets(listOf(SPORTS))
+        profiles.save(stored)
+
+        val viewModel = viewModel()
+        viewModel.load(EpgTestReceiver.PROFILE_ID)
+        val before = viewModel.uiState.first { !it.loading }
+
+        assertEquals(setOf(SPORTS), before.hidden)
+        assertEquals(listOf("Favourites", "Sports"), before.tv.map { it.name })
+
+        tvBouquets += DOCUMENTARIES to "Documentaries"
+        viewModel.reload()
+        val after = viewModel.uiState.first { state ->
+            !state.loading && state.tv.any { it.name == "Documentaries" }
+        }
+
+        assertEquals(listOf("Favourites", "Sports", "Documentaries"), after.tv.map { it.name })
+        assertTrue(after.tv.single { it.name == "Documentaries" }.reference !in after.hidden)
+        assertTrue(SPORTS in after.hidden)
+    }
+
+    @Test
     fun loadsAProfileThatIsNotActive() = runTest {
         val other = Profile.getDefault().apply {
             name = "Bedroom"
@@ -99,12 +125,8 @@ class ProfileBouquetsViewModelTest {
         ProfileBouquetsViewModel(profiles, receiver.services).also { viewModels += it }
 
     private fun routes(request: RecordedRequest): MockResponse = when (request.sRef()) {
-        TV_ROOTS[0] -> MockResponse().setBody(
-            serviceList(FAVOURITES to "Favourites", SPORTS to "Sports")
-        )
-
+        TV_ROOTS[0] -> MockResponse().setBody(serviceList(*tvBouquets.toTypedArray()))
         RADIO_ROOTS[0] -> MockResponse().setBody(serviceList(RADIO to "Radio"))
-
         else -> MockResponse().setResponseCode(404)
     }
 
@@ -123,6 +145,8 @@ class ProfileBouquetsViewModelTest {
             "1:7:1:0:0:0:0:0:0:0:FROM BOUQUET \"userbouquet.favourites.tv\" ORDER BY bouquet"
         const val SPORTS =
             "1:7:1:0:0:0:0:0:0:0:FROM BOUQUET \"userbouquet.sports.tv\" ORDER BY bouquet"
+        const val DOCUMENTARIES =
+            "1:7:1:0:0:0:0:0:0:0:FROM BOUQUET \"userbouquet.documentaries.tv\" ORDER BY bouquet"
         const val RADIO =
             "1:7:2:0:0:0:0:0:0:0:FROM BOUQUET \"userbouquet.favourites.radio\" ORDER BY bouquet"
     }
