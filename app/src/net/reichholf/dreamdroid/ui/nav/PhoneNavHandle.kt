@@ -70,6 +70,7 @@ interface PhoneNavHandle {
     fun queueTimerEdit(timer: Timer, create: Boolean)
     fun queueEpgSearch(query: String)
     fun navigateToProfileEdit(profile: Profile?): Boolean
+    fun navigateToProfileBouquets(profileId: Int): Boolean
     fun popNavBackStack(): Boolean
     fun navigateToTimerEdit(timer: Timer, create: Boolean): Boolean
     fun navigateToTimerServicePick(): Boolean

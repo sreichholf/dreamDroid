@@ -25,6 +25,8 @@ import org.junit.jupiter.api.Test
  * `profile` table is checked against the exported schema 12.
  * [AppDatabase.MIGRATION_13_14] adds `profile.vps_enabled`, off for existing profiles; the
  * `profile` table is checked against the exported schema 14.
+ * [AppDatabase.MIGRATION_14_15] adds `profile.hidden_bouquet_refs`, empty for existing
+ * profiles; the `profile` table is checked against the exported schema 15.
  * Raw [androidx.room3.migration.Migration.migrate] calls do not bump
  * `user_version`. Room does that when it opens the file.
  */
@@ -67,6 +69,18 @@ class AppDatabaseMigrationTest {
             }
             assertProfileColumn(connection, "vps_enabled", expected = 0L)
             assertTableMatchesSchema(connection, "profile", SCHEMA_14)
+        }
+    }
+
+    @Test
+    fun migratesV14ProfileWithNoHiddenBouquets() {
+        withMigratedV12 { connection ->
+            runBlocking {
+                AppDatabase.MIGRATION_13_14.migrate(connection)
+                AppDatabase.MIGRATION_14_15.migrate(connection)
+            }
+            assertProfileColumnIsNull(connection, "hidden_bouquet_refs")
+            assertTableMatchesSchema(connection, "profile", SCHEMA_15)
         }
     }
 
@@ -197,6 +211,15 @@ class AppDatabaseMigrationTest {
         connection.prepare("SELECT DISTINCT `$column` FROM profile").use { statement ->
             assertTrue(statement.step())
             assertEquals(expected, statement.getLong(0))
+            assertFalse(statement.step())
+        }
+    }
+
+    /** Every existing profile has no value in [column]. */
+    private fun assertProfileColumnIsNull(connection: SQLiteConnection, column: String) {
+        connection.prepare("SELECT DISTINCT `$column` FROM profile").use { statement ->
+            assertTrue(statement.step())
+            assertTrue(statement.isNull(0))
             assertFalse(statement.step())
         }
     }
@@ -395,6 +418,7 @@ class AppDatabaseMigrationTest {
 
         private const val SCHEMA_13 = "schemas/net.reichholf.dreamdroid.room.AppDatabase/13.json"
         private const val SCHEMA_14 = "schemas/net.reichholf.dreamdroid.room.AppDatabase/14.json"
+        private const val SCHEMA_15 = "schemas/net.reichholf.dreamdroid.room.AppDatabase/15.json"
 
         /** A version-10 timer snapshot row, from before dreamDroid kept VPS. */
         private val V10_TIMER_LIST_ROW =

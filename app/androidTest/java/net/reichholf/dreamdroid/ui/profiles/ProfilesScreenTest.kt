@@ -48,7 +48,8 @@ class ProfilesScreenTest {
                         )
                     ),
                     onProfileClick = {},
-                    onProfileEdit = {}
+                    onProfileEdit = {},
+                    onProfileBouquets = {}
                 )
             }
         }
@@ -62,9 +63,10 @@ class ProfilesScreenTest {
     }
 
     @Test
-    fun tapActivatesAndEditIconOpensEditor() {
+    fun tapActivatesEditOpensEditorAndBouquetsOpenTheVisibilityScreen() {
         var clickedId = -1
         var editedId = -1
+        var bouquetsId = -1
         composeRule.setContent {
             DreamDroidTheme {
                 ProfilesScreen(
@@ -77,7 +79,8 @@ class ProfilesScreenTest {
                         )
                     ),
                     onProfileClick = { clickedId = it.id },
-                    onProfileEdit = { editedId = it.id }
+                    onProfileEdit = { editedId = it.id },
+                    onProfileBouquets = { bouquetsId = it.id }
                 )
             }
         }
@@ -85,11 +88,19 @@ class ProfilesScreenTest {
         composeRule.waitForIdle()
         assertEquals(1, clickedId)
         assertEquals(-1, editedId)
+        assertEquals(-1, bouquetsId)
         clickedId = -1
         composeRule.onNodeWithTag(PROFILE_ROW_EDIT_TAG_PREFIX + "1").performClick()
         composeRule.waitForIdle()
         assertEquals(-1, clickedId)
         assertEquals(1, editedId)
+        assertEquals(-1, bouquetsId)
+        clickedId = -1
+        composeRule.onNodeWithTag(PROFILE_ROW_BOUQUETS_TAG_PREFIX + "1").performClick()
+        composeRule.waitForIdle()
+        assertEquals(-1, clickedId)
+        assertEquals(-1, editedId)
+        assertEquals(1, bouquetsId)
     }
 
     @Test
@@ -112,7 +123,8 @@ class ProfilesScreenTest {
                         )
                     ),
                     onProfileClick = {},
-                    onProfileEdit = {}
+                    onProfileEdit = {},
+                    onProfileBouquets = {}
                 )
             }
         }

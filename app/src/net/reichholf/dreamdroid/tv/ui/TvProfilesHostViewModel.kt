@@ -76,6 +76,20 @@ class TvProfilesHostViewModel @Inject constructor(private val profiles: ProfileR
         reload()
     }
 
+    /** Opens the bouquet visibility of [profileId]; the screen saves each change itself. */
+    fun showBouquets(profileId: Int) {
+        editJob?.cancel()
+        editJob = null
+        editing = null
+        _uiState.update {
+            it.copy(
+                page = TvProfilesPage.BouquetVisibility(profileId),
+                form = null,
+                hostError = null
+            )
+        }
+    }
+
     /** Opens add with [Profile.getDefault]. Keeps the draft when add is already open. */
     fun showAdd() {
         if (_uiState.value.page is TvProfilesPage.Add && editing != null) {

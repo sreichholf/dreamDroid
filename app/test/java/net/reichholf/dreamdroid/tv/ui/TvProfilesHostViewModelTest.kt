@@ -117,6 +117,23 @@ class TvProfilesHostViewModelTest {
     }
 
     @Test
+    fun showBouquetsOpensTheVisibilityPageWithoutEditingTheProfile() = runTest {
+        val living = saved("Living Room")
+        val viewModel = viewModel()
+        viewModel.showEdit(living.id!!)
+        viewModel.uiState.first { it.form != null }
+
+        viewModel.showBouquets(living.id!!)
+
+        val state = viewModel.uiState.value
+        assertEquals(TvProfilesPage.BouquetVisibility(living.id!!), state.page)
+        assertNull(state.form)
+
+        viewModel.showList()
+        assertEquals(TvProfilesPage.List, viewModel.uiState.value.page)
+    }
+
+    @Test
     fun activatingReportsSuccess() = runTest {
         val bedroom = saved("Bedroom")
         val viewModel = viewModel()

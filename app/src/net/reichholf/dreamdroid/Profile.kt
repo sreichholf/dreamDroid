@@ -196,6 +196,13 @@ class Profile : Serializable {
     @ColumnInfo(name = "picons_online_use_name", defaultValue = "0")
     var piconsOnlineUseName: Boolean = false
 
+    /**
+     * The bouquets this profile hides from every bouquet list, one reference per line.
+     * Nullable so a profile from an older backup imports with nothing hidden.
+     */
+    @ColumnInfo(name = "hidden_bouquet_refs")
+    var hiddenBouquetRefs: String? = null
+
     constructor()
 
     @Ignore
@@ -398,6 +405,25 @@ class Profile : Serializable {
     fun setDefaultRef2Values(ref: String?, name: String?) {
         defaultParentBouquetTv = ref
         defaultParentBouquetTvName = name
+    }
+
+    /** The references in [hiddenBouquetRefs]; nothing when the profile never hid one. */
+    fun hiddenBouquets(): Set<String> = hiddenBouquetRefs
+        ?.lineSequence()
+        ?.filter { it.isNotBlank() }
+        ?.toSet()
+        .orEmpty()
+
+    /**
+     * Stores [refs] in [hiddenBouquetRefs]. Sorted, so equal sets write equal rows and a
+     * backup does not churn on reorder.
+     */
+    fun setHiddenBouquets(refs: Collection<String>) {
+        hiddenBouquetRefs = refs
+            .filter { it.isNotBlank() }
+            .toSortedSet()
+            .joinToString("\n")
+            .ifEmpty { null }
     }
 
     fun hasSameSettings(p: Profile): Boolean = host == p.host &&

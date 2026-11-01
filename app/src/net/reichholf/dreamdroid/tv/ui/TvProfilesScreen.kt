@@ -52,6 +52,7 @@ fun TvProfilesScreen(
     onBackup: () -> Unit,
     onActivate: (Int) -> Unit,
     onEdit: (Int) -> Unit,
+    onBouquets: (Int) -> Unit,
     onDelete: (Int) -> Unit,
     onDeleteConfirmed: (Int) -> Unit,
     modifier: Modifier = Modifier
@@ -137,6 +138,7 @@ fun TvProfilesScreen(
                 },
                 onActivate = { onActivate(profile.id) },
                 onEdit = { onEdit(profile.id) },
+                onBouquets = { onBouquets(profile.id) },
                 onDelete = {
                     onDelete(profile.id)
                     pendingDelete = profile
@@ -164,6 +166,7 @@ private fun TvProfileRow(
     activeFocusRequester: FocusRequester?,
     onActivate: () -> Unit,
     onEdit: () -> Unit,
+    onBouquets: () -> Unit,
     onDelete: () -> Unit
 ) {
     Row(
@@ -219,6 +222,22 @@ private fun TvProfileRow(
                 Icon(
                     painter = painterResource(R.drawable.ic_action_edit),
                     contentDescription = stringResource(R.string.edit)
+                )
+            }
+        }
+        Surface(
+            onClick = onBouquets,
+            modifier = Modifier
+                .width(72.dp)
+                .height(72.dp)
+                .testTag("tv_profiles_bouquets_${profile.id}"),
+            colors = dreamDroidTvCardColors(),
+            scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f)
+        ) {
+            Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_visibility),
+                    contentDescription = stringResource(R.string.manage_bouquets)
                 )
             }
         }

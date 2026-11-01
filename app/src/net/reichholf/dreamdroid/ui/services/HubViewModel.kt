@@ -84,8 +84,13 @@ class HubViewModel @Inject constructor(
                 sessions.status.map { it.session }.distinctUntilChanged(),
                 services.bouquetEdits
                     .map { edits -> services.bouquetIndexRefs.map { edits[it] } }
+                    .distinctUntilChanged(),
+                // Hiding a bouquet edits the profile, not the receiver: reload so the
+                // strip drops it as soon as the profile row is saved.
+                profiles.current
+                    .map { it?.hiddenBouquets() }
                     .distinctUntilChanged()
-            ) { session, edits -> session to edits }.collect {
+            ) { session, edits, _ -> session to edits }.collect {
                 bouquetJob?.cancel()
                 bouquetJob = launch { loadBouquets() }
             }

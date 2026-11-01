@@ -201,6 +201,55 @@ class ServiceRepositoryTest {
     }
 
     @Test
+    fun hiddenBouquetsAreLeftOutOfListsButStayInTheTabStrip() = runBlocking {
+        lists[TV_ROOTS[0]] = serviceList(FAVOURITES to "Favourites", SPORTS to "Sports")
+        lists[RADIO_ROOTS[0]] = serviceList(RADIO to "Radio")
+        receiver.profiles.repository.current.value!!.setHiddenBouquets(listOf(SPORTS))
+
+        val load = services.bouquets().last() as BouquetListLoad.Loaded
+        val aggregate = services.services(TV_ROOTS[0]).last() as ServiceListLoad.Services
+
+        assertEquals(listOf("Favourites"), load.bouquets.tv.map { it.name })
+        assertEquals(listOf("Favourites"), aggregate.services.map { it.name })
+        assertEquals(listOf(FAVOURITES, SPORTS), strip("TV"))
+        assertEquals(listOf(FAVOURITES, SPORTS), services.cachedBouquets().tv.map { it.reference })
+    }
+
+    @Test
+    fun hiddenBouquetsAreLeftOutOfTheTvHubAndMultiEpg() = runBlocking {
+        lists[TV_ROOTS[0]] = serviceList(FAVOURITES to "Favourites", SPORTS to "Sports")
+        receiver.profiles.repository.current.value!!.setHiddenBouquets(listOf(SPORTS))
+        writeStrip("TV", FAVOURITES to "Favourites", SPORTS to "Sports")
+
+        assertEquals(listOf("Favourites"), services.tvBouquetTabs().value!!.map { it.name })
+        assertEquals(listOf("Favourites"), services.tvBouquets().map { it.name })
+        assertEquals(
+            listOf(FAVOURITES, SPORTS),
+            services.cachedTvBouquetTabs().map { it.reference }
+        )
+    }
+
+    @Test
+    fun visibilityBouquetsListUserBouquetsAndFallBackToTheStrip() = runBlocking {
+        lists[TV_ROOTS[0]] = serviceList(FAVOURITES to "Favourites", TV_ROOTS[1] to "Provider")
+        lists[RADIO_ROOTS[0]] = serviceList(RADIO to "Radio")
+        val profile = receiver.profiles.repository.current.value!!
+        profile.setHiddenBouquets(listOf(SPORTS))
+
+        val live = services.bouquetsForVisibility(profile).value!!
+
+        assertEquals(listOf("Favourites"), live.tv.map { it.name })
+        assertEquals(listOf("Radio"), live.radio.map { it.name })
+
+        writeStrip("TV", FAVOURITES to "Favourites", SPORTS to "Sports")
+        receiver.goOffline()
+        val cached = services.bouquetsForVisibility(profile).value!!
+
+        assertEquals(listOf(FAVOURITES, SPORTS), cached.tv.map { it.reference })
+        assertEquals(emptyList<String>(), cached.radio.map { it.reference })
+    }
+
+    @Test
     fun tvBouquetsComeFromTheReceiverWithoutWritingTheStrip() = runBlocking {
         val bouquets = services.tvBouquets()
 

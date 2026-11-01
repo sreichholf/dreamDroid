@@ -77,6 +77,7 @@ fun ProfilesDestination(
         onProfileEdit = { item ->
             viewModel.profileFor(item)?.let { handle.navigateToProfileEdit(it) }
         },
+        onProfileBouquets = { item -> handle.navigateToProfileBouquets(item.id) },
         modifier = modifier
     )
 

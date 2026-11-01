@@ -452,6 +452,14 @@ class PhoneNavigator(
         return true
     }
 
+    override fun navigateToProfileBouquets(profileId: Int): Boolean {
+        val controller = navController ?: return false
+        controller.navigate(ProfileBouquets(profileId)) {
+            launchSingleTop = true
+        }
+        return true
+    }
+
     override fun popNavBackStack(): Boolean {
         val controller = navController ?: return false
         if (controller.previousBackStackEntry == null) {

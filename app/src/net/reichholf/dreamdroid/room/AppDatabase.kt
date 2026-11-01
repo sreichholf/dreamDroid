@@ -27,7 +27,7 @@ import net.reichholf.dreamdroid.Profile
         MovieListEntity::class,
         EpgSearchRecentEntity::class
     ],
-    version = 14,
+    version = 15,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -422,6 +422,15 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        /** Adds the per-profile bouquet visibility filter; every existing bouquet shows. */
+        val MIGRATION_14_15: Migration = object : Migration(14, 15) {
+            override suspend fun migrate(connection: SQLiteConnection) {
+                connection.execSQL(
+                    "ALTER TABLE `profile` ADD COLUMN `hidden_bouquet_refs` TEXT"
+                )
+            }
+        }
+
         /**
          * The app's file-backed database. Hilt builds the one instance (DatabaseModule);
          * building does not open the file.
@@ -444,7 +453,8 @@ abstract class AppDatabase : RoomDatabase() {
                 MIGRATION_10_11,
                 MIGRATION_11_12,
                 migration12To13(piconSeed),
-                MIGRATION_13_14
+                MIGRATION_13_14,
+                MIGRATION_14_15
             )
             .configureRoomDriver()
             .build()
