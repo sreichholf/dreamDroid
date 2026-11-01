@@ -216,6 +216,47 @@ class ServiceRepositoryTest {
     }
 
     @Test
+    fun bouquetAddedAfterHidingAnotherIsShownOnlineAndFromTheTabStrip() = runBlocking {
+        lists[TV_ROOTS[0]] = serviceList(FAVOURITES to "Favourites", SPORTS to "Sports")
+        lists[RADIO_ROOTS[0]] = serviceList(RADIO to "Radio")
+        receiver.profiles.repository.current.value!!.setHiddenBouquets(listOf(SPORTS))
+
+        val before = services.bouquets().last() as BouquetListLoad.Loaded
+        assertEquals(listOf("Favourites"), before.bouquets.tv.map { it.name })
+
+        lists[TV_ROOTS[0]] = serviceList(
+            FAVOURITES to "Favourites",
+            SPORTS to "Sports",
+            DOCUMENTARIES to "Documentaries"
+        )
+
+        val live = services.bouquets().last() as BouquetListLoad.Loaded
+        val liveTv = services.tvBouquets()
+
+        assertEquals(
+            listOf("Favourites", "Documentaries"),
+            live.bouquets.tv.map { it.name }
+        )
+        assertEquals(listOf("Favourites", "Documentaries"), liveTv.map { it.name })
+
+        receiver.goOffline()
+        val cached = services.bouquets().toList().single() as BouquetListLoad.Loaded
+        val cachedTv = services.tvBouquets()
+
+        assertTrue(cached.cached)
+        assertEquals(
+            listOf("Favourites", "Documentaries"),
+            cached.bouquets.tv.map { it.name }
+        )
+        assertEquals(listOf("Favourites", "Documentaries"), cachedTv.map { it.name })
+        assertEquals(listOf(FAVOURITES, SPORTS, DOCUMENTARIES), strip("TV"))
+        assertEquals(
+            listOf(FAVOURITES, SPORTS, DOCUMENTARIES),
+            services.cachedBouquets().tv.map { it.reference }
+        )
+    }
+
+    @Test
     fun hiddenBouquetsAreLeftOutOfTheTvHubAndMultiEpg() = runBlocking {
         lists[TV_ROOTS[0]] = serviceList(FAVOURITES to "Favourites", SPORTS to "Sports")
         receiver.profiles.repository.current.value!!.setHiddenBouquets(listOf(SPORTS))
@@ -644,6 +685,8 @@ class ServiceRepositoryTest {
             "1:7:1:0:0:0:0:0:0:0:FROM BOUQUET \"userbouquet.favourites.tv\" ORDER BY bouquet"
         const val SPORTS =
             "1:7:1:0:0:0:0:0:0:0:FROM BOUQUET \"userbouquet.sports.tv\" ORDER BY bouquet"
+        const val DOCUMENTARIES =
+            "1:7:1:0:0:0:0:0:0:0:FROM BOUQUET \"userbouquet.documentaries.tv\" ORDER BY bouquet"
         const val OTHER =
             "1:7:1:0:0:0:0:0:0:0:FROM BOUQUET \"userbouquet.other.tv\" ORDER BY bouquet"
         const val RADIO =
