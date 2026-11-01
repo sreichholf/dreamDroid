@@ -38,6 +38,7 @@ object PhoneNavRoutes {
     const val EPG_SEARCH = "epg_search"
     const val PICK_SERVICE = "pick_service"
     const val PROFILE_EDIT = "profile_edit"
+    const val PROFILE_BOUQUETS = "profile_bouquets"
     const val TIMER_EDIT = "timer_edit"
     const val TIMER_SERVICE_PICK = "timer_service_pick"
     const val BOUQUET_CONTENT = "bouquet_content"
@@ -105,6 +106,7 @@ fun routeForId(id: String): Any = when (routeKey(id)) {
     PhoneNavRoutes.PROFILE_CHECK -> ProfileCheck
     PhoneNavRoutes.PICK_SERVICE -> PickService
     PhoneNavRoutes.PROFILE_EDIT -> ProfileEdit()
+    PhoneNavRoutes.PROFILE_BOUQUETS -> ProfileBouquets()
     PhoneNavRoutes.TIMER_EDIT -> TimerEdit()
     PhoneNavRoutes.TIMER_SERVICE_PICK -> TimerServicePick
     PhoneNavRoutes.SERVICE_EPG -> ServiceEpg(serviceRef = "")
@@ -167,6 +169,7 @@ fun routeId(route: Any): String {
         is MultiEpg -> PhoneNavRoutes.MULTI_EPG
         is SleepTimerRoute -> PhoneNavRoutes.SLEEP_TIMER
         is ProfileEdit -> PhoneNavRoutes.PROFILE_EDIT
+        is ProfileBouquets -> PhoneNavRoutes.PROFILE_BOUQUETS
         is TimerEdit -> PhoneNavRoutes.TIMER_EDIT
         is BouquetContent -> PhoneNavRoutes.BOUQUET_CONTENT
         is BouquetAddServices -> PhoneNavRoutes.BOUQUET_ADD_SERVICES
@@ -392,6 +395,10 @@ fun Profile?.toProfileEditRoute(): ProfileEdit {
         simpleRemote = simpleRemote
     )
 }
+
+@Serializable
+@SerialName(PhoneNavRoutes.PROFILE_BOUQUETS)
+data class ProfileBouquets(val profileId: Int = -1)
 
 @Serializable
 @SerialName(PhoneNavRoutes.TIMER_EDIT)

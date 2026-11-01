@@ -488,6 +488,15 @@
     <string name="setup_restore_needs_profile">Select at least one profile to restore. Settings alone leave no receiver to connect to.</string>
 
     <string name="bouquets">Bouquets</string>
+    <string name="manage_bouquets">Manage bouquets</string>
+    <string name="bouquets_visibility_summary">Hidden bouquets are left out of Live TV, Guide and the channel pickers. New bouquets show up automatically.</string>
+    <string name="show_all_bouquets">Show all bouquets</string>
+    <string name="bouquet_shown">Shown</string>
+    <string name="bouquet_hidden">Hidden</string>
+    <string name="bouquets_all_shown">All bouquets are shown again.</string>
+    <string name="bouquets_save_failed">Could not save the bouquet visibility.</string>
+    <string name="no_bouquets_on_receiver">No bouquets on this receiver.</string>
+    <string name="profile_not_found">This profile no longer exists.</string>
     <string name="bouquet_add">Add bouquet</string>
     <string name="bouquet_rename">Rename bouquet</string>
     <string name="bouquet_remove">Remove bouquet</string>

@@ -6,6 +6,7 @@
 * FIX: Timer-Bereinigung mit aktivierter erweiterter Sicherheit fehlgeschlagen
 
 ## 2.0.470
+* NEU: Bouquets pro Profil ausblenden
 * NEU: Sicherung im Einrichtungsassistenten wiederherstellen
 * NEU: Kanal-EPG aus der EPG-Detailansicht
 * UPD: TV - Profil- und Timer-Editor passen zum Hub

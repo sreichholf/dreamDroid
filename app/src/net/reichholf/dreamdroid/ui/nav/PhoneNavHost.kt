@@ -49,6 +49,7 @@ import net.reichholf.dreamdroid.ui.multiepg.MultiEpgDestination
 import net.reichholf.dreamdroid.ui.pick.PickServiceDestination
 import net.reichholf.dreamdroid.ui.pick.TimerServicePickDestination
 import net.reichholf.dreamdroid.ui.profilecheck.ProfileCheckDestination
+import net.reichholf.dreamdroid.ui.profiles.ProfileBouquetsDestination
 import net.reichholf.dreamdroid.ui.profiles.ProfileEditDestination
 import net.reichholf.dreamdroid.ui.profiles.ProfilesDestination
 import net.reichholf.dreamdroid.ui.remote.VirtualRemoteDestination
@@ -226,6 +227,11 @@ private fun PhoneNavHostGraph(
         }
         composable<ProfileEdit> {
             ProfileEditDestination(handle = handle)
+        }
+        composable<ProfileBouquets> { entry ->
+            ProfileBouquetsDestination(
+                profileId = entry.toRoute<ProfileBouquets>().profileId
+            )
         }
         composable<TimerEdit> {
             TimerEditDestination(handle = handle)

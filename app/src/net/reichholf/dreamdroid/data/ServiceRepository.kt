@@ -10,7 +10,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
+import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Bouquets
 import net.reichholf.dreamdroid.enigma.EnigmaResponse
@@ -125,6 +127,25 @@ class ServiceRepository @Inject constructor(
     fun userBouquetTabs(bouquets: List<Service>): List<Service> =
         userBouquetTabs(bouquets, excludedTabRefs)
 
+    /**
+     * [services] without the active profile's hidden bouquets. Bouquet lists are filtered
+     * when they are handed to a screen; the Room cache keeps every bouquet, so hiding one
+     * works while Offline and unhiding it never waits for the receiver.
+     */
+    fun visibleBouquets(services: List<Service>): List<Service> {
+        val hidden = profiles.current.value?.hiddenBouquets().orEmpty()
+        return if (hidden.isEmpty()) services else services.filter { it.reference !in hidden }
+    }
+
+    /**
+     * [bouquets] without the active profile's hidden bouquets, for a whole TV + radio pair.
+     * See [visibleBouquets].
+     */
+    fun visibleBouquets(bouquets: Bouquets): Bouquets = Bouquets().also { visible ->
+        visible.tv.addAll(visibleBouquets(bouquets.tv))
+        visible.radio.addAll(visibleBouquets(bouquets.radio))
+    }
+
     /** The Room tab strip refs, TV and radio, the bouquets MultiEPG and the hub persist. */
     suspend fun hubTabStripRefs(): List<String> {
         val profileId = profiles.current.value?.id ?: return emptyList()
@@ -163,7 +184,12 @@ class ServiceRepository @Inject constructor(
         fetch = ::receiverBouquets,
         loaded = BouquetListLoad::Loaded,
         failed = BouquetListLoad::Failed
-    )
+    ).map { load ->
+        when (load) {
+            is BouquetListLoad.Loaded -> load.copy(bouquets = visibleBouquets(load.bouquets))
+            is BouquetListLoad.Failed -> load
+        }
+    }
 
     private suspend fun receiverBouquets(): EnigmaResponse<Bouquets> {
         val profile = profiles.current.value ?: return EnigmaResponse(null)
@@ -187,15 +213,37 @@ class ServiceRepository @Inject constructor(
     }
 
     /**
+     * The user bouquets of [profile] only: no dedicated roots and no provider path. Reads
+     * both indexes and writes nothing; the visibility screen must see a hidden bouquet to
+     * list it again.
+     */
+    private suspend fun readBouquets(profile: Profile): EnigmaResponse<Bouquets> {
+        val client = clients.forProfile(profile)
+        val tv = client.services(tvRoots[0])
+        val tvList = tv.value ?: return EnigmaResponse(null, tv.error)
+        val bouquets = Bouquets()
+        bouquets.tv.addAll(userBouquetTabs(tvList))
+        val radio = client.services(radioRoots[0])
+        val radioList = radio.value
+        if (radioList != null) {
+            bouquets.radio.addAll(userBouquetTabs(radioList))
+        }
+        if (radioList == null && tvList.isEmpty()) {
+            return EnigmaResponse(null, radio.error)
+        }
+        return EnigmaResponse(bouquets)
+    }
+
+    /**
      * TV bouquets for the TV MultiEPG picker. Room's TV tab strip answers while the session
      * skips the receiver, and when the receiver fails. Does not write the tab strip.
      */
     suspend fun tvBouquets(): List<Service> {
         val cached = cachedTvBouquetTabs()
         if (sessions.status.value.shouldSkipReceiverHttp(cached.isNotEmpty())) {
-            return cached
+            return visibleBouquets(cached)
         }
-        return fetchTvBouquets().value ?: cached
+        return visibleBouquets(fetchTvBouquets().value ?: cached)
     }
 
     /** The TV hub's bouquets from the receiver. An answer replaces the Room TV tab strip. */
@@ -206,7 +254,26 @@ class ServiceRepository @Inject constructor(
         if (bouquets != null && profileId != null) {
             replaceTabStrip(profileId, KIND_TV, bouquets)
         }
-        return response
+        return EnigmaResponse(bouquets?.let(::visibleBouquets), response.error)
+    }
+
+    /**
+     * Every user bouquet of [profile], TV and radio, for the per-profile visibility screen.
+     * The active profile paints from its Room tab strip while Offline or when the receiver
+     * fails; another profile asks that receiver while it is edited.
+     */
+    suspend fun bouquetsForVisibility(profile: Profile): EnigmaResponse<Bouquets> {
+        val active = profiles.current.value?.id == profile.id
+        val cached = if (active) cachedBouquets().takeIf { it.isNotEmpty() } else null
+        if (active && sessions.status.value.shouldSkipReceiverHttp(cached != null)) {
+            return EnigmaResponse(cached)
+        }
+        val live = readBouquets(profile)
+        val bouquets = live.value
+        if (bouquets != null) {
+            return EnigmaResponse(bouquets)
+        }
+        return if (cached != null) EnigmaResponse(cached) else live
     }
 
     /** The Room TV tab strip, which the TV hub paints while it skips the receiver. */
@@ -241,7 +308,14 @@ class ServiceRepository @Inject constructor(
             },
             loaded = ServiceListLoad::Services,
             failed = ServiceListLoad::Failed
-        )
+        ).map { load ->
+            when (load) {
+                is ServiceListLoad.Services ->
+                    load.copy(services = visibleBouquets(load.services))
+
+                is ServiceListLoad.Failed -> load
+            }
+        }
 
     /**
      * The hub list of [ref], opened under the hub tab [tabRootRef], read [cacheFirstLoad]. The

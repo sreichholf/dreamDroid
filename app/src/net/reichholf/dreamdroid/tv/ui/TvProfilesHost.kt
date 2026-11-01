@@ -18,6 +18,9 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.ui.nav.ShowShellUserMessage
+import net.reichholf.dreamdroid.ui.profiles.ProfileBouquetsScreen
+import net.reichholf.dreamdroid.ui.profiles.ProfileBouquetsViewModel
 import net.reichholf.dreamdroid.ui.profiles.ProfileEditScreen
 import net.reichholf.dreamdroid.ui.text.asString
 
@@ -25,6 +28,7 @@ sealed interface TvProfilesPage {
     data object List : TvProfilesPage
     data class Edit(val profileId: Int) : TvProfilesPage
     data object Add : TvProfilesPage
+    data class BouquetVisibility(val profileId: Int) : TvProfilesPage
 }
 
 sealed interface TvProfilesEvent {
@@ -100,32 +104,49 @@ fun TvProfilesHost(
         }
     }
 
-    BackHandler(enabled = uiState.page !is TvProfilesPage.List) {
+    val page = uiState.page
+    BackHandler(enabled = page !is TvProfilesPage.List) {
+        if (page is TvProfilesPage.BouquetVisibility) {
+            currentOnMarkReload()
+        }
         viewModel.showList()
     }
 
     val form = uiState.form
     Column(modifier = modifier.fillMaxSize()) {
         Text(
-            text = stringResource(R.string.profiles),
+            text = stringResource(
+                if (page is TvProfilesPage.BouquetVisibility) {
+                    R.string.bouquets
+                } else {
+                    R.string.profiles
+                }
+            ),
             style = MaterialTheme.typography.headlineMedium,
             modifier = Modifier
                 .padding(start = 32.dp, top = 24.dp, bottom = 8.dp)
                 .semantics { heading() }
         )
-        if (uiState.page == TvProfilesPage.List || form == null) {
-            TvProfilesScreen(
+        when {
+            page is TvProfilesPage.BouquetVisibility ->
+                TvProfileBouquetsPage(
+                    profileId = page.profileId,
+                    modifier = Modifier.weight(1f)
+                )
+
+            page == TvProfilesPage.List || form == null -> TvProfilesScreen(
                 profiles = uiState.profiles,
                 onAdd = viewModel::showAdd,
                 onBackup = onBackup,
                 onActivate = viewModel::activate,
                 onEdit = viewModel::showEdit,
+                onBouquets = viewModel::showBouquets,
                 onDelete = {},
                 onDeleteConfirmed = viewModel::delete,
                 modifier = Modifier.weight(1f)
             )
-        } else {
-            ProfileEditScreen(
+
+            else -> ProfileEditScreen(
                 form = form,
                 fields = viewModel.fields,
                 hostError = uiState.hostError?.asString(),
@@ -137,4 +158,22 @@ fun TvProfilesHost(
             )
         }
     }
+}
+
+@Composable
+private fun TvProfileBouquetsPage(profileId: Int, modifier: Modifier = Modifier) {
+    val viewModel: ProfileBouquetsViewModel =
+        hiltViewModel(key = "tv-profile-bouquets:$profileId")
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    LaunchedEffect(profileId, viewModel) {
+        viewModel.load(profileId)
+    }
+    ShowShellUserMessage(uiState.userMessage, viewModel::onMessageShown)
+    ProfileBouquetsScreen(
+        state = uiState,
+        onToggle = viewModel::setVisible,
+        onShowAll = viewModel::showAll,
+        onReload = viewModel::reload,
+        modifier = modifier
+    )
 }

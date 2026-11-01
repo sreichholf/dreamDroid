@@ -6,6 +6,7 @@
 * FIX: Timer cleanup failed with extended security enabled
 
 ## 2.0.470
+* NEW: Hide bouquets per profile
 * NEW: Restore a backup in the setup assistant
 * NEW: Channel EPG from the EPG detail
 * UPD: TV - profile and timer editors match the hub

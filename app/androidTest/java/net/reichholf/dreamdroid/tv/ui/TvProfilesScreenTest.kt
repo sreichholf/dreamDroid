@@ -48,6 +48,7 @@ class TvProfilesScreenTest {
                         onBackup = {},
                         onActivate = {},
                         onEdit = {},
+                        onBouquets = {},
                         onDelete = {},
                         onDeleteConfirmed = {}
                     )
@@ -84,6 +85,7 @@ class TvProfilesScreenTest {
                         onBackup = {},
                         onActivate = {},
                         onEdit = {},
+                        onBouquets = {},
                         onDelete = {},
                         onDeleteConfirmed = {}
                     )
@@ -106,6 +108,7 @@ class TvProfilesScreenTest {
                         onBackup = { opened = true },
                         onActivate = {},
                         onEdit = {},
+                        onBouquets = {},
                         onDelete = {},
                         onDeleteConfirmed = {}
                     )
@@ -136,6 +139,7 @@ class TvProfilesScreenTest {
                         onBackup = {},
                         onActivate = { activated = it },
                         onEdit = {},
+                        onBouquets = {},
                         onDelete = {},
                         onDeleteConfirmed = {}
                     )
@@ -147,8 +151,9 @@ class TvProfilesScreenTest {
     }
 
     @Test
-    fun editAndDeleteTagsFireCallbacks() {
+    fun editBouquetsAndDeleteTagsFireCallbacks() {
         var edited: Int? = null
+        var bouquets: Int? = null
         var deleted: Int? = null
         composeRule.setContent {
             DreamDroidTvTheme {
@@ -159,6 +164,7 @@ class TvProfilesScreenTest {
                         onBackup = {},
                         onActivate = {},
                         onEdit = { edited = it },
+                        onBouquets = { bouquets = it },
                         onDelete = { deleted = it },
                         onDeleteConfirmed = {}
                     )
@@ -167,6 +173,8 @@ class TvProfilesScreenTest {
         }
         dpadActivate("tv_profiles_edit_1") { edited != null }
         assertEquals(1, edited)
+        dpadActivate("tv_profiles_bouquets_1") { bouquets != null }
+        assertEquals(1, bouquets)
         dpadActivate("tv_profiles_delete_2") { deleted != null }
         assertEquals(2, deleted)
     }
@@ -184,6 +192,7 @@ class TvProfilesScreenTest {
                         onBackup = {},
                         onActivate = {},
                         onEdit = {},
+                        onBouquets = {},
                         onDelete = { deleted = it },
                         onDeleteConfirmed = { confirmed = it }
                     )

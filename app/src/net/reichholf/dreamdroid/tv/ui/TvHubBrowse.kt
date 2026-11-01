@@ -177,7 +177,8 @@ class TvHubBrowse @Inject constructor(
     ): TvHubBrowseResult {
         val nowSec = System.currentTimeMillis() / 1000L
         return TvHubBrowseResult(
-            rows = tabs.mapNotNull { bouquet -> paintBouquetFromCache(bouquet, nowSec) },
+            rows = services.visibleBouquets(tabs)
+                .mapNotNull { bouquet -> paintBouquetFromCache(bouquet, nowSec) },
             locations = locations,
             errorText = null,
             usedCache = true
