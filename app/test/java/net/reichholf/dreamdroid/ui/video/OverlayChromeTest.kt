@@ -22,6 +22,9 @@ class OverlayChromeTest {
         val chrome = overlayChrome(session, player, nowMs = (START_SEC + 600) * 1000)
 
         assertEquals("ZDF HD", chrome.title)
+        assertFalse(chrome.recording)
+        assertNull(chrome.subtitle)
+        assertNull(chrome.remaining)
         assertTrue(chrome.showInfoButton)
         assertFalse(chrome.showPvrControls)
         assertFalse(chrome.seekable)
@@ -58,8 +61,15 @@ class OverlayChromeTest {
     }
 
     @Test
-    fun recordingWithEngineLengthShowsPositionAndLength() {
-        val session = recording(Movie(title = "Tatort", serviceName = "Das Erste", length = "1:00"))
+    fun recordingWithEngineLengthShowsPositionLengthAndTimeLeft() {
+        val session = recording(
+            Movie(
+                title = "Tatort",
+                serviceName = "Das Erste",
+                timeReadable = "So, 27.10. - 20:15",
+                length = "1:00"
+            )
+        )
         val player = PlayerState(
             seekable = true,
             lengthMs = 120_000,
@@ -70,6 +80,9 @@ class OverlayChromeTest {
         val chrome = overlayChrome(session, player, nowMs = 0)
 
         assertEquals("Tatort", chrome.title)
+        assertTrue(chrome.recording)
+        assertEquals("Das Erste · So, 27.10. - 20:15", chrome.subtitle)
+        assertEquals("\u221201:30", chrome.remaining)
         assertTrue(chrome.showInfoButton)
         assertTrue(chrome.showPvrControls)
         assertTrue(chrome.seekable)
@@ -87,6 +100,9 @@ class OverlayChromeTest {
         val chrome = overlayChrome(session, player, nowMs = 0)
 
         assertEquals("Film", chrome.title)
+        assertTrue(chrome.recording)
+        assertEquals("Arte", chrome.subtitle)
+        assertEquals("\u221245:00", chrome.remaining)
         assertEquals(OverlayRow("45:00", "Arte", "90:00"), chrome.now)
         assertNull(chrome.progress)
         assertEquals(
@@ -99,7 +115,12 @@ class OverlayChromeTest {
     fun recordingWithoutAnyLengthHidesTheNowRow() {
         val session = recording(Movie(title = "Tatort", length = "unknown"))
 
-        assertNull(overlayChrome(session, PlayerState(), nowMs = 0).now)
+        val chrome = overlayChrome(session, PlayerState(), nowMs = 0)
+
+        assertTrue(chrome.recording)
+        assertNull(chrome.now)
+        assertNull(chrome.subtitle)
+        assertNull(chrome.remaining)
     }
 
     @Test
@@ -110,6 +131,7 @@ class OverlayChromeTest {
         val chrome = overlayChrome(session, player, nowMs = 0)
 
         assertEquals("Stream", chrome.title)
+        assertTrue(chrome.recording)
         assertFalse(chrome.showInfoButton)
         assertTrue(chrome.showPvrControls)
         assertTrue(chrome.seekable)
@@ -125,6 +147,9 @@ class OverlayChromeTest {
         assertEquals(
             OverlayChrome(
                 title = "",
+                recording = false,
+                subtitle = null,
+                remaining = null,
                 showInfoButton = false,
                 showPvrControls = false,
                 seekable = false,

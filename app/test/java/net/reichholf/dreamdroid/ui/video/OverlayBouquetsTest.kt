@@ -4,7 +4,7 @@ import net.reichholf.dreamdroid.enigma.Service
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-class OverlayBouquetBarTest {
+class OverlayBouquetsTest {
     @Test
     fun tvBouquetsPrecedeRadioAndRootsDrop() {
         val excluded = setOf("1:7:1:0:0:0:0:0:0:0:")

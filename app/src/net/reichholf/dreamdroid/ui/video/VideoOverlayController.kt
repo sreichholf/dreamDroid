@@ -16,6 +16,7 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.OnBackPressedCallback
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.platform.ComposeView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -81,7 +82,9 @@ class VideoOverlayController(
     private var overlayRoot: View? = null
     private var composeOverlay: ComposeView? = null
     private var composeZapList: ComposeView? = null
-    private var composeBouquetBar: ComposeView? = null
+    private val topBarChannelListOpen = mutableStateOf(false)
+    private val channelPanel = PhoneChannelPanelState()
+    private var channelLayout = PhoneChannelLayout.Portrait
 
     private val overlayUiState: VideoOverlayUiState = VideoOverlayUiState()
 
@@ -98,7 +101,7 @@ class VideoOverlayController(
     private var reloadDueAtMs: Long? = null
     private var tvSessionJob: Job? = null
     private var tvChannelListBound: Boolean = false
-    private var phoneZapListBound: Boolean = false
+    private var phoneChannelPanelBound: Boolean = false
     private var savedScreenBrightness: Float? = null
 
     /** Views fading out stay VISIBLE until their animation ends. */
@@ -138,19 +141,6 @@ class VideoOverlayController(
         overlayRoot = view.findViewById(R.id.overlay_root)
         composeOverlay = view.findViewById(R.id.compose_overlay)
         composeZapList = view.findViewById(R.id.compose_zap_list)
-        composeBouquetBar = view.findViewById(R.id.compose_bouquet_bar)
-        composeBouquetBar?.bindOverlayBouquetBar(
-            state = overlayUiState,
-            onBouquetClick = { bouquet -> selectBouquet(bouquet) },
-            onUserInteraction = { autohide() },
-            onScrollInProgress = { scrolling ->
-                if (scrolling) {
-                    handler.removeCallbacks(autoHideRunnable)
-                } else {
-                    autohide()
-                }
-            }
-        )
         if (tvOverlay) {
             composeOverlay!!.bindTvPlayerInfobar(
                 state = overlayUiState,
@@ -177,6 +167,15 @@ class VideoOverlayController(
                 onSleepTimer = { onSleepTimer() },
                 onSeekChange = { progress -> seek(progress) }
             )
+            view.findViewById<ComposeView>(R.id.compose_top_bar).bindVideoOverlayTopBar(
+                onBack = { leavePlayer() },
+                onPictureInPicture = if (activity.pictureInPictureSupported()) {
+                    { activity.enterPictureInPicture() }
+                } else {
+                    null
+                },
+                channelListOpen = topBarChannelListOpen
+            )
         }
         overlayUiState.onChoiceAction = { actionId, dialogTag ->
             onDialogAction(actionId, null, dialogTag)
@@ -184,14 +183,16 @@ class VideoOverlayController(
         if (tvOverlay) {
             bindTvChannelListIfAllowed()
         } else {
-            bindPhoneZapList()
+            bindPhoneChannelPanel()
         }
         wireServiceListAndGestures()
         onServiceInfoChanged(true)
         backCallback =
             object : OnBackPressedCallback(true) {
                 override fun handleOnBackPressed() {
-                    if (isOverlaysVisible()) {
+                    if (isPhoneChannelListOpen()) {
+                        closeChannelList()
+                    } else if (isOverlaysVisible()) {
                         hideOverlays()
                     } else {
                         isEnabled = false
@@ -268,7 +269,8 @@ class VideoOverlayController(
         playback.cancelReload()
         reloadDueAtMs = null
         tvChannelListBound = false
-        phoneZapListBound = false
+        phoneChannelPanelBound = false
+        activity.dockVideoTop(false)
         activity.findViewById<View>(R.id.overlay)?.setOnTouchListener(null)
         val container = activity.findViewById<ViewGroup>(R.id.overlay)
         rootView?.let { child ->
@@ -278,7 +280,6 @@ class VideoOverlayController(
         overlayRoot = null
         composeOverlay = null
         composeZapList = null
-        composeBouquetBar = null
         gestureDetector = null
         attached = false
     }
@@ -341,14 +342,21 @@ class VideoOverlayController(
         tvChannelListBound = false
     }
 
-    private fun bindPhoneZapList() {
+    private fun bindPhoneChannelPanel() {
         val zapList = composeZapList ?: return
-        if (phoneZapListBound) {
+        if (phoneChannelPanelBound) {
             return
         }
-        zapList.bindPhoneZapList(
+        channelPanel.videoAspect = activity.videoAspect
+        zapList.bindPhoneChannelPanel(
             state = overlayUiState,
-            onServiceClick = { row -> zapToService(row) },
+            panel = channelPanel,
+            onServiceClick = { row -> onPhoneChannelPicked(row) },
+            onSelectBouquet = { bouquet -> selectBouquet(bouquet) },
+            onLayout = { layout ->
+                channelLayout = layout
+                dockVideo(isPhoneChannelListOpen())
+            },
             onScrollInProgress = { scrolling ->
                 if (scrolling) {
                     handler.removeCallbacks(autoHideRunnable)
@@ -357,7 +365,12 @@ class VideoOverlayController(
                 }
             }
         )
-        phoneZapListBound = true
+        phoneChannelPanelBound = true
+    }
+
+    /** From [VideoActivity] once the engine reports the picture's shape. */
+    fun onVideoAspectChanged(aspect: Float) {
+        channelPanel.videoAspect = aspect
     }
 
     private fun wireServiceListAndGestures() {
@@ -516,7 +529,7 @@ class VideoOverlayController(
         overlayUiState.showEpgDetail(activity, event)
     }
 
-    private fun onList() {
+    internal fun onList() {
         if (!allowsTvStreaming()) {
             return
         }
@@ -526,11 +539,25 @@ class VideoOverlayController(
         }
         if (!servicesViewVisible) {
             servicesViewVisible = true
-            showZapOverlays()
+            channelPanel.openCount += 1
+            showOverlays()
         } else {
-            hideZapOverlays()
-            servicesViewVisible = false
+            closeChannelList()
         }
+        showPhoneTopBar()
+    }
+
+    /** While the list is open the top bar keeps only the tablet PiP button. */
+    private fun showPhoneTopBar() {
+        topBarChannelListOpen.value = servicesViewVisible
+    }
+
+    /** The overlay's back button: leaves the player as system back does with no overlay. */
+    private fun leavePlayer() {
+        val callback = backCallback
+        callback?.isEnabled = false
+        activity.onBackPressedDispatcher.onBackPressed()
+        callback?.isEnabled = true
     }
 
     private fun showTrackSelection(
@@ -649,6 +676,9 @@ class VideoOverlayController(
         overlayUiState.showListButton = showButton
         if (!showButton) {
             hideZapOverlays()
+            if (!tvOverlay && servicesViewVisible && rootView != null) {
+                closeChannelList()
+            }
             return
         }
         if (isOverlaysVisible() && servicesViewVisible) {
@@ -813,13 +843,12 @@ class VideoOverlayController(
         if (rootView == null) return
         handler.removeCallbacks(autoHideRunnable)
         updateViews()
-        if (tvOverlay) {
-            // TV shows either the channel list or the infobar, never both.
-            composeOverlay?.visibility = if (servicesViewVisible) View.GONE else View.VISIBLE
-        }
+        // Either the channel list or the infobar, never both.
+        composeOverlay?.visibility = if (servicesViewVisible) View.GONE else View.VISIBLE
+        if (!tvOverlay) showPhoneTopBar()
         if (servicesViewVisible) {
             showZapOverlays()
-        } else if (tvOverlay) {
+        } else {
             hideZapOverlays()
         }
         fadeInView(overlayRoot)
@@ -835,9 +864,38 @@ class VideoOverlayController(
         handler.removeCallbacks(autoHideRunnable)
         hideZapOverlays()
         fadeOutView(overlayRoot)
-        if (tvOverlay) {
-            servicesViewVisible = false
+        servicesViewVisible = false
+    }
+
+    private fun isPhoneChannelListOpen(): Boolean =
+        !tvOverlay && servicesViewVisible && isOverlaysVisible()
+
+    /** Back to the infobar. The list goes at once: fading, it would still take taps. */
+    internal fun closeChannelList() {
+        composeZapList?.let { list ->
+            fadingOut.remove(list)
+            list.animate().setListener(null).cancel()
+            list.visibility = View.GONE
         }
+        dockVideo(false)
+        servicesViewVisible = false
+        showOverlays()
+    }
+
+    /** A tap in the phone channel list: zap and close; on the playing channel, only close. */
+    private fun onPhoneChannelPicked(row: ServiceNowNext) {
+        if (row.serviceReference != session.serviceRef) {
+            zapToService(row)
+        }
+        closeChannelList()
+    }
+
+    /** Portrait docks the picture to the top so the list fits below it. */
+    private fun dockVideo(listShown: Boolean) {
+        if (tvOverlay) {
+            return
+        }
+        activity.dockVideoTop(listShown && channelLayout == PhoneChannelLayout.Portrait)
     }
 
     private fun showTvChannelList() {
@@ -869,20 +927,19 @@ class VideoOverlayController(
         val showBouquets = liveBouquetBarAvailable()
         if (!showChannels && !showBouquets) {
             hideZapOverlays()
+            if (!tvOverlay && servicesViewVisible) {
+                closeChannelList()
+            }
             return
         }
         overlayUiState.zapCurrentRef = session.serviceRef
         overlayUiState.selectedBouquetRef = session.bouquetRef
-        if (showChannels) {
-            val composeZapList = this.composeZapList
+        // The phone panel carries the bouquet header, so it shows for an empty bouquet too.
+        if (showChannels || !tvOverlay) {
             fadeInView(composeZapList)
+            dockVideo(true)
         } else {
             fadeOutView(composeZapList)
-        }
-        if (showBouquets) {
-            fadeInView(composeBouquetBar)
-        } else {
-            fadeOutView(composeBouquetBar)
         }
         autohide()
     }
@@ -890,7 +947,7 @@ class VideoOverlayController(
     private fun hideZapOverlays() {
         if (rootView == null) return
         fadeOutView(composeZapList)
-        fadeOutView(composeBouquetBar)
+        dockVideo(false)
     }
 
     private fun fadeInView(v: View?) {
@@ -901,7 +958,10 @@ class VideoOverlayController(
             v.alpha = 0.0f
             v.visibility = View.VISIBLE
         }
-        v.animate().alpha(if (tvOverlay) 1f else overlayAlpha)
+        // The infobar, top buttons and channel panel draw their own translucent panels.
+        v.animate().alpha(
+            if (tvOverlay || v === overlayRoot || v === composeZapList) 1f else overlayAlpha
+        )
     }
 
     private fun fadeOutView(v: View?) {
@@ -919,7 +979,9 @@ class VideoOverlayController(
     }
 
     fun toggleViews() {
-        if (isOverlaysVisible()) {
+        if (isPhoneChannelListOpen()) {
+            closeChannelList()
+        } else if (isOverlaysVisible()) {
             hideOverlays()
         } else {
             showOverlays()
@@ -1091,7 +1153,7 @@ class VideoOverlayController(
 
         private val LOG_TAG: String = VideoOverlayController::class.java.simpleName
 
-        /** Phone chrome stays see-through so the video shows; TV panels carry their own. */
+        /** Phone channel list and spinner stay see-through; the panels carry their own. */
         var overlayAlpha: Float = 0.85f
 
         var seekStepSize: Float = 0.02f

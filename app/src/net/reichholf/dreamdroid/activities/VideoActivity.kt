@@ -50,12 +50,14 @@ import net.reichholf.dreamdroid.tv.ui.shouldKeepTvStreamingActivity
 import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
+import net.reichholf.dreamdroid.ui.video.DEFAULT_VIDEO_ASPECT
 import net.reichholf.dreamdroid.ui.video.SLEEP_TIMER_EXTEND_MINUTES
 import net.reichholf.dreamdroid.ui.video.SleepTimer
 import net.reichholf.dreamdroid.ui.video.SleepTimerCountdown
 import net.reichholf.dreamdroid.ui.video.VideoOverlayController
 import net.reichholf.dreamdroid.ui.video.VideoPlaybackViewModel
 import net.reichholf.dreamdroid.ui.video.VideoSnackbarHost
+import net.reichholf.dreamdroid.ui.video.videoTopTranslation
 import net.reichholf.dreamdroid.video.PIP_ASPECT_RATIO_SCALE
 import net.reichholf.dreamdroid.video.PipRect
 import net.reichholf.dreamdroid.video.PlayRequest
@@ -102,6 +104,17 @@ class VideoActivity :
     private var videoWidth: Int = 0
     private var videoHeight: Int = 0
 
+    /** Width / height of the picture as it shows; 16:9 until the engine reports it. */
+    val videoAspect: Float
+        get() = if (videoWidth > 0 && videoHeight > 0) {
+            videoWidth.toFloat() / videoHeight
+        } else {
+            DEFAULT_VIDEO_ASPECT
+        }
+
+    /** The picture sits at the top of [playerContainer] instead of its centre. */
+    private var videoDockedTop: Boolean = false
+
     /** Audio focus and the media session live while [playerAttached]. */
     private var audioFocus: PlaybackAudioFocus? = null
     private var sessionPlayer: VideoSessionPlayer? = null
@@ -116,6 +129,7 @@ class VideoActivity :
     private val containerLayoutListener =
         View.OnLayoutChangeListener { _, l, t, r, b, oldL, oldT, oldR, oldB ->
             val moved = l != oldL || t != oldT || r != oldR || b != oldB
+            if (moved) applyVideoDock(animate = false)
             // In PiP the container is the PiP window; its bounds are no source for the hint.
             if (moved && !isInPictureInPictureMode) updatePipParams()
         }
@@ -414,10 +428,13 @@ class VideoActivity :
 
     /** The picture's rect inside the container, in window coordinates. */
     private fun pictureSourceRectHint(): Rect? {
+        val view = playerContainer ?: return null
         val visible = Rect()
         // Writes the unclipped local bounds first, so only true gives a usable global rect.
-        if (playerContainer?.getGlobalVisibleRect(visible) != true) return null
-        val container = PipRect(visible.left, visible.top, visible.right, visible.bottom)
+        if (!view.getGlobalVisibleRect(visible)) return null
+        // Docked to the top, the container reaches above the window and is clipped there.
+        val top = if (view.translationY < 0f) visible.bottom - view.height else visible.top
+        val container = PipRect(visible.left, top, visible.right, visible.bottom)
         val hint = pictureInPictureSourceRectHint(container, videoWidth, videoHeight)
             ?: return null
         return Rect(hint.left, hint.top, hint.right, hint.bottom)
@@ -442,8 +459,11 @@ class VideoActivity :
         false
     }
 
+    /** The overlay's PiP button: false when the system refuses. */
+    fun enterPictureInPicture(): Boolean = doEnterPip()
+
     /** PiP needs the system feature; without it every PiP call is rejected. */
-    private fun pictureInPictureSupported(): Boolean =
+    fun pictureInPictureSupported(): Boolean =
         packageManager.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE)
 
     @TargetApi(Build.VERSION_CODES.R)
@@ -476,9 +496,36 @@ class VideoActivity :
         }
         videoWidth = (layout.visibleWidth * sar).toInt()
         videoHeight = layout.visibleHeight
+        overlay?.onVideoAspectChanged(videoAspect)
+        applyVideoDock(animate = false)
         if (playerAttached) {
             // The size arrives after Playing; PiP needs it for the aspect ratio and hint.
             updatePipParams()
+        }
+    }
+
+    /** Moves the picture to the top of the screen, for the channel list below it, or back. */
+    fun dockVideoTop(docked: Boolean) {
+        if (docked == videoDockedTop) return
+        videoDockedTop = docked
+        applyVideoDock(animate = !isInPictureInPictureMode) {
+            if (playerAttached && !isInPictureInPictureMode) updatePipParams()
+        }
+    }
+
+    private fun applyVideoDock(animate: Boolean, onDone: () -> Unit = {}) {
+        val container = playerContainer ?: return
+        val target = if (videoDockedTop && !isInPictureInPictureMode) {
+            videoTopTranslation(container.width, container.height, videoAspect)
+        } else {
+            0f
+        }
+        container.animate().cancel()
+        if (animate && container.translationY != target) {
+            container.animate().translationY(target).withEndAction(onDone)
+        } else {
+            container.translationY = target
+            onDone()
         }
     }
 

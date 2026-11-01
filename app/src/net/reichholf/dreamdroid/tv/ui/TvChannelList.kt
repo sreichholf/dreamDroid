@@ -74,6 +74,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.PiconImage
 import net.reichholf.dreamdroid.helpers.enigma2.Service as ServiceRef
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTvTheme
 import net.reichholf.dreamdroid.ui.theme.dreamDroidTvCardColors
+import net.reichholf.dreamdroid.ui.video.CHANNEL_LIST_CONTEXT_ROWS
 import net.reichholf.dreamdroid.ui.video.VideoOverlayUiState
 import net.reichholf.dreamdroid.ui.video.eventProgress
 
@@ -87,9 +88,6 @@ private val PanelShape = RoundedCornerShape(16.dp)
 private const val PANEL_ALPHA = 0.94f
 private val RowHeight = 62.dp
 private val RowShape = RoundedCornerShape(12.dp)
-
-/** Rows kept above the target when the list scrolls to it, so it does not sit at the edge. */
-private const val SCROLL_CONTEXT_ROWS = 2
 
 /**
  * Player channel list: the shown bouquet as a vertical list docked left, Left/Right switching
@@ -128,7 +126,7 @@ fun TvChannelList(
 
     suspend fun scrollToTarget() {
         if (targetIndex >= 0) {
-            listState.scrollToItem((targetIndex - SCROLL_CONTEXT_ROWS).coerceAtLeast(0))
+            listState.scrollToItem((targetIndex - CHANNEL_LIST_CONTEXT_ROWS).coerceAtLeast(0))
         }
     }
 

@@ -148,6 +148,8 @@
     <string name="powercontrol">Power Control</string>
     <string name="choose_tags">Tags wählen</string>
     <string name="bouquet_overview">Bouquet-Übersicht</string>
+    <string name="previous_bouquet">Vorheriges Bouquet</string>
+    <string name="next_bouquet">Nächstes Bouquet</string>
     <string name="set_default">Als Standard festlegen</string>
     <string name="default_bouquet_set_to">Das Standard-Bouquet ist nun: </string>
     <string name="default_bouquet_not_set">Das Standard-Bouquet konnte nicht gesetzt werden!</string>
@@ -322,6 +324,8 @@
     <string name="player_engine_media3_missing">Auf diesem Gerät nicht unterstützt: %s. Diese Sender laufen mit VLC.</string>
     <string name="player_fell_back_to_vlc">Media3 kann diesen Stream nicht abspielen, VLC übernimmt</string>
     <string name="player_software_decoding">Kein Bild vom Hardware-Decoder, wechsle zur Software-Dekodierung</string>
+    <string name="player_back">Zurück</string>
+    <string name="player_picture_in_picture">Bild-in-Bild</string>
     <string name="track_off">Aus</string>
     <string name="stream_buffer">Stream-Puffer</string>
     <string name="stream_buffer_long">Erhöhen, wenn Streams ruckeln oder abbrechen (%s)</string>

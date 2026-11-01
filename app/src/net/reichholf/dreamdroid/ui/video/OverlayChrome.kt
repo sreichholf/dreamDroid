@@ -15,10 +15,14 @@ data class OverlayProgress(val position: Int, val max: Int)
 /**
  * The overlay's title, buttons, now/next rows and progress bar for what plays. A null [now],
  * [next] or [progress] hides that row or disables the bar. [nowEvent] is the live event
- * behind [now].
+ * behind [now]. [recording] is anything but a live service: a recording or a seekable stream.
+ * A recording's [subtitle] is "service · date" and [remaining] its "−mm:ss" left.
  */
 data class OverlayChrome(
     val title: String,
+    val recording: Boolean,
+    val subtitle: String?,
+    val remaining: String?,
     val showInfoButton: Boolean,
     val showPvrControls: Boolean,
     val seekable: Boolean,
@@ -49,6 +53,9 @@ fun overlayChrome(session: VideoPlaybackUiState, player: PlayerState, nowMs: Lon
 
         else -> OverlayChrome(
             title = title,
+            recording = player.seekable,
+            subtitle = null,
+            remaining = null,
             showInfoButton = false,
             showPvrControls = player.seekable,
             seekable = player.seekable,
@@ -63,9 +70,10 @@ fun overlayChrome(session: VideoPlaybackUiState, player: PlayerState, nowMs: Lon
 private fun recordingChrome(movie: Movie, title: String, player: PlayerState): OverlayChrome {
     val lengthSec = player.lengthMs / 1000
     val durationSec = if (lengthSec > 0) lengthSec else movieLengthSec(movie.length)
+    val positionSec = (durationSec * player.position).toLong().coerceIn(0, durationSec)
     val now = if (durationSec > 0) {
         OverlayRow(
-            start = DateTime.minutesAndSeconds((durationSec * player.position).toLong().toInt()),
+            start = DateTime.minutesAndSeconds(positionSec.toInt()),
             title = movie.serviceName,
             duration = DateTime.minutesAndSeconds(durationSec.toInt())
         )
@@ -74,6 +82,16 @@ private fun recordingChrome(movie: Movie, title: String, player: PlayerState): O
     }
     return OverlayChrome(
         title = movie.title.ifEmpty { title },
+        recording = true,
+        subtitle = listOf(movie.serviceName, movie.timeReadable)
+            .filter { it.isNotEmpty() }
+            .joinToString(" · ")
+            .ifEmpty { null },
+        remaining = if (durationSec > 0) {
+            "\u2212" + DateTime.minutesAndSeconds((durationSec - positionSec).toInt())
+        } else {
+            null
+        },
         showInfoButton = true,
         showPvrControls = player.seekable,
         seekable = player.seekable,
@@ -90,6 +108,9 @@ private fun liveChrome(service: ServiceNowNext, title: String, nowMs: Long): Ove
     val next = service.next?.takeIf { it.title.isNotEmpty() }
     return OverlayChrome(
         title = service.serviceName.ifEmpty { title },
+        recording = false,
+        subtitle = null,
+        remaining = null,
         showInfoButton = true,
         showPvrControls = false,
         seekable = false,
