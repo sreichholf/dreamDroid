@@ -36,6 +36,22 @@ class EnigmaUrlsTest {
     }
 
     @Test
+    fun page_appendsWithAmpersandToAnExistingQuery() {
+        val params = listOf(NameValuePair("sessionid", "abc"))
+        val url = EnigmaUrls.page(httpProfile(), "/web/timercleanup?cleanup=true", params)
+        assertEquals(
+            "http://box.local:80/web/timercleanup?cleanup=true&sessionid=abc",
+            url
+        )
+    }
+
+    @Test
+    fun page_keepsAnExistingQueryWithoutParameters() {
+        val url = EnigmaUrls.page(httpProfile(), "/web/timercleanup?cleanup=true")
+        assertEquals("http://box.local:80/web/timercleanup?cleanup=true", url)
+    }
+
+    @Test
     fun stream_usesTheProfileHost() {
         val profile = streamProfile(streamHost = "dreamdroid.org")
         val url = EnigmaUrls.serviceStream(profile, "1:0:1")

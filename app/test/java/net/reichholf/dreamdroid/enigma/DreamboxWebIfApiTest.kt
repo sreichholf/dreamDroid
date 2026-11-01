@@ -36,19 +36,23 @@ class DreamboxWebIfApiTest {
 
     private val api by lazy { api(WebIfCapabilities()) }
 
-    private fun api(capabilities: WebIfCapabilities, vpsPlugin: VpsPlugin = VpsPlugin.Absent) =
-        DreamboxWebIfApi(
-            EnigmaHttp(
-                Profile().apply {
-                    host = server.hostName
-                    port = server.port
-                },
-                EnigmaOkHttp(),
-                WebIfCapabilitiesRepository()
-            ),
-            capabilities,
-            vpsPlugin
-        )
+    private fun api(
+        capabilities: WebIfCapabilities,
+        vpsPlugin: VpsPlugin = VpsPlugin.Absent,
+        sessionId: String? = null
+    ) = DreamboxWebIfApi(
+        EnigmaHttp(
+            Profile().apply {
+                host = server.hostName
+                port = server.port
+                this.sessionId = sessionId
+            },
+            EnigmaOkHttp(),
+            WebIfCapabilitiesRepository()
+        ),
+        capabilities,
+        vpsPlugin
+    )
 
     @BeforeEach
     fun setUp() {
@@ -285,6 +289,18 @@ class DreamboxWebIfApiTest {
             "/web/timercleanup?cleanup=true",
             server.takeRequest(5, TimeUnit.SECONDS)!!.path
         )
+    }
+
+    @Test
+    fun cleanupKeepsTheCleanupFlagAndTheSessionIdApart() = runBlocking {
+        server.enqueue(MockResponse().setBody(""))
+
+        api(WebIfCapabilities(), sessionId = "abc").cleanupTimers()
+
+        val url = takeUrl()
+        assertEquals("/web/timercleanup", url.encodedPath)
+        assertEquals("true", url.queryParameter("cleanup"))
+        assertEquals("abc", url.queryParameter("sessionid"))
     }
 
     @Test

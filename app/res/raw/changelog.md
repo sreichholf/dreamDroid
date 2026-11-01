@@ -3,6 +3,7 @@
 ## 2.0.471
 * UPD: Improve video player
 * FIX: Recordings in very large folders not loading
+* FIX: Timer cleanup failed with extended security enabled
 
 ## 2.0.470
 * NEW: Restore a backup in the setup assistant

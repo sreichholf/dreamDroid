@@ -105,11 +105,15 @@ object EnigmaUrls {
         if (profile.fileSsl) "https://" else "http://"
 
     private fun withQuery(uri: String, parameters: List<NameValuePair>): String {
-        var path = uri
         val parms = NameValuePair.toString(parameters)
-        if (!path.contains("?")) {
-            path += "?"
+        if (parms.isEmpty()) {
+            return if (uri.contains("?")) uri else "$uri?"
         }
-        return path + parms
+        val separator = when {
+            !uri.contains("?") -> "?"
+            uri.endsWith("?") || uri.endsWith("&") -> ""
+            else -> "&"
+        }
+        return uri + separator + parms
     }
 }
