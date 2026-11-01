@@ -16,27 +16,15 @@
         android:layout_alignParentBottom="true"
         android:fitsSystemWindows="true" />
 
-    <LinearLayout
+    <androidx.compose.ui.platform.ComposeView
+        android:id="@+id/compose_zap_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@id/compose_overlay"
-        android:layout_alignParentTop="true"
-        android:orientation="vertical">
+        android:visibility="gone" />
 
-        <androidx.compose.ui.platform.ComposeView
-            android:id="@+id/compose_bouquet_bar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:visibility="gone" />
-
-        <androidx.compose.ui.platform.ComposeView
-            android:id="@+id/compose_zap_list"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="8dp"
-            android:layout_weight="1"
-            android:clipToPadding="false"
-            android:visibility="gone" />
-    </LinearLayout>
+    <androidx.compose.ui.platform.ComposeView
+        android:id="@+id/compose_top_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true" />
 </RelativeLayout>

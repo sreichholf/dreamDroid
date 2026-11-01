@@ -1,18 +1,34 @@
 package net.reichholf.dreamdroid.ui.video
 
+import android.text.format.DateFormat
 import androidx.activity.ComponentActivity
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.requiredWidth
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asAndroidBitmap
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.SemanticsNodeInteraction
+import androidx.compose.ui.test.assert
+import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsFocused
+import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.captureToImage
+import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
@@ -22,8 +38,11 @@ import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.pressKey
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
+import java.util.Date
 import kotlin.Metadata
 import kotlin.math.abs
 import net.reichholf.dreamdroid.DreamDroid
@@ -32,6 +51,7 @@ import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Movie
 import net.reichholf.dreamdroid.tv.ui.TV_PLAYER_DETAIL_BODY_TAG
 import net.reichholf.dreamdroid.tv.ui.TV_PLAYER_DETAIL_DIALOG_TAG
+import net.reichholf.dreamdroid.tv.ui.nowEventTimes
 import net.reichholf.dreamdroid.ui.epg.EPG_DETAIL_CAPPED_TAG
 import net.reichholf.dreamdroid.ui.movies.MOVIE_DETAIL_CAPPED_TAG
 import net.reichholf.dreamdroid.ui.movies.MOVIE_DETAIL_UNCAPPED_TAG
@@ -56,61 +76,208 @@ class VideoOverlayScreenTest {
     }
 
     @Test
-    fun sampleStateShowsTitleNowNextAndButtons() {
-        val state = VideoOverlayUiState().apply {
-            title = "Das Erste HD"
-            nowStart = "20:15"
-            nowTitle = "Tatort"
-            nowDuration = "90"
-            showNow = true
-            nextStart = "21:45"
-            nextTitle = "Tagesschau"
-            nextDuration = "15"
-            hasNext = true
-            showPvrControls = true
-            progressMax = 100
-            progress = 40
-            progressEnabled = true
-            seekable = true
-            showAudioButton = true
-            showSubtitleButton = true
-            showListButton = true
-            showInfoButton = true
+    fun liveShowsChannelTimesProgrammeClockAndActions() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val state = liveState()
+        setOverlay(state)
+
+        composeRule.onNodeWithText("Das Erste HD").assertIsDisplayed()
+        composeRule.onNodeWithText(nowEventTimes(context, NOW_EVENT, NOW_MS)!!)
+            .assertIsDisplayed()
+        composeRule.onNodeWithText("Wetter vor acht").assertIsDisplayed()
+        composeRule.onNodeWithText("21:45  Tagesschau").assertIsDisplayed()
+        composeRule.onNodeWithTag(VIDEO_OVERLAY_CLOCK_TAG)
+            .assertTextEquals(DateFormat.getTimeFormat(context).format(Date(NOW_MS)))
+        composeRule.onNodeWithTag(VIDEO_OVERLAY_PROGRESS_TAG).assertIsDisplayed()
+        for (label in listOf("Pause", "Audio Tracks", "Subtitles", "Info", "Services")) {
+            composeRule.onNodeWithContentDescription(label)
+                .assertIsDisplayed()
+                .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Button))
         }
+        composeRule.onNodeWithContentDescription("Sleep Timer").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("Seek").assertDoesNotExist()
+        composeRule.onNodeWithContentDescription("Rewind").assertDoesNotExist()
+        composeRule.onNodeWithContentDescription("Forward").assertDoesNotExist()
+    }
+
+    @Test
+    fun liveActionsStartWithPlayPause() {
+        setOverlay(liveState())
+        val play = composeRule.onNodeWithContentDescription("Pause").getUnclippedBoundsInRoot()
+        val audio =
+            composeRule.onNodeWithContentDescription("Audio Tracks").getUnclippedBoundsInRoot()
+        val sleep =
+            composeRule.onNodeWithContentDescription("Sleep Timer").getUnclippedBoundsInRoot()
+        assertTrue(play.right <= audio.left)
+        assertTrue(audio.right <= sleep.left)
+    }
+
+    @Test
+    fun recordingShowsSubtitleSeekBarTimesAndTransportWithoutProgressEdge() {
+        val state = recordingState()
+        setOverlay(state)
+
+        composeRule.onNodeWithText("Tatort: Murot").assertIsDisplayed()
+        composeRule.onNodeWithText("Das Erste HD · So, 27.10. - 20:15").assertIsDisplayed()
+        composeRule.onNodeWithText("34:12").assertIsDisplayed()
+        composeRule.onNodeWithText("−54:08").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("Seek").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("Rewind").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("Play").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("Forward").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("Audio Tracks").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("Info").assertIsDisplayed()
+        composeRule.onNodeWithTag(VIDEO_OVERLAY_PROGRESS_TAG).assertDoesNotExist()
+        composeRule.onNodeWithContentDescription("Services").assertDoesNotExist()
+    }
+
+    @Test
+    fun recordingTransportSitsAboveTheActionsInPortrait() {
+        setOverlay(recordingState(), VideoOverlayLayout.Portrait)
+        val rewind = composeRule.onNodeWithContentDescription("Rewind").getUnclippedBoundsInRoot()
+        val audio =
+            composeRule.onNodeWithContentDescription("Audio Tracks").getUnclippedBoundsInRoot()
+        assertTrue(rewind.bottom <= audio.top)
+    }
+
+    @Test
+    fun recordingTransportAndActionsShareARowInLandscape() {
+        setOverlay(recordingState(), VideoOverlayLayout.Landscape)
+        val rewind = composeRule.onNodeWithContentDescription("Rewind").getUnclippedBoundsInRoot()
+        val audio =
+            composeRule.onNodeWithContentDescription("Audio Tracks").getUnclippedBoundsInRoot()
+        val rewindCenter = (rewind.top + rewind.bottom) / 2
+        val audioCenter = (audio.top + audio.bottom) / 2
+        assertTrue(
+            "rewind $rewind and audio $audio",
+            abs(rewindCenter.value - audioCenter.value) < 2f
+        )
+        assertTrue(rewind.right <= audio.left)
+    }
+
+    @Test
+    fun liveActionsSitBelowTheProgrammeInPortrait() {
+        setOverlay(liveState(), VideoOverlayLayout.Portrait)
+        val next = composeRule.onNodeWithText("21:45  Tagesschau").getUnclippedBoundsInRoot()
+        val play = composeRule.onNodeWithContentDescription("Pause").getUnclippedBoundsInRoot()
+        assertTrue(next.bottom <= play.top)
+    }
+
+    @Test
+    fun liveActionsSitBesideTheProgrammeInLandscape() {
+        setOverlay(liveState(), VideoOverlayLayout.Landscape)
+        val title = composeRule.onNodeWithText("Wetter vor acht").getUnclippedBoundsInRoot()
+        val next = composeRule.onNodeWithText("21:45  Tagesschau").getUnclippedBoundsInRoot()
+        val play = composeRule.onNodeWithContentDescription("Pause").getUnclippedBoundsInRoot()
+        assertTrue("play $play next $next", play.top < next.bottom)
+        assertTrue("play $play title $title", play.left >= title.right)
+    }
+
+    @Test
+    fun narrowLandscapeKeepsTheChannelAndMovesActionsBelowTheProgramme() {
+        setOverlay(liveState(), VideoOverlayLayout.Landscape, landscapeWidth = 640.dp)
+        composeRule.onNodeWithText("Das Erste HD").assertIsDisplayed()
+        val title = composeRule.onNodeWithText("Das Erste HD").getUnclippedBoundsInRoot()
+        assertTrue("title $title", title.right - title.left > 48.dp)
+        val next = composeRule.onNodeWithText("21:45  Tagesschau").getUnclippedBoundsInRoot()
+        val play = composeRule.onNodeWithContentDescription("Pause").getUnclippedBoundsInRoot()
+        assertTrue("play $play next $next", next.bottom <= play.top)
+        for (label in listOf("Audio Tracks", "Subtitles", "Info", "Services", "Sleep Timer")) {
+            composeRule.onNodeWithContentDescription(label).assertIsDisplayed()
+        }
+    }
+
+    @Test
+    fun recordingShowsItsTimesBeforeTheEngineReportsALength() {
+        val state = recordingState().apply {
+            progressMax = 0
+            progress = 0
+        }
+        setOverlay(state)
+        composeRule.onNodeWithContentDescription("Seek").assertDoesNotExist()
+        composeRule.onNodeWithText("34:12").assertIsDisplayed()
+        composeRule.onNodeWithText("\u221254:08").assertIsDisplayed()
+    }
+
+    @Test
+    fun tabletShowsTheProgrammeDescription() {
+        setOverlay(liveState(), VideoOverlayLayout.Tablet)
+        composeRule.onNodeWithText(NOW_EVENT.description).assertIsDisplayed()
+    }
+
+    @Test
+    fun phoneLeavesTheProgrammeDescriptionOut() {
+        setOverlay(liveState(), VideoOverlayLayout.Portrait)
+        composeRule.onNodeWithText(NOW_EVENT.description).assertDoesNotExist()
+    }
+
+    @Test
+    fun hiddenActionsStayHidden() {
+        val state = liveState().apply {
+            showAudioButton = false
+            showSubtitleButton = false
+            showInfoButton = false
+            showListButton = false
+        }
+        setOverlay(state)
+        composeRule.onNodeWithContentDescription("Pause").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("Sleep Timer").assertIsDisplayed()
+        for (label in listOf("Audio Tracks", "Subtitles", "Info", "Services")) {
+            composeRule.onNodeWithContentDescription(label).assertDoesNotExist()
+        }
+
+        composeRule.runOnIdle {
+            state.recording = true
+            state.showPvrControls = false
+        }
+        composeRule.onNodeWithContentDescription("Pause").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("Sleep Timer").assertIsDisplayed()
+        for (label in listOf("Rewind", "Forward", "Audio Tracks", "Subtitles", "Info")) {
+            composeRule.onNodeWithContentDescription(label).assertDoesNotExist()
+        }
+    }
+
+    @Test
+    fun actionsReportClicks() {
+        val clicks = mutableListOf<String>()
         composeRule.setContent {
             DreamDroidTheme {
                 VideoOverlayScreen(
-                    state = state,
-                    onPlay = {},
+                    state = liveState(),
+                    onPlay = { clicks += "play" },
                     onRewind = {},
                     onForward = {},
-                    onInfo = {},
-                    onList = {},
-                    onAudio = {},
-                    onSubtitle = {},
-                    onSleepTimer = {},
-                    onSeekChange = {}
+                    onInfo = { clicks += "info" },
+                    onList = { clicks += "list" },
+                    onAudio = { clicks += "audio" },
+                    onSubtitle = { clicks += "subtitle" },
+                    onSleepTimer = { clicks += "sleep" },
+                    onSeekChange = {},
+                    layout = VideoOverlayLayout.Portrait,
+                    nowMs = NOW_MS
                 )
             }
         }
-        composeRule.onNodeWithText("Das Erste HD").assertIsDisplayed()
-        composeRule.onNodeWithText("Tatort").assertIsDisplayed()
-        composeRule.onNodeWithText("Tagesschau").assertIsDisplayed()
-        composeRule.onNodeWithContentDescription("Play").assertIsDisplayed()
-        composeRule.onNodeWithContentDescription("Rewind").assertIsDisplayed()
-        composeRule.onNodeWithContentDescription("Forward").assertIsDisplayed()
-        composeRule.onNodeWithContentDescription("Info").assertIsDisplayed()
-        composeRule.onNodeWithContentDescription("Services").assertIsDisplayed()
-        composeRule.onNodeWithContentDescription("Audio Tracks").assertIsDisplayed()
-        composeRule.onNodeWithContentDescription("Subtitles").assertIsDisplayed()
-        composeRule.onNodeWithContentDescription("Now").assertIsDisplayed()
-        composeRule.onNodeWithContentDescription("Next").assertIsDisplayed()
+        for (label in listOf(
+            "Pause",
+            "Audio Tracks",
+            "Subtitles",
+            "Info",
+            "Services",
+            "Sleep Timer"
+        )) {
+            composeRule.onNodeWithContentDescription(label).performClick()
+        }
+        composeRule.runOnIdle {
+            assertEquals(listOf("play", "audio", "subtitle", "info", "list", "sleep"), clicks)
+        }
     }
 
     @Test
     fun playButtonShowsPauseOnlyWhilePlayingForward() {
         val state = VideoOverlayUiState().apply {
             title = "Tatort: Recording"
+            recording = true
             showPvrControls = true
             isPlaying = PlayerState(isPlaying = true).playingForward
         }
@@ -141,7 +308,19 @@ class VideoOverlayScreenTest {
         assertPlayPauseShows("Play", absent = "Pause")
     }
 
-    private fun setOverlay(state: VideoOverlayUiState) {
+    private fun setOverlay(
+        state: VideoOverlayUiState,
+        layout: VideoOverlayLayout = VideoOverlayLayout.Portrait,
+        landscapeWidth: Dp = 844.dp
+    ) {
+        // A landscape phone's width, whatever the test device's orientation.
+        val width = if (layout == VideoOverlayLayout.Landscape) {
+            Modifier
+                .wrapContentWidth(Alignment.Start, unbounded = true)
+                .requiredWidth(landscapeWidth)
+        } else {
+            Modifier
+        }
         composeRule.setContent {
             DreamDroidTheme {
                 VideoOverlayScreen(
@@ -154,7 +333,10 @@ class VideoOverlayScreenTest {
                     onAudio = {},
                     onSubtitle = {},
                     onSleepTimer = {},
-                    onSeekChange = {}
+                    onSeekChange = {},
+                    modifier = width,
+                    layout = layout,
+                    nowMs = NOW_MS
                 )
             }
         }
@@ -181,18 +363,22 @@ class VideoOverlayScreenTest {
                     onAudio = {},
                     onSubtitle = {},
                     onSleepTimer = { clicks++ },
-                    onSeekChange = {}
+                    onSeekChange = {},
+                    layout = VideoOverlayLayout.Portrait
                 )
             }
         }
 
         composeRule.onNodeWithContentDescription("Sleep Timer").performClick()
         composeRule.runOnIdle { assertEquals(1, clicks) }
+        composeRule.onNodeWithTag(VIDEO_OVERLAY_SLEEP_BADGE_TAG).assertDoesNotExist()
 
         state.sleepTimer = SleepTimer.Running(29)
         composeRule.onNodeWithContentDescription("Sleep Timer: 29 min. left")
             .assertIsDisplayed()
-        composeRule.onNodeWithText("29").assertIsDisplayed()
+        composeRule.onNodeWithTag(VIDEO_OVERLAY_SLEEP_BADGE_TAG).assertIsDisplayed()
+        // The label says it already; accessibility (the merged tree) does not read the badge.
+        composeRule.onNodeWithText("29").assertDoesNotExist()
     }
 
     @Test
@@ -266,83 +452,125 @@ class VideoOverlayScreenTest {
     }
 
     @Test
-    fun liveTvOverlayKeepsSeeThroughAlpha() {
-        assertEquals(0.85f, VideoOverlayController.overlayAlpha, 0.001f)
+    fun livePanelIsTranslucentSurfaceContainerLowWithAPrimaryProgressEdge() {
+        var panel = Color.Unspecified
+        var primary = Color.Unspecified
+        val state = liveState().apply { progress = 1200 }
+        composeRule.setContent {
+            DreamDroidTheme {
+                panel = MaterialTheme.colorScheme.surfaceContainerLow.copy(alpha = 0.92f)
+                    .compositeOver(Color.Black)
+                primary = MaterialTheme.colorScheme.primary
+                Box(Modifier.background(Color.Black)) {
+                    VideoOverlayScreen(
+                        state = state,
+                        onPlay = {},
+                        onRewind = {},
+                        onForward = {},
+                        onInfo = {},
+                        onList = {},
+                        onAudio = {},
+                        onSubtitle = {},
+                        onSleepTimer = {},
+                        onSeekChange = {},
+                        layout = VideoOverlayLayout.Portrait,
+                        nowMs = NOW_MS
+                    )
+                }
+            }
+        }
+        val bitmap = composeRule.onNodeWithTag(VIDEO_OVERLAY_PANEL_TAG)
+            .captureToImage()
+            .asAndroidBitmap()
+        // The bottom padding strip, below the actions and clear of the rounded corners.
+        val y = bitmap.height - 3
+        var x = bitmap.width / 5
+        while (x < bitmap.width * 4 / 5) {
+            val px = bitmap.getPixel(x, y)
+            assertTrue(
+                "panel pixel #${Integer.toHexString(px)} at $x should be " +
+                    "#${Integer.toHexString(panel.toArgb())}",
+                rgbDistance(px, panel.toArgb()) < 12
+            )
+            x += 7
+        }
+        val edge = bitmap.getPixel(bitmap.width / 4, 1)
+        assertTrue(
+            "progress edge #${Integer.toHexString(edge)} should be primary " +
+                "#${Integer.toHexString(primary.toArgb())}",
+            rgbDistance(edge, primary.toArgb()) < 40
+        )
     }
 
     @Test
-    fun progressContainerUsesSurfaceVariantNotPrimaryContainer() {
-        var surfaceVariant = Color.Unspecified
-        var primaryContainer = Color.Unspecified
-        val state = VideoOverlayUiState().apply {
-            title = "ZDF HD"
-            showNow = true
-            nowStart = "16:10"
-            nowTitle = "Die Rosenheim-Cops"
-            nowDuration = "50"
-            // Live-style chrome: progress and play only (no seek buttons) — the blue nest was most obvious.
-            progressMax = 100
-            progress = 20
-            progressEnabled = true
-            seekable = false
-            showInfoButton = true
-            showListButton = true
-        }
+    fun topBarBackAndPictureInPictureAreButtons() {
+        var backs = 0
+        var pips = 0
         composeRule.setContent {
             DreamDroidTheme {
-                surfaceVariant = MaterialTheme.colorScheme.surfaceVariant
-                primaryContainer = MaterialTheme.colorScheme.primaryContainer
-                VideoOverlayScreen(
-                    state = state,
-                    onPlay = {},
-                    onRewind = {},
-                    onForward = {},
-                    onInfo = {},
-                    onList = {},
-                    onAudio = {},
-                    onSubtitle = {},
-                    onSleepTimer = {},
-                    onSeekChange = {}
+                VideoOverlayTopBar(
+                    onBack = { backs++ },
+                    onPictureInPicture = { pips++ },
+                    layout = VideoOverlayLayout.Portrait
                 )
             }
         }
-        composeRule.onNodeWithTag(VIDEO_OVERLAY_PROGRESS_CONTAINER_TAG).assertIsDisplayed()
-        val bitmap = composeRule
-            .onNodeWithTag(VIDEO_OVERLAY_PROGRESS_CONTAINER_TAG)
-            .captureToImage()
-            .asAndroidBitmap()
-        val expected = surfaceVariant.toArgb()
-        val wrong = primaryContainer.toArgb()
-        // Sample the top padding strip (away from the Slider track/thumb).
-        var nearSurface = 0
-        var nearPrimary = 0
-        var samples = 0
-        val yMax = (bitmap.height * 0.15f).toInt().coerceAtLeast(1).coerceAtMost(bitmap.height)
-        var y = 0
-        while (y < yMax) {
-            var x = 0
-            while (x < bitmap.width) {
-                val px = bitmap.getPixel(x, y)
-                if (rgbDistance(px, expected) < rgbDistance(px, wrong)) {
-                    nearSurface++
-                }
-                if (rgbDistance(px, wrong) < 40) {
-                    nearPrimary++
-                }
-                samples++
-                x += 3
-            }
-            y += 1
+        val isButton = SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Button)
+        composeRule.onNodeWithContentDescription("Back")
+            .assertIsDisplayed()
+            .assert(isButton)
+            .assertHasClickAction()
+            .performClick()
+        composeRule.onNodeWithContentDescription("Picture in picture")
+            .assertIsDisplayed()
+            .assert(isButton)
+            .assertHasClickAction()
+            .performClick()
+        composeRule.runOnIdle {
+            assertEquals(1, backs)
+            assertEquals(1, pips)
         }
-        assertTrue("expected samples along progress nest padding", samples > 10)
-        assertTrue(
-            "progress nest should match surfaceVariant, not primaryContainer " +
-                "(nearSurface=$nearSurface nearPrimary=$nearPrimary samples=$samples " +
-                "surfaceVariant=#${Integer.toHexString(
-                    expected
-                )} primaryContainer=#${Integer.toHexString(wrong)})",
-            nearSurface > samples / 2 && nearPrimary < samples / 4
-        )
+        val back = composeRule.onNodeWithContentDescription("Back").getUnclippedBoundsInRoot()
+        val pip = composeRule.onNodeWithContentDescription("Picture in picture")
+            .getUnclippedBoundsInRoot()
+        assertTrue(back.right < pip.left)
+        assertTrue(back.right - back.left >= 48.dp && pip.right - pip.left >= 48.dp)
+    }
+
+    @Test
+    fun openChannelListKeepsOnlyTheTabletPictureInPicture() {
+        var layout by mutableStateOf(VideoOverlayLayout.Tablet)
+        composeRule.setContent {
+            DreamDroidTheme {
+                VideoOverlayTopBar(
+                    onBack = {},
+                    onPictureInPicture = {},
+                    channelListOpen = true,
+                    layout = layout
+                )
+            }
+        }
+        composeRule.onNodeWithContentDescription("Picture in picture").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("Back").assertDoesNotExist()
+
+        composeRule.runOnIdle { layout = VideoOverlayLayout.Portrait }
+        composeRule.onNodeWithContentDescription("Picture in picture").assertDoesNotExist()
+        composeRule.onNodeWithContentDescription("Back").assertDoesNotExist()
+    }
+
+    @Test
+    fun topBarHidesPictureInPictureWhereUnsupported() {
+        composeRule.setContent {
+            DreamDroidTheme {
+                VideoOverlayTopBar(
+                    onBack = {},
+                    onPictureInPicture = null,
+                    layout = VideoOverlayLayout.Landscape
+                )
+            }
+        }
+        composeRule.onNodeWithContentDescription("Back").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("Picture in picture").assertDoesNotExist()
     }
 
     @Test
@@ -518,8 +746,43 @@ class VideoOverlayScreenTest {
         composeRule.onNodeWithTag(MOVIE_DETAIL_CAPPED_TAG).assertDoesNotExist()
     }
 
+    private fun liveState() = VideoOverlayUiState().apply {
+        title = "Das Erste HD"
+        nowTitle = "Wetter vor acht"
+        nowStart = "20:15"
+        showNow = true
+        nowEvent = NOW_EVENT
+        nextStart = "21:45"
+        nextTitle = "Tagesschau"
+        hasNext = true
+        progressMax = 1800
+        progress = 600
+        progressEnabled = true
+        isPlaying = true
+        showAudioButton = true
+        showSubtitleButton = true
+        showInfoButton = true
+        showListButton = true
+    }
+
+    private fun recordingState() = VideoOverlayUiState().apply {
+        title = "Tatort: Murot"
+        recording = true
+        subtitle = "Das Erste HD · So, 27.10. - 20:15"
+        nowStart = "34:12"
+        remaining = "−54:08"
+        showPvrControls = true
+        progressMax = 5280
+        progress = 2052
+        progressEnabled = true
+        seekable = true
+        showAudioButton = true
+        showInfoButton = true
+    }
+
     private fun seekableState(progress: Int) = VideoOverlayUiState().apply {
         title = "Recording"
+        recording = true
         showPvrControls = true
         progressMax = 100
         this.progress = progress
@@ -540,7 +803,8 @@ class VideoOverlayScreenTest {
                     onAudio = {},
                     onSubtitle = {},
                     onSleepTimer = {},
-                    onSeekChange = onSeekChange
+                    onSeekChange = onSeekChange,
+                    layout = VideoOverlayLayout.Portrait
                 )
             }
         }
@@ -560,5 +824,18 @@ class VideoOverlayScreenTest {
         val bg = (b shr 8) and 0xff
         val bb = b and 0xff
         return abs(ar - br) + abs(ag - bg) + abs(ab - bb)
+    }
+
+    private companion object {
+        const val START_SEC = 1_700_000_000L
+        const val NOW_MS = (START_SEC + 600) * 1000
+
+        val NOW_EVENT = Event(
+            eventId = "1",
+            title = "Wetter vor acht",
+            description = "Aussichten fuer das Wochenende",
+            start = START_SEC.toString(),
+            duration = "1800"
+        )
     }
 }

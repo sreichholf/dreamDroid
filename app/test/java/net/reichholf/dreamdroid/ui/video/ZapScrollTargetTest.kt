@@ -1,50 +1,32 @@
 package net.reichholf.dreamdroid.ui.video
 
-import net.reichholf.dreamdroid.ui.services.ServiceListItem
-import net.reichholf.dreamdroid.ui.services.ServiceRowKind
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 
 class ZapScrollTargetTest {
-    @Test
-    fun withoutSectionHeadersTheRowItselfIsTheTarget() {
-        val items = listOf(channel(0), channel(1), channel(2))
-
-        assertEquals(2, zapScrollTarget(items, 2))
-    }
-
-    @Test
-    fun underASectionHeaderTheRowBeforeGoesUnderIt() {
-        val items = listOf(marker(0, "Doku"), channel(1), channel(2), channel(3))
-
-        assertEquals(0, zapScrollTarget(items, 1))
-        assertEquals(2, zapScrollTarget(items, 3))
-    }
-
-    @Test
-    fun spacersAreSkipped() {
-        val items = listOf(marker(0, "Doku"), channel(1), spacer(2), channel(3))
-
-        assertEquals(1, zapScrollTarget(items, 3))
-    }
-
-    @Test
-    fun aSpacerAloneIsNoSectionHeader() {
-        val items = listOf(spacer(0), channel(1))
-
-        assertEquals(1, zapScrollTarget(items, 1))
-    }
-
-    private fun channel(index: Int) = ServiceListItem(
-        index,
-        "1:0:1:$index:1:1:1:0:0:0:",
-        "Channel $index",
-        ServiceRowKind.CHANNEL
+    private val refs = listOf(
+        "1:64:0:0:0:0:0:0:0:0::Doku",
+        "1:0:1:1:1:1:1:0:0:0:",
+        "1:0:1:2:1:1:1:0:0:0:",
+        "1:0:1:3:1:1:1:0:0:0:",
+        "1:0:1:4:1:1:1:0:0:0:"
     )
 
-    private fun marker(index: Int, name: String) =
-        ServiceListItem(index, "1:64:$index:0:0:0:0:0:0:0::$name", name, ServiceRowKind.MARKER)
+    @Test
+    fun rowsAboveThePlayingChannelStayInView() {
+        assertEquals(2, zapScrollTarget(refs, "1:0:1:4:1:1:1:0:0:0:"))
+    }
 
-    private fun spacer(index: Int) =
-        ServiceListItem(index, "1:832:$index:0:0:0:0:0:0:0:", "", ServiceRowKind.MARKER)
+    @Test
+    fun nearTheTopTheListStartsAtTheFirstRow() {
+        assertEquals(0, zapScrollTarget(refs, "1:0:1:1:1:1:1:0:0:0:"))
+    }
+
+    @Test
+    fun noTargetWithoutAPlayingChannelInTheList() {
+        assertNull(zapScrollTarget(refs, "1:0:1:99:1:1:1:0:0:0:"))
+        assertNull(zapScrollTarget(refs, null))
+        assertNull(zapScrollTarget(refs, refs.first()))
+    }
 }
