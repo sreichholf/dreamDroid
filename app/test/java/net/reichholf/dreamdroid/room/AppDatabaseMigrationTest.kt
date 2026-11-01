@@ -76,6 +76,13 @@ class AppDatabaseMigrationTest {
     fun migratesV14ProfileWithNoHiddenBouquets() {
         withMigratedV12 { connection ->
             runBlocking {
+                AppDatabase.migration12To13(
+                    PiconSeed(
+                        online = false,
+                        onlineUseName = false,
+                        onlinePath = Profile.DEFAULT_PICON_PATH
+                    )
+                ).migrate(connection)
                 AppDatabase.MIGRATION_13_14.migrate(connection)
                 AppDatabase.MIGRATION_14_15.migrate(connection)
             }

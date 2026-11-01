@@ -9,6 +9,7 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import kotlinx.coroutines.withTimeout
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver
 import net.reichholf.dreamdroid.testutil.RADIO_ROOTS
@@ -51,7 +52,7 @@ class ProfileBouquetsViewModelTest {
     }
 
     @Test
-    fun loadsBothBouquetListsAndSavesAToggle() = runTest {
+    fun loadsBothBouquetListsAndSavesAToggle() = runBlocking {
         val viewModel = viewModel()
 
         viewModel.load(EpgTestReceiver.PROFILE_ID)
@@ -66,6 +67,9 @@ class ProfileBouquetsViewModelTest {
         val hidden = viewModel.uiState.first { sports.reference in it.hidden }
 
         assertEquals(setOf(sports.reference), hidden.hidden)
+        withTimeout(5_000L) {
+            profiles.current.first { it?.hiddenBouquets() == setOf(sports.reference) }
+        }
         assertEquals(
             setOf(sports.reference),
             profiles.profile(EpgTestReceiver.PROFILE_ID)!!.hiddenBouquets()
@@ -75,6 +79,9 @@ class ProfileBouquetsViewModelTest {
         val shown = viewModel.uiState.first { it.hidden.isEmpty() }
 
         assertTrue(shown.hidden.isEmpty())
+        withTimeout(5_000L) {
+            profiles.current.first { it?.hiddenBouquets().orEmpty().isEmpty() }
+        }
         assertTrue(profiles.profile(EpgTestReceiver.PROFILE_ID)!!.hiddenBouquets().isEmpty())
     }
 
