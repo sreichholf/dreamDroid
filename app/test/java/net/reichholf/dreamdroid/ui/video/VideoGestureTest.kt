@@ -66,10 +66,12 @@ class SwipeTargetTest {
 
     @Test
     fun theBandsAreCutWithIntegerDivision() {
+        // 3 * 1000 / 7 truncates to 428 and 4 * 1000 / 7 to 571; with float bounds the two
+        // cases just above each bound would land in the opposite band.
         assertEquals(SwipeTarget.Brightness, target(427.9f, 10f, 80f, widthPixels = 1000))
         assertEquals(SwipeTarget.Ignored, target(428.3f, 10f, 80f, widthPixels = 1000))
-        assertEquals(SwipeTarget.Ignored, target(571.2f, 10f, 80f, widthPixels = 1000))
-        assertEquals(SwipeTarget.Volume, target(572f, 10f, 80f, widthPixels = 1000))
+        assertEquals(SwipeTarget.Ignored, target(571f, 10f, 80f, widthPixels = 1000))
+        assertEquals(SwipeTarget.Volume, target(571.2f, 10f, 80f, widthPixels = 1000))
     }
 
     @Test

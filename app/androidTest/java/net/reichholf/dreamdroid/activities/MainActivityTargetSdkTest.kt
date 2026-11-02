@@ -3,7 +3,7 @@ package net.reichholf.dreamdroid.activities
 import android.Manifest
 import android.content.pm.PackageManager
 import android.graphics.Rect
-import android.view.View
+import android.view.ViewGroup
 import android.view.ViewTreeObserver
 import androidx.core.content.ContextCompat
 import androidx.core.view.WindowInsetsCompat
@@ -106,7 +106,7 @@ class MainActivityTargetSdkTest {
                         navigationBars.left >= 0 && navigationBars.right >= 0
                 )
 
-                val content = activity.findViewById<View>(android.R.id.content)
+                val content = activity.findViewById<ViewGroup>(android.R.id.content)
                 assertNotNull("the activity has no content view", content)
                 assertTrue(
                     "the content view is not laid out: ${content.width}x${content.height}",
