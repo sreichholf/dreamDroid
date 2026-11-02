@@ -323,7 +323,8 @@ tasks.withType<Test>().configureEach {
  * The class dirs are AGP 9's build intermediates; if AGP moves them this fails loudly here
  * instead of reporting zero.
  */
-// Same generated code the Kover report leaves out, so the two numbers stay comparable.
+// R, Hilt and BuildConfig classes carry no line data, so they change no percentage — they
+// only add entries to the report's class list, which is why the R jar is not passed at all.
 val GENERATED = listOf(
     "**/R.class",
     "**/R$*.class",
