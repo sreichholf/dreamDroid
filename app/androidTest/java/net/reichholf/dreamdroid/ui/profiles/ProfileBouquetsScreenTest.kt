@@ -143,6 +143,6 @@ class ProfileBouquetsScreenTest {
     private companion object {
         val FAVOURITES = Service("favourites", "Favourites")
         val SPORTS = Service("sports", "Sports")
-        val RADIO = Service("radio", "Radio")
+        val RADIO = Service("radio", "Radio One")
     }
 }
