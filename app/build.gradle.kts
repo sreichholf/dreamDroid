@@ -161,6 +161,11 @@ android {
             testInstrumentationRunnerArguments["shardIndex"] =
                 providers.gradleProperty("testShardIndex").get()
         }
+        // One run on the target SDK (androidTestTargetSdk in android-ci.yml) runs the classes
+        // whose behaviour depends on the platform version instead of the whole suite.
+        providers.gradleProperty("testClassFilter").orNull?.let { classes ->
+            testInstrumentationRunnerArguments["class"] = classes
+        }
         multiDexEnabled = true
         buildConfigField("int", "MIN_SDK", "26")
     }
