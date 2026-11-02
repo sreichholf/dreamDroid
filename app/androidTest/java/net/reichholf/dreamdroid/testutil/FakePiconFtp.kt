@@ -28,6 +28,7 @@ class FakePiconFtp @Inject constructor() : PiconFtp {
 
     var picons: List<String> = emptyList()
     var contents: Map<String, ByteArray> = emptyMap()
+    var failRetrieveFor: Set<String> = emptySet()
     var loginReply = FtpReply(ok = true, code = 230, text = "User logged in")
     var directoryReply = FtpReply(ok = true, code = 250, text = "Directory changed")
     var retrieveReply = FtpReply(ok = true, code = 226, text = "Transfer complete")
@@ -50,6 +51,9 @@ class FakePiconFtp @Inject constructor() : PiconFtp {
 
     override fun retrieve(name: String, to: OutputStream): FtpReply {
         retrieved += name
+        if (name in failRetrieveFor) {
+            return FtpReply(ok = false, code = 550, text = "No such file")
+        }
         if (retrieveReply.ok) {
             contents[name]?.let { to.write(it) }
         }

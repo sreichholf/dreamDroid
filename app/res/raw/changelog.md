@@ -2,6 +2,7 @@
 
 ## 2.0.471
 * UPD: Improve video player
+* UPD: Picon sync reports a partial download
 * FIX: Picon sync reported success when nothing was downloaded
 * FIX: Recordings in very large folders not loading
 * FIX: Timer cleanup failed with extended security enabled

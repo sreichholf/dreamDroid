@@ -11,7 +11,6 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
-import androidx.preference.PreferenceManager
 import androidx.work.CoroutineWorker
 import androidx.work.ForegroundInfo
 import androidx.work.WorkerParameters
@@ -22,9 +21,9 @@ import dagger.hilt.components.SingletonComponent
 import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.ProfileRepository
+import net.reichholf.dreamdroid.data.SettingsRepository
 import net.reichholf.dreamdroid.helpers.enigma2.Picon
 
 /**
@@ -66,8 +65,7 @@ class PiconSyncWorker(appContext: Context, params: WorkerParameters) :
             ?: return PiconSyncResult(0, 0, applicationContext.getString(R.string.no_profile_title))
         val host = profile.host?.takeIf { it.isNotEmpty() }
             ?: return PiconSyncResult(0, 0, applicationContext.getString(R.string.error))
-        val remotePath = PreferenceManager.getDefaultSharedPreferences(applicationContext)
-            .getString(DreamDroid.PREFS_KEY_SYNC_PICONS_PATH, DEFAULT_REMOTE_PATH)
+        val remotePath = entryPoint.settingsRepository().current().syncPiconsPath
         val localDir = File(Picon.localDir(applicationContext))
         Log.i(TAG, "Syncing from $remotePath to $localDir")
         val job = PiconSyncJob(
@@ -102,6 +100,12 @@ class PiconSyncWorker(appContext: Context, params: WorkerParameters) :
 
             result.downloadedNothing ->
                 applicationContext.getString(R.string.picon_sync_failed)
+
+            result.downloadedFiles < result.totalFiles -> applicationContext.getString(
+                R.string.picon_sync_partial,
+                result.downloadedFiles,
+                result.totalFiles
+            )
 
             else -> applicationContext.getString(
                 R.string.picon_sync_finished,
@@ -159,7 +163,6 @@ class PiconSyncWorker(appContext: Context, params: WorkerParameters) :
 
     companion object {
         private const val TAG = "PiconSyncWorker"
-        private const val DEFAULT_REMOTE_PATH = "/usr/share/enigma2/picon"
     }
 }
 
@@ -168,6 +171,9 @@ class PiconSyncWorker(appContext: Context, params: WorkerParameters) :
 @InstallIn(SingletonComponent::class)
 interface PiconSyncWorkerEntryPoint {
     fun profileRepository(): ProfileRepository
+
+    /** The remote picon path is a setting; the screen and this sync read the same one. */
+    fun settingsRepository(): SettingsRepository
 
     /** One client per sync; the sync closes it. */
     fun piconFtp(): PiconFtp
