@@ -323,6 +323,18 @@ tasks.withType<Test>().configureEach {
  * The class dirs are AGP 9's build intermediates; if AGP moves them this fails loudly here
  * instead of reporting zero.
  */
+// Same generated code the Kover report leaves out, so the two numbers stay comparable.
+val GENERATED = listOf(
+    "**/R.class",
+    "**/R$*.class",
+    "**/BuildConfig.class",
+    "**/*_Factory.class",
+    "**/*_Impl.class",
+    "**/*_HiltModules*",
+    "**/Hilt_*.class",
+    "**/*_MembersInjector.class",
+)
+
 tasks.register<JacocoReport>("instrumentedCoverageReport") {
     group = "verification"
     description = "Coverage of the instrumented suite, from coverage-in/**/*.ec."
@@ -336,18 +348,12 @@ tasks.register<JacocoReport>("instrumentedCoverageReport") {
             layout.buildDirectory.dir(
                 "intermediates/built_in_kotlinc/googleDebug/compileGoogleDebugKotlin/classes",
             ),
-        ),
+        ) { exclude(GENERATED) },
         fileTree(
             layout.buildDirectory.dir(
                 "intermediates/javac/googleDebug/compileGoogleDebugJavaWithJavac/classes",
             ),
-        ),
-        file(
-            layout.buildDirectory.file(
-                "intermediates/compile_and_runtime_r_class_jar/googleDebug/" +
-                    "processGoogleDebugResources/R.jar",
-            ),
-        ),
+        ) { exclude(GENERATED) },
     )
     sourceDirectories.setFrom(files("src"))
     reports {
