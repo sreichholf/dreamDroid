@@ -317,9 +317,11 @@ jobs:
       # API 37 ships as the platform package android-37.0; the emulator runner takes the
       # same string and looks up system-images;android-37.0;<target>;<arch>.
       AVD_API_LEVEL: "37.0"
-      # Comma-separated with no spaces: the runner parses `class` by splitting on commas and
-      # does not trim, so "a, b" would look for a class whose name starts with a space.
-      TARGET_SDK_CLASSES: "net.reichholf.dreamdroid.helpers.LocalNetworkPermissionTest,net.reichholf.dreamdroid.activities.LauncherIntentTest,net.reichholf.dreamdroid.ui.nav.PhoneNavDestinationViewportTest,net.reichholf.dreamdroid.ui.nav.ShellWindowSizeClassTest"
+      # Plain JUnit only: on API 37 every Compose test dies in Espresso.onIdle, because
+      # androidx.test.espresso's idling resource calls the removed
+      # InputManager.getInstance(). These classes exercise the platform paths that differ on
+      # the targetSdk. No spaces: the runner splits on commas and does not trim.
+      TARGET_SDK_CLASSES: "net.reichholf.dreamdroid.helpers.LocalNetworkPermissionTest,net.reichholf.dreamdroid.activities.LauncherIntentTest"
     steps:
       - name: Checkout
         uses: actions/checkout@v5
