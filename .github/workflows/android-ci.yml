@@ -210,8 +210,12 @@ jobs:
 
       # Build before the emulator boots so it does not compete for the runner's CPUs.
       # -Pci disables ABI splits so connectedAndroidTest installs one APK.
+      # -PinstrumentCoverage: JaCoCo instruments the app, and the connected run pulls the
+      # coverage.ec off the device; the `coverage` job merges the three shards' files.
       - name: Build googleDebug + androidTest APKs
-        run: ./gradlew -Pci --no-configuration-cache :app:assembleGoogleDebug :app:assembleGoogleDebugAndroidTest
+        run: >
+          ./gradlew -Pci -PinstrumentCoverage --no-configuration-cache
+          :app:assembleGoogleDebug :app:assembleGoogleDebugAndroidTest
 
       # Boot from a cached AVD snapshot instead of cold booting
       # (reactivecircus/android-emulator-runner README, "Caching AVD").
@@ -265,7 +269,7 @@ jobs:
           script: |
             adb wait-for-device
             timeout 60 bash -c 'until adb shell pm path android | grep -q package:; do sleep 2; done'
-            ./gradlew -Pci --no-configuration-cache $SHARD_ARGS :app:connectedGoogleDebugAndroidTest
+            ./gradlew -Pci -PinstrumentCoverage --no-configuration-cache $SHARD_ARGS :app:connectedGoogleDebugAndroidTest
 
       - name: Upload instrumented test reports
         if: always()
@@ -275,6 +279,78 @@ jobs:
           path: |
             app/build/reports/androidTests/connected/
             app/build/outputs/androidTest-results/
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Collect shard coverage
+        if: always()
+        run: |
+          mkdir -p coverage-out
+          find app/build -name '*.ec' -exec cp {} coverage-out/ \;
+          echo "coverage files: $(ls -1 coverage-out | wc -l)"
+
+      - name: Upload shard coverage
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: instrumented-coverage-shard-${{ matrix.shard }}
+          path: coverage-out/
+          if-no-files-found: ignore
+          retention-days: 14
+
+  # One report for the whole instrumented suite: each shard uploads the coverage.ec its run
+  # pulled off the device, and JacocoReport merges them (it takes a file collection).
+  coverage:
+    name: Instrumented coverage
+    needs: androidTest
+    # Runs after a real emulator run, including a failed one, but not on PRs where the
+    # shards are skipped.
+    if: always() && needs.androidTest.result != 'skipped'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up build
+        uses: ./.github/actions/setup-build
+
+      - name: Download shard coverage
+        uses: actions/download-artifact@v7
+        with:
+          pattern: instrumented-coverage-shard-*
+          path: app/coverage-in
+
+      - name: Report
+        run: |
+          if ! compgen -G "app/coverage-in/**/*.ec" > /dev/null; then
+            echo "No shard coverage was uploaded; nothing to merge." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          # The report needs the compiled classes, not the instrumented APK.
+          ./gradlew --no-configuration-cache :app:instrumentedCoverageReport
+          report=app/build/reports/instrumented-coverage/report.xml
+          awk -v report="$report" '
+            /<counter type="LINE"/ { line = $0 }
+            END {
+              if (line == "") { print "No LINE counter in " report; exit }
+              if (match(line, /missed="[0-9]+"/)) {
+                missed = substr(line, RSTART, RLENGTH); gsub(/[^0-9]/, "", missed)
+              }
+              if (match(line, /covered="[0-9]+"/)) {
+                covered = substr(line, RSTART, RLENGTH); gsub(/[^0-9]/, "", covered)
+              }
+              total = missed + covered
+              printf "Instrumented line coverage: %.1f%% (%d/%d lines)\n",
+                100 * covered / total, covered, total
+            }' "$report" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: instrumented-coverage-report
+          path: app/build/reports/instrumented-coverage/
           if-no-files-found: ignore
           retention-days: 14
 
