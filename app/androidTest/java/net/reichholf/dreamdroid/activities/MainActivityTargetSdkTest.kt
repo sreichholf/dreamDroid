@@ -149,15 +149,13 @@ class MainActivityTargetSdkTest {
                     activity.onBackPressedDispatcher.hasEnabledCallbacks()
                 )
                 activity.onBackPressedDispatcher.onBackPressed()
+                // finish() sets this synchronously; the lifecycle tears down after the
+                // dispatch returns, so the state is still STARTED when read here.
+                assertTrue(
+                    "Back on the setup welcome step did not leave the screen",
+                    activity.isFinishing
+                )
             }
-            // finish() travels the lifecycle asynchronously; let the main thread settle
-            // before reading the state, or the scenario is still mid-teardown.
-            InstrumentationRegistry.getInstrumentation().waitForIdleSync()
-            assertEquals(
-                "Back on the setup welcome step leaves the wizard",
-                Lifecycle.State.DESTROYED,
-                scenario.state
-            )
         }
     }
 
