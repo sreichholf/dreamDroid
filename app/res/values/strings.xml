@@ -305,6 +305,7 @@
     <string name="connected">Connected</string>
     <string name="getting_list_of_files">Getting list of files</string>
     <string name="picon_sync_finished">Successfully downloaded %s picons</string>
+    <string name="picon_sync_partial">Downloaded %1$s of %2$s picons</string>
     <string name="picon_sync_failed">No picon could be downloaded</string>
     <string name="drawer_open">Open navigation drawer</string>
     <string name="enable_animations_long">Enable additional view animations</string>

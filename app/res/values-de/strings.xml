@@ -255,6 +255,7 @@
     <string name="connected">Verbunden</string>
     <string name="getting_list_of_files">Hole Liste von Dateien</string>
     <string name="picon_sync_finished">%s Picons wurden erfolgreich heruntergeladen</string>
+    <string name="picon_sync_partial">%1$s von %2$s Picons heruntergeladen</string>
     <string name="picon_sync_failed">Es konnte kein Picon heruntergeladen werden</string>
     <string name="drawer_open">Navigationsmenü öffnen</string>
     <string name="enable_animations_long">Zusätzliche Animationen für diverse Aktionen aktivieren</string>
