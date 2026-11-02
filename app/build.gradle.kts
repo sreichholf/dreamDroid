@@ -113,6 +113,7 @@ dependencies {
     androidTestImplementation(libs.androidx.test.rules)
     androidTestImplementation(libs.okhttp.mockwebserver)
     androidTestImplementation(libs.hilt.android.testing)
+    androidTestImplementation(libs.work.testing)
     kspAndroidTest(libs.hilt.compiler)
     testImplementation(platform(libs.junit.bom))
     testImplementation(libs.junit.jupiter)
