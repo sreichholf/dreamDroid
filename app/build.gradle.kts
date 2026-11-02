@@ -14,11 +14,26 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
+    alias(libs.plugins.kover)
 }
 
 // Room writes versioned schema JSON when AppDatabase.exportSchema is true.
 ksp {
     arg("room.schemaLocation", "${project.projectDir}/schemas")
+}
+
+// JVM coverage for :app:testGoogleDebugUnitTest, reported by the `unit` CI job
+// (koverXmlReportGoogleDebug). Instrumented coverage would need the emulator job and is
+// not collected. Generated code is left out so the number reflects hand-written Kotlin.
+kover {
+    reports {
+        filters {
+            excludes {
+                classes("*.BuildConfig", "*_Factory", "*_Factory\$*", "*_Impl", "*_Impl\$*")
+                packages("dagger.hilt.internal", "hilt_aggregated_deps")
+            }
+        }
+    }
 }
 
 repositories {
@@ -278,6 +293,7 @@ tasks.register("prTests") {
         "testGoogleDebugUnitTest",
         "compileGoogleDebugAndroidTestKotlin",
         "compileGoogleDebugAndroidTestJavaWithJavac",
+        "koverXmlReportGoogleDebug",
     )
 }
 

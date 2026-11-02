@@ -110,6 +110,45 @@ jobs:
           if-no-files-found: ignore
           retention-days: 14
 
+      # JVM coverage only: the instrumented suite runs on the emulator job and is not
+      # merged in. The report comes from prTests, so a red test task leaves no report.
+      - name: Coverage summary
+        if: always()
+        run: |
+          report=$(find app/build/reports/kover -name '*.xml' 2>/dev/null | head -1)
+          if [[ -z "$report" ]]; then
+            echo "No coverage report in app/build/reports/kover." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          awk -v report="$report" '
+            /<counter type="LINE"/ { line = $0 }
+            END {
+              if (line == "") {
+                print "No LINE counter in " report
+                exit
+              }
+              if (match(line, /missed="[0-9]+"/)) {
+                missed = substr(line, RSTART, RLENGTH)
+                gsub(/[^0-9]/, "", missed)
+              }
+              if (match(line, /covered="[0-9]+"/)) {
+                covered = substr(line, RSTART, RLENGTH)
+                gsub(/[^0-9]/, "", covered)
+              }
+              total = missed + covered
+              percent = total == 0 ? 0 : 100 * covered / total
+              printf "JVM line coverage: %.1f%% (%d/%d lines)\n", percent, covered, total
+            }' "$report" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: coverage-report
+          path: app/build/reports/kover/
+          if-no-files-found: ignore
+          retention-days: 14
+
   # Runs beside the unit job so lint does not compete with tests and dexing
   # for the runner's 4 vCPUs. Not on main pushes: the merged PR already ran it.
   lint:
