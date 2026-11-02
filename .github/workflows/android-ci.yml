@@ -317,11 +317,9 @@ jobs:
       # API 37 ships as the platform package android-37.0; the emulator runner takes the
       # same string and looks up system-images;android-37.0;<target>;<arch>.
       AVD_API_LEVEL: "37.0"
-      TARGET_SDK_CLASSES: >-
-        net.reichholf.dreamdroid.helpers.LocalNetworkPermissionTest,
-        net.reichholf.dreamdroid.activities.LauncherIntentTest,
-        net.reichholf.dreamdroid.ui.nav.PhoneNavDestinationViewportTest,
-        net.reichholf.dreamdroid.ui.nav.ShellWindowSizeClassTest
+      # Comma-separated with no spaces: the runner parses `class` by splitting on commas and
+      # does not trim, so "a, b" would look for a class whose name starts with a space.
+      TARGET_SDK_CLASSES: "net.reichholf.dreamdroid.helpers.LocalNetworkPermissionTest,net.reichholf.dreamdroid.activities.LauncherIntentTest,net.reichholf.dreamdroid.ui.nav.PhoneNavDestinationViewportTest,net.reichholf.dreamdroid.ui.nav.ShellWindowSizeClassTest"
     steps:
       - name: Checkout
         uses: actions/checkout@v5
