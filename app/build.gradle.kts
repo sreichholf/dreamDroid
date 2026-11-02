@@ -1,6 +1,8 @@
 import com.android.build.api.dsl.AndroidSourceDirectorySet
 import com.android.build.api.variant.FilterConfiguration
 import org.gradle.api.tasks.util.PatternFilterable
+import org.gradle.testing.jacoco.plugins.JacocoTaskExtension
+import org.gradle.testing.jacoco.tasks.JacocoReport
 
 private fun replaceDirs(source: AndroidSourceDirectorySet, dir: String) {
     val dirs = source.directories as MutableSet<String>
@@ -15,6 +17,9 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
     alias(libs.plugins.kover)
+    // For the instrumented coverage report only. Kover stays the JVM agent: the Test tasks
+    // below turn JaCoCo's agent off, so no test JVM carries two.
+    jacoco
 }
 
 // Room writes versioned schema JSON when AppDatabase.exportSchema is true.
@@ -245,6 +250,10 @@ android {
             applicationIdSuffix = ".debug"
             versionNameSuffix = "-debug"
             resValue("string", "app_name", "@string/app_name_debug")
+            // -PinstrumentCoverage: JaCoCo-instrument the app for the instrumented suite, so
+            // AGP pulls a coverage.ec off the device after the connected run. Slower and a
+            // different APK, so only the coverage run asks for it. Unit tests keep Kover.
+            enableAndroidTestCoverage = project.hasProperty("instrumentCoverage")
         }
         getByName("release") {
             isMinifyEnabled = true
@@ -299,6 +308,63 @@ androidComponents {
             val base = output.versionCode.orNull ?: baseVersionCode
             output.versionCode.set(abiCode * 10_000_000 + base)
         }
+    }
+}
+
+// Kover instruments the unit-test JVM; the jacoco plugin would attach its own agent to the
+// same Test tasks. Keep that agent off: only the report task type is used.
+tasks.withType<Test>().configureEach {
+    extensions.findByType(JacocoTaskExtension::class.java)?.isEnabled = false
+}
+
+/**
+ * Instrumented coverage: the androidTest job's shards each upload the device's `coverage.ec`,
+ * and this turns all of them into one report — JacocoReport merges the exec files itself.
+ * The class dirs are AGP 9's build intermediates; if AGP moves them this fails loudly here
+ * instead of reporting zero.
+ */
+// Generated code carries a few hundred lines of its own (R, Hilt modules, BuildConfig);
+// leaving it out keeps the percentage about hand-written Kotlin. The R jar is not passed
+// at all, so no dependency's R class lands in the report either.
+val GENERATED = listOf(
+    "**/R.class",
+    "**/R$*.class",
+    "**/BuildConfig.class",
+    "**/*_Factory.class",
+    "**/*_Impl.class",
+    "**/*_HiltModules*",
+    "**/Hilt_*.class",
+    "**/*_MembersInjector.class",
+)
+
+tasks.register<JacocoReport>("instrumentedCoverageReport") {
+    group = "verification"
+    description = "Coverage of the instrumented suite, from coverage-in/**/*.ec."
+    // The report reads compiled classes, so the app has to be built first.
+    dependsOn("assembleGoogleDebug")
+    executionData.setFrom(
+        fileTree(layout.projectDirectory.dir("coverage-in")) { include("**/*.ec") },
+    )
+    classDirectories.setFrom(
+        fileTree(
+            layout.buildDirectory.dir(
+                "intermediates/built_in_kotlinc/googleDebug/compileGoogleDebugKotlin/classes",
+            ),
+        ) { exclude(GENERATED) },
+        fileTree(
+            layout.buildDirectory.dir(
+                "intermediates/javac/googleDebug/compileGoogleDebugJavaWithJavac/classes",
+            ),
+        ) { exclude(GENERATED) },
+    )
+    sourceDirectories.setFrom(files("src"))
+    reports {
+        xml.required.set(true)
+        xml.outputLocation.set(
+            layout.buildDirectory.file("reports/instrumented-coverage/report.xml"),
+        )
+        html.required.set(true)
+        html.outputLocation.set(layout.buildDirectory.dir("reports/instrumented-coverage/html"))
     }
 }
 
