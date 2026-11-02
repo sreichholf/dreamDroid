@@ -96,6 +96,7 @@ class ProfilesScreenTest {
         assertEquals(1, editedId)
         assertEquals(-1, bouquetsId)
         clickedId = -1
+        editedId = -1
         composeRule.onNodeWithTag(PROFILE_ROW_BOUQUETS_TAG_PREFIX + "1").performClick()
         composeRule.waitForIdle()
         assertEquals(-1, clickedId)
