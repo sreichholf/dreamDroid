@@ -1,5 +1,6 @@
 package net.reichholf.dreamdroid.ui.dialogs
 
+import android.view.KeyEvent
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
@@ -154,10 +155,8 @@ class TextInputDialogTest {
 
         composeRule.onNode(isDialog()).assertExists()
         composeRule.waitForIdle()
-        composeRule.runOnUiThread {
-            composeRule.activity.onBackPressedDispatcher.onBackPressed()
-        }
-        composeRule.waitForIdle()
+        InstrumentationRegistry.getInstrumentation().sendKeyDownUpSync(KeyEvent.KEYCODE_BACK)
+        composeRule.waitUntil(timeoutMillis = 5_000) { dismissed }
 
         assertTrue("back should reach onDismissRequest", dismissed)
     }
