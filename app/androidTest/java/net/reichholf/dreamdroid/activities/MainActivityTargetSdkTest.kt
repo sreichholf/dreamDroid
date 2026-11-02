@@ -150,6 +150,9 @@ class MainActivityTargetSdkTest {
                 )
                 activity.onBackPressedDispatcher.onBackPressed()
             }
+            // finish() travels the lifecycle asynchronously; let the main thread settle
+            // before reading the state, or the scenario is still mid-teardown.
+            InstrumentationRegistry.getInstrumentation().waitForIdleSync()
             assertEquals(
                 "Back on the setup welcome step leaves the wizard",
                 Lifecycle.State.DESTROYED,
