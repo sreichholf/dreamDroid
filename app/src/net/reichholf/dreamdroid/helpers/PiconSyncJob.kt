@@ -33,8 +33,12 @@ data class PiconSyncProgress(
     val downloadedFiles: Int = 0
 )
 
-/** How a sync ended: the picons stored, and the message that stopped it, if any. */
-data class PiconSyncResult(val downloadedFiles: Int, val error: String?)
+/** How a sync ended: how many picons the receiver listed, how many arrived, and why not. */
+data class PiconSyncResult(val totalFiles: Int, val downloadedFiles: Int, val error: String?) {
+    /** The receiver listed picons and not one of them could be stored. */
+    val downloadedNothing: Boolean
+        get() = error == null && totalFiles > 0 && downloadedFiles == 0
+}
 
 /**
  * One picon sync into [localDir]: the `.png` files the receiver lists over [ftp], each
@@ -58,7 +62,7 @@ class PiconSyncJob(
         sync()
     } catch (e: Exception) {
         Log.e(TAG, "Picon sync failed", e)
-        PiconSyncResult(downloadedFiles, e.message)
+        PiconSyncResult(totalFiles, downloadedFiles, e.message)
     } finally {
         ftp.disconnect()
     }
@@ -75,15 +79,15 @@ class PiconSyncJob(
         publish(PiconSyncEvent.Connecting)
         ftp.connect(target.host)
         if (isStopped()) {
-            return PiconSyncResult(downloadedFiles, null)
+            return PiconSyncResult(totalFiles, downloadedFiles, null)
         }
         publish(PiconSyncEvent.Connected)
         val login = ftp.login(target.user, target.pass)
         failedOrNull(PiconFtpSync.loginGate(login.ok, login.code, login.text))?.let {
-            return PiconSyncResult(downloadedFiles, it)
+            return PiconSyncResult(totalFiles, downloadedFiles, it)
         }
         if (isStopped()) {
-            return PiconSyncResult(downloadedFiles, null)
+            return PiconSyncResult(totalFiles, downloadedFiles, null)
         }
 
         publish(PiconSyncEvent.Connected)
@@ -91,7 +95,7 @@ class PiconSyncJob(
         failedOrNull(
             PiconFtpSync.directoryGate(remotePath, directory.ok, directory.code, directory.text)
         )?.let {
-            return PiconSyncResult(downloadedFiles, it)
+            return PiconSyncResult(totalFiles, downloadedFiles, it)
         }
 
         publish(PiconSyncEvent.Listing)
@@ -100,14 +104,14 @@ class PiconSyncJob(
         publish(PiconSyncEvent.Checking)
         for (name in picons) {
             if (isStopped()) {
-                return PiconSyncResult(downloadedFiles, null)
+                return PiconSyncResult(totalFiles, downloadedFiles, null)
             }
             publish(PiconSyncEvent.Downloading(name))
             if (store(name)) {
                 downloadedFiles++
             }
         }
-        return PiconSyncResult(downloadedFiles, null)
+        return PiconSyncResult(totalFiles, downloadedFiles, null)
     }
 
     /**
@@ -169,7 +173,7 @@ class PiconSyncJob(
     }
 
     private fun failed(step: PiconFtpSync.FtpStep): PiconSyncResult =
-        PiconSyncResult(downloadedFiles, failedOrNull(step))
+        PiconSyncResult(totalFiles, downloadedFiles, failedOrNull(step))
 
     private companion object {
         const val TAG = "PiconSyncJob"

@@ -104,6 +104,14 @@ class PiconSyncWorkerTest {
     }
 
     @Test
+    fun aSyncThatStoredNothingFailsTheWork() {
+        ftp.picons = listOf("ard.png")
+        ftp.retrieveReply = FtpReply(ok = false, code = 550, text = "No such file")
+
+        assertEquals(ListenableWorker.Result.failure(), runSync())
+    }
+
+    @Test
     fun withoutAProfileItFailsBeforeConnecting() {
         profiles.clearCurrent()
 

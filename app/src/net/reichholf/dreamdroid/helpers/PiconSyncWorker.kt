@@ -43,10 +43,10 @@ class PiconSyncWorker(appContext: Context, params: WorkerParameters) :
             syncPicons()
         } catch (e: Exception) {
             Log.e(TAG, "Picon sync failed", e)
-            PiconSyncResult(0, e.message)
+            PiconSyncResult(0, 0, e.message)
         }
         publishFinished(result)
-        if (result.error != null || isStopped) {
+        if (result.error != null || result.downloadedNothing || isStopped) {
             Result.failure()
         } else {
             Result.success()
@@ -63,9 +63,9 @@ class PiconSyncWorker(appContext: Context, params: WorkerParameters) :
         profiles.awaitLoaded()
         // No screen is open while this runs, so nothing gates it when the last profile is gone.
         val profile = profiles.current.value
-            ?: return PiconSyncResult(0, applicationContext.getString(R.string.no_profile_title))
+            ?: return PiconSyncResult(0, 0, applicationContext.getString(R.string.no_profile_title))
         val host = profile.host?.takeIf { it.isNotEmpty() }
-            ?: return PiconSyncResult(0, applicationContext.getString(R.string.error))
+            ?: return PiconSyncResult(0, 0, applicationContext.getString(R.string.error))
         val remotePath = PreferenceManager.getDefaultSharedPreferences(applicationContext)
             .getString(DreamDroid.PREFS_KEY_SYNC_PICONS_PATH, DEFAULT_REMOTE_PATH)
         val localDir = File(Picon.localDir(applicationContext))
@@ -96,11 +96,17 @@ class PiconSyncWorker(appContext: Context, params: WorkerParameters) :
 
     private fun publishFinished(result: PiconSyncResult) {
         Picon.clearCache(applicationContext)
-        val message = if (result.error == null) {
-            applicationContext.getString(R.string.picon_sync_finished, result.downloadedFiles)
-        } else {
-            result.error.takeIf { it.isNotEmpty() }
+        val message = when {
+            result.error != null -> result.error.takeIf { it.isNotEmpty() }
                 ?: applicationContext.getString(R.string.error)
+
+            result.downloadedNothing ->
+                applicationContext.getString(R.string.picon_sync_failed)
+
+            else -> applicationContext.getString(
+                R.string.picon_sync_finished,
+                result.downloadedFiles
+            )
         }
         // Lint needs the permission check in the same method as the notify call below.
         if (Build.VERSION.SDK_INT >= 33 &&
