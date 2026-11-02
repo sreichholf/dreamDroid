@@ -3,9 +3,8 @@ package net.reichholf.dreamdroid.helpers
 import org.apache.commons.net.ftp.FTPReply
 
 /**
- * Interprets FTP login, CWD, and retrieve results for picon sync.
- * [org.apache.commons.net.ftp.FTPClient] is concrete, so [PiconSyncWorker] calls this
- * instead of being unit-tested itself.
+ * Interprets the login, CWD and retrieve replies of a picon sync: what [PiconSyncJob] makes
+ * of an [FtpReply] before it lists or stores anything.
  */
 object PiconFtpSync {
     sealed class FtpStep {

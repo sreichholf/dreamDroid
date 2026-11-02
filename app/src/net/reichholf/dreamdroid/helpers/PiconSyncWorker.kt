@@ -19,223 +19,90 @@ import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
-import java.io.BufferedOutputStream
 import java.io.File
-import java.io.FileOutputStream
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.helpers.enigma2.Picon
-import org.apache.commons.net.ftp.FTPClient
-import org.apache.commons.net.ftp.FTPFileFilter
 
 /**
- * One-shot FTP picon sync. Runs as a foreground worker so a long download survives
- * the user leaving Settings (WorkManager + [setForeground]).
+ * Runs [PiconSyncJob] as a foreground worker, so a long download survives the user leaving
+ * Settings: the sync reports each step here and this turns it into the notification.
  */
 class PiconSyncWorker(appContext: Context, params: WorkerParameters) :
     CoroutineWorker(appContext, params) {
 
-    private val progress = SyncProgress()
+    private var totalFiles: Int = 0
+    private var downloadedFiles: Int = 0
 
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
         setForeground(createForegroundInfo(applicationContext.getString(R.string.connecting)))
-        try {
+        val result = try {
             syncPicons()
         } catch (e: Exception) {
             Log.e(TAG, "Picon sync failed", e)
-            progress.error = true
-            progress.errorText = e.message
+            PiconSyncResult(0, e.message)
         }
-        publishFinished()
-        if (progress.error || isStopped) {
+        publishFinished(result)
+        if (result.error != null || isStopped) {
             Result.failure()
         } else {
             Result.success()
         }
     }
 
-    private suspend fun syncPicons() {
-        val localPath = Picon.localDir(applicationContext)
-        val remotePath = PreferenceManager.getDefaultSharedPreferences(applicationContext)
-            .getString(DreamDroid.PREFS_KEY_SYNC_PICONS_PATH, "/usr/share/enigma2/picon")
-        Log.i(TAG, "Syncing from $remotePath to $localPath")
-        val client = FTPClient()
-        val profiles = EntryPointAccessors
-            .fromApplication(applicationContext, PiconSyncWorkerEntryPoint::class.java)
-            .profileRepository()
+    private suspend fun syncPicons(): PiconSyncResult {
+        val entryPoint = EntryPointAccessors.fromApplication(
+            applicationContext,
+            PiconSyncWorkerEntryPoint::class.java
+        )
+        val profiles = entryPoint.profileRepository()
         // WorkManager can start this in a fresh process, before the active profile is read.
         profiles.awaitLoaded()
         // No screen is open while this runs, so nothing gates it when the last profile is gone.
         val profile = profiles.current.value
-        if (profile == null) {
-            progress.error = true
-            progress.errorText = applicationContext.getString(R.string.no_profile_title)
-            return
-        }
-        try {
-            var tmpFile = File(localPath)
-            if (!tmpFile.exists()) {
-                tmpFile.mkdirs()
-            }
-            tmpFile = File("$localPath.nomedia")
-            if (!tmpFile.exists()) {
-                tmpFile.createNewFile()
-            }
-
-            if (remotePath.isNullOrBlank()) {
-                failFtp(PiconFtpSync.directoryGate(remotePath, false, 0, null))
-                return
-            }
-
-            publish(R.string.connecting)
-            client.connect(profile.host)
-            if (isStopped) {
-                return
-            }
-            publish(R.string.connected)
-            val loggedIn = client.login(profile.user, profile.pass)
-            if (failFtp(PiconFtpSync.loginGate(loggedIn, client.replyCode, client.replyString))) {
-                return
-            }
-            if (isStopped) {
-                return
-            }
-            publish(R.string.connected)
-
-            client.setFileType(FTPClient.BINARY_FILE_TYPE)
-            Log.i(TAG, "Changing to $remotePath")
-            val cwdOk = client.changeWorkingDirectory(remotePath)
-            if (
-                failFtp(
-                    PiconFtpSync.directoryGate(
-                        remotePath,
-                        cwdOk,
-                        client.replyCode,
-                        client.replyString
-                    )
-                )
-            ) {
-                return
-            }
-            publish(R.string.getting_list_of_files)
-
-            val filter = FTPFileFilter { file -> file.isFile && file.name.endsWith(".png") }
-            val fileList = client.listFiles(null, filter)
-            progress.totalFiles = fileList.size
-            publish(R.string.checking)
-            for (remoteFile in fileList) {
-                if (isStopped) {
-                    return
-                }
-                if (!remoteFile.isFile) {
-                    continue
-                }
-                val fileName = remoteFile.name
-                progress.currentFile = fileName
-                publish(fileName)
-                if (saveRetrievedPicon(client, fileName, localPath)) {
-                    progress.downloadedFiles++
-                }
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Picon sync failed", e)
-            progress.error = true
-            progress.errorText = e.message
-        } finally {
-            try {
-                if (client.isConnected) {
-                    client.disconnect()
-                }
-            } catch (_: Exception) {
-            }
-        }
+            ?: return PiconSyncResult(0, applicationContext.getString(R.string.no_profile_title))
+        val host = profile.host?.takeIf { it.isNotEmpty() }
+            ?: return PiconSyncResult(0, applicationContext.getString(R.string.error))
+        val remotePath = PreferenceManager.getDefaultSharedPreferences(applicationContext)
+            .getString(DreamDroid.PREFS_KEY_SYNC_PICONS_PATH, DEFAULT_REMOTE_PATH)
+        val localDir = File(Picon.localDir(applicationContext))
+        Log.i(TAG, "Syncing from $remotePath to $localDir")
+        val job = PiconSyncJob(
+            ftp = entryPoint.piconFtp(),
+            localDir = localDir,
+            target = PiconSyncTarget(host, profile.user, profile.pass, remotePath),
+            isStopped = { isStopped },
+            onProgress = { progress -> publish(progress) }
+        )
+        return job.run()
     }
 
-    /** @return true when [step] failed and the sync must stop before listing or downloading. */
-    private fun failFtp(step: PiconFtpSync.FtpStep): Boolean {
-        if (step is PiconFtpSync.FtpStep.Failed) {
-            Log.e(TAG, step.message)
-            progress.error = true
-            progress.errorText = step.message
-            return true
-        }
-        return false
+    private suspend fun publish(progress: PiconSyncProgress) {
+        totalFiles = progress.totalFiles
+        downloadedFiles = progress.downloadedFiles
+        setForeground(createForegroundInfo(message(progress)))
     }
 
-    /**
-     * Downloads one picon via a partial file. A failed retrieve deletes that partial
-     * and leaves any existing png in place.
-     */
-    private fun saveRetrievedPicon(
-        client: FTPClient,
-        fileName: String,
-        localPath: String
-    ): Boolean {
-        val destination = File(localPath, fileName)
-        val partial = File(localPath, "$fileName.part")
-        partial.delete()
-        var retrieved = false
-        var retrieveThrew = false
-        try {
-            BufferedOutputStream(FileOutputStream(partial)).use { outputStream ->
-                retrieved = client.retrieveFile(fileName, outputStream)
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to download picon with filename $fileName", e)
-            retrieved = false
-            retrieveThrew = true
-        }
-        return when (PiconFtpSync.localFileAfterRetrieve(retrieved, client.replyCode)) {
-            PiconFtpSync.LocalFile.DISCARD -> {
-                partial.delete()
-                if (!retrieveThrew) {
-                    Log.e(TAG, "Picon retrieve failed for $fileName: ${client.replyString}")
-                }
-                false
-            }
-
-            PiconFtpSync.LocalFile.KEEP -> commitPartial(partial, destination)
-        }
+    private fun message(progress: PiconSyncProgress): String = when (val event = progress.event) {
+        PiconSyncEvent.Connecting -> applicationContext.getString(R.string.connecting)
+        PiconSyncEvent.Connected -> applicationContext.getString(R.string.connected)
+        PiconSyncEvent.Listing -> applicationContext.getString(R.string.getting_list_of_files)
+        PiconSyncEvent.Checking -> applicationContext.getString(R.string.checking)
+        is PiconSyncEvent.Downloading -> event.fileName
     }
 
-    private fun commitPartial(partial: File, destination: File): Boolean {
-        if (destination.exists() && !destination.delete()) {
-            Log.e(TAG, "Failed to replace picon ${destination.name}")
-            partial.delete()
-            return false
-        }
-        if (!partial.renameTo(destination)) {
-            Log.e(TAG, "Failed to store picon ${destination.name}")
-            partial.delete()
-            return false
-        }
-        return true
-    }
-
-    private suspend fun publish(messageRes: Int) {
-        publish(applicationContext.getString(messageRes))
-    }
-
-    private suspend fun publish(message: String) {
-        setForeground(createForegroundInfo(message))
-    }
-
-    private fun publishFinished() {
+    private fun publishFinished(result: PiconSyncResult) {
         Picon.clearCache(applicationContext)
-        val message = if (!progress.error) {
-            applicationContext.getString(
-                R.string.picon_sync_finished,
-                progress.downloadedFiles
-            )
+        val message = if (result.error == null) {
+            applicationContext.getString(R.string.picon_sync_finished, result.downloadedFiles)
         } else {
-            progress.errorText?.takeIf { it.isNotEmpty() }
-                ?: progress.currentFile.ifEmpty {
-                    applicationContext.getString(R.string.error)
-                }
+            result.error.takeIf { it.isNotEmpty() }
+                ?: applicationContext.getString(R.string.error)
         }
+        // Lint needs the permission check in the same method as the notify call below.
         if (Build.VERSION.SDK_INT >= 33 &&
             ContextCompat.checkSelfPermission(
                 applicationContext,
@@ -278,22 +145,15 @@ class PiconSyncWorker(appContext: Context, params: WorkerParameters) :
             .setSmallIcon(R.drawable.ic_action_refresh)
             .setOngoing(ongoing)
             .setOnlyAlertOnce(true)
-        if (progress.totalFiles > 0 && ongoing) {
-            builder.setProgress(progress.totalFiles, progress.downloadedFiles, false)
+        if (totalFiles > 0 && ongoing) {
+            builder.setProgress(totalFiles, downloadedFiles, false)
         }
         return builder.build()
     }
 
-    private class SyncProgress {
-        var error: Boolean = false
-        var totalFiles: Int = 0
-        var downloadedFiles: Int = 0
-        var currentFile: String = ""
-        var errorText: String? = null
-    }
-
     companion object {
-        private val TAG = PiconSyncWorker::class.java.simpleName
+        private const val TAG = "PiconSyncWorker"
+        private const val DEFAULT_REMOTE_PATH = "/usr/share/enigma2/picon"
     }
 }
 
@@ -302,4 +162,7 @@ class PiconSyncWorker(appContext: Context, params: WorkerParameters) :
 @InstallIn(SingletonComponent::class)
 interface PiconSyncWorkerEntryPoint {
     fun profileRepository(): ProfileRepository
+
+    /** One client per sync; the sync closes it. */
+    fun piconFtp(): PiconFtp
 }

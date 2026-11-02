@@ -92,6 +92,7 @@ sqlite-bundled-jvm = { module = "androidx.sqlite:sqlite-bundled-jvm", version.re
 tv-material = { module = "androidx.tv:tv-material", version.ref = "tvMaterial" }
 vlc = { module = "org.videolan.android:libvlc-all", version.ref = "vlc" }
 work-runtime = { module = "androidx.work:work-runtime-ktx", version.ref = "work" }
+work-testing = { module = "androidx.work:work-testing", version.ref = "work" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
