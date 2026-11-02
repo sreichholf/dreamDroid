@@ -31,7 +31,7 @@ class PiconSyncJobTest {
 
         val result = runBlocking { job().run() }
 
-        assertEquals(PiconSyncResult(2, null), result)
+        assertEquals(PiconSyncResult(2, 2, null), result)
         assertArrayEquals(ARD, File(dir, "ard.png").readBytes())
         assertArrayEquals(ZDF, File(dir, "zdf.png").readBytes())
         assertEquals(listOf("ard.png", "zdf.png"), ftp.retrieved)
@@ -118,6 +118,29 @@ class PiconSyncJobTest {
     }
 
     @Test
+    fun aSyncWhereNoPiconArrivedIsAnError() {
+        ftp.picons = listOf("ard.png", "zdf.png")
+        ftp.retrieveReply = FtpReply(false, 550, "No such file")
+
+        val result = runBlocking { job().run() }
+
+        assertEquals(PiconSyncResult(2, 0, null), result)
+        assertTrue(result.downloadedNothing, "a sync that stored nothing must be an error")
+    }
+
+    @Test
+    fun aSyncThatStoredSomePiconsIsNotAnError() {
+        ftp.picons = listOf("ard.png", "zdf.png")
+        ftp.contents = mapOf("ard.png" to ARD)
+        ftp.failRetrieveFor = setOf("zdf.png")
+
+        val result = runBlocking { job().run() }
+
+        assertEquals(PiconSyncResult(2, 1, null), result)
+        assertFalse(result.downloadedNothing, "one stored picon is not a failed sync")
+    }
+
+    @Test
     fun aStoppedSyncDoesNotDownloadOn() {
         ftp.picons = listOf("ard.png", "zdf.png")
         ftp.contents = mapOf("ard.png" to ARD, "zdf.png" to ZDF)
@@ -198,6 +221,7 @@ private class FakePiconFtp : PiconFtp {
     var loginReply = FtpReply(ok = true, code = 230, text = "User logged in")
     var directoryReply = FtpReply(ok = true, code = 250, text = "Directory changed")
     var retrieveReply = FtpReply(ok = true, code = 226, text = "Transfer complete")
+    var failRetrieveFor: Set<String> = emptySet()
     var connectThrows: Exception? = null
     var listingThrows: Exception? = null
 
@@ -224,6 +248,9 @@ private class FakePiconFtp : PiconFtp {
 
     override fun retrieve(name: String, to: OutputStream): FtpReply {
         retrieved += name
+        if (name in failRetrieveFor) {
+            return FtpReply(ok = false, code = 550, text = "No such file")
+        }
         if (retrieveReply.ok) {
             contents[name]?.let { to.write(it) }
         }

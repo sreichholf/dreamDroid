@@ -2,6 +2,7 @@
 
 ## 2.0.471
 * UPD: Video-Player verbessert
+* FIX: Picon-Sync meldete Erfolg, obwohl nichts heruntergeladen wurde
 * FIX: Aufnahmen in sehr großen Ordnern werden nicht geladen
 * FIX: Timer-Bereinigung mit aktivierter erweiterter Sicherheit fehlgeschlagen
 
