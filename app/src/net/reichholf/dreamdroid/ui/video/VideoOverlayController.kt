@@ -22,7 +22,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import java.io.Serializable
-import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 import kotlinx.coroutines.Job
@@ -392,19 +391,21 @@ class VideoOverlayController(
                         distanceX: Float,
                         distanceY: Float
                     ): Boolean {
-                        if (e1 == null || !playback.gesturesEnabled) return true
+                        if (e1 == null) return true
                         val metrics = activity.resources.displayMetrics
-                        val isRight = e1.rawX > (4 * metrics.widthPixels / 7)
-                        val isLeft = e1.rawX < (3 * metrics.widthPixels / 7)
-
-                        if (abs(distanceY) > abs(distanceX) && distanceY != 0f) {
-                            if (isRight) {
-                                onVolumeTouch(distanceY)
-                            } else if (isLeft) {
-                                onBrightnessTouch(distanceY)
-                            }
-                        } else if (abs(distanceX) > abs(distanceY) && distanceX != 0f) {
-                            onChannelSwipe(distanceX, distanceY)
+                        val target =
+                            swipeTarget(
+                                e1.rawX,
+                                metrics.widthPixels,
+                                distanceX,
+                                distanceY,
+                                playback.gesturesEnabled
+                            )
+                        when (target) {
+                            SwipeTarget.Volume -> onVolumeTouch(distanceY)
+                            SwipeTarget.Brightness -> onBrightnessTouch(distanceY)
+                            SwipeTarget.Channel -> onChannelSwipe(distanceX, distanceY)
+                            SwipeTarget.Ignored -> Unit
                         }
                         return true
                     }
@@ -575,17 +576,11 @@ class VideoOverlayController(
     }
 
     private fun onVolumeTouch(distanceY: Float) {
-        val delta = (distanceY / surfaceHeight) * 100
-        var currentVolume =
+        val delta = volumeDeltaPercent(distanceY, surfaceHeight)
+        val systemPercent =
             audioManager.getStreamVolume(AudioManager.STREAM_MUSIC) / audioMaxVol.toFloat() * 100
-        if (volume > 0) {
-            currentVolume = volume
-        }
-
-        currentVolume += delta
-        currentVolume = max(min(currentVolume, 100f), 0f)
-        volume = currentVolume
-        setVolume((currentVolume / 100 * audioMaxVol).toInt())
+        volume = volumePercentAfterSwipe(volume, systemPercent, delta)
+        setVolume(streamVolumeFor(volume, audioMaxVol))
     }
 
     private fun setVolume(volume: Int) {
