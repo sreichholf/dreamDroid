@@ -22,6 +22,10 @@ on:
         description: Take the phone store screenshots (fastlane) on an emulator, instead of the instrumented suite
         type: boolean
         default: false
+      target_sdk:
+        description: Run the targetSdk tests on an API 37 emulator, instead of the instrumented suite
+        type: boolean
+        default: false
 
 concurrency:
   group: android-ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -186,7 +190,9 @@ jobs:
   # (AndroidJUnitRunner numShards/shardIndex) on the cached AVD.
   androidTest:
     name: Instrumented Compose tests (shard ${{ matrix.shard }}/3)
-    if: github.event_name != 'pull_request' && !inputs.upgrade_from_115 && !inputs.screenshots
+    if: >-
+      github.event_name != 'pull_request' && !inputs.upgrade_from_115 &&
+      !inputs.screenshots && !inputs.target_sdk
     runs-on: ubuntu-latest
     timeout-minutes: 45
     strategy:
@@ -295,6 +301,91 @@ jobs:
         with:
           name: instrumented-coverage-shard-${{ matrix.shard }}
           path: coverage-out/
+          if-no-files-found: ignore
+          retention-days: 14
+
+  # What the API 30 shards cannot reach: from API 37 the platform requires
+  # ACCESS_LOCAL_NETWORK, so LocalNetworkPermission's granted path and the permission itself
+  # only exist there. Same ATD image and profile as the shards, its own AVD cache entry (the
+  # key includes the API level) and a class filter instead of the whole suite.
+  androidTestTargetSdk:
+    name: Instrumented tests (API 37, targetSdk)
+    if: github.event_name == 'workflow_dispatch' && inputs.target_sdk
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      # API 37 ships as the platform package android-37.0; the emulator runner takes the
+      # same string and looks up system-images;android-37.0;<target>;<arch>.
+      AVD_API_LEVEL: "37.0"
+      TARGET_SDK_CLASSES: >-
+        net.reichholf.dreamdroid.helpers.LocalNetworkPermissionTest,
+        net.reichholf.dreamdroid.activities.LauncherIntentTest,
+        net.reichholf.dreamdroid.ui.nav.PhoneNavDestinationViewportTest,
+        net.reichholf.dreamdroid.ui.nav.ShellWindowSizeClassTest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Set up build
+        uses: ./.github/actions/setup-build
+
+      - name: Build googleDebug + androidTest APKs
+        run: ./gradlew -Pci --no-configuration-cache :app:assembleGoogleDebug :app:assembleGoogleDebugAndroidTest
+
+      - name: Host CPU vendor
+        run: echo "AVD_CPU_VENDOR=$(awk '/^vendor_id/ { print $3; exit }' /proc/cpuinfo)" >> "$GITHUB_ENV"
+
+      - name: AVD cache
+        uses: actions/cache@v5
+        id: avd-cache
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-${{ env.AVD_API_LEVEL }}-${{ env.AVD_TARGET }}-${{ env.AVD_PROFILE }}-${{ env.AVD_SNAPSHOT_VERSION }}-${{ env.AVD_CPU_VENDOR }}
+
+      - name: Create AVD and generate snapshot for caching
+        if: steps.avd-cache.outputs.cache-hit != 'true'
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: ${{ env.AVD_API_LEVEL }}
+          arch: x86_64
+          target: ${{ env.AVD_TARGET }}
+          profile: ${{ env.AVD_PROFILE }}
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swangle -noaudio -no-boot-anim -camera-back none
+          disable-animations: false
+          script: bash .github/emulator/settle-snapshot.sh
+
+      - name: Instrumented tests (targetSdk)
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: ${{ env.AVD_API_LEVEL }}
+          arch: x86_64
+          target: ${{ env.AVD_TARGET }}
+          profile: ${{ env.AVD_PROFILE }}
+          force-avd-creation: false
+          emulator-options: -no-snapshot-save -no-window -gpu swangle -noaudio -no-boot-anim -camera-back none
+          disable-animations: true
+          script: |
+            adb wait-for-device
+            timeout 60 bash -c 'until adb shell pm path android | grep -q package:; do sleep 2; done'
+            ./gradlew -Pci --no-configuration-cache -PtestClassFilter="$TARGET_SDK_CLASSES" :app:connectedGoogleDebugAndroidTest
+
+      - name: Upload instrumented test reports
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: androidTest-reports-api37
+          path: |
+            app/build/reports/androidTests/connected/
+            app/build/outputs/androidTest-results/
           if-no-files-found: ignore
           retention-days: 14
 
