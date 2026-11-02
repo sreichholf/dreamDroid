@@ -20,7 +20,6 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.ProgressiveMediaSource
 import androidx.media3.exoplayer.util.EventLogger
 import dagger.hilt.android.qualifiers.ApplicationContext
-import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.math.max
@@ -152,7 +151,7 @@ class Media3Engine @Inject constructor(
 
     override fun subtitleTracks(): List<MediaTrack>? {
         val exo = reportingTracks() ?: return null
-        val off = MediaTrack(TRACK_OFF, context.getString(R.string.track_off))
+        val off = MediaTrack(Media3Tracks.OFF, context.getString(R.string.track_off))
         return listOf(off) + tracksOf(exo, C.TRACK_TYPE_TEXT)
     }
 
@@ -170,13 +169,16 @@ class Media3Engine @Inject constructor(
 
     private fun select(exo: ExoPlayer, type: Int, id: Int) {
         val builder = exo.trackSelectionParameters.buildUpon()
-        if (id == TRACK_OFF) {
+        if (id == Media3Tracks.OFF) {
             builder.setTrackTypeDisabled(type, true)
         } else {
-            val group = exo.currentTracks.groups.getOrNull(id shr TRACK_SHIFT) ?: return
+            val group = exo.currentTracks.groups.getOrNull(Media3Tracks.groupIndex(id)) ?: return
             builder.setTrackTypeDisabled(type, false)
                 .setOverrideForType(
-                    TrackSelectionOverride(group.mediaTrackGroup, id and TRACK_MASK)
+                    TrackSelectionOverride(
+                        group.mediaTrackGroup,
+                        Media3Tracks.trackIndex(id)
+                    )
                 )
         }
         exo.trackSelectionParameters = builder.build()
@@ -189,12 +191,14 @@ class Media3Engine @Inject constructor(
             .flatMap { (groupIndex, group) ->
                 (0 until group.length).filter(group::isTrackSupported).map { trackIndex ->
                     val format = group.getTrackFormat(trackIndex)
-                    val name = listOfNotNull(
-                        format.label
-                            ?: format.language?.let { Locale.forLanguageTag(it).displayLanguage },
-                        format.sampleMimeType?.substringAfter('/')?.uppercase()
-                    ).joinToString(" · ")
-                    MediaTrack((groupIndex shl TRACK_SHIFT) or trackIndex, name)
+                    MediaTrack(
+                        Media3Tracks.id(groupIndex, trackIndex),
+                        Media3Tracks.label(
+                            format.label,
+                            format.language,
+                            format.sampleMimeType
+                        )
+                    )
                 }
             }
 
@@ -202,7 +206,8 @@ class Media3Engine @Inject constructor(
     private fun audioTrackOptions(exo: ExoPlayer): List<AudioTrackOption> {
         val groups = exo.currentTracks.groups
         return tracksOf(exo, C.TRACK_TYPE_AUDIO).map { track ->
-            val format = groups[track.id shr TRACK_SHIFT].getTrackFormat(track.id and TRACK_MASK)
+            val format = groups[Media3Tracks.groupIndex(track.id)]
+                .getTrackFormat(Media3Tracks.trackIndex(track.id))
             AudioTrackOption(track.id, track.name, format.language)
         }
     }
@@ -353,24 +358,16 @@ class Media3Engine @Inject constructor(
         }
 
         override fun onVideoSizeChanged(videoSize: VideoSize) {
-            if (player !== exo || videoSize.width == 0 || videoSize.height == 0) return
+            if (player !== exo) return
+            val layout = Media3Video.layout(
+                videoSize.width,
+                videoSize.height,
+                videoSize.pixelWidthHeightRatio
+            ) ?: return
             views?.media3Frame?.setAspectRatio(
                 videoSize.width * videoSize.pixelWidthHeightRatio / videoSize.height
             )
-            val sarDen = SAR_SCALE
-            val sarNum = (videoSize.pixelWidthHeightRatio * sarDen).toInt()
-            emit(
-                PlayerEvent.Layout(
-                    VideoLayout(
-                        videoSize.width,
-                        videoSize.height,
-                        videoSize.width,
-                        videoSize.height,
-                        sarNum,
-                        sarDen
-                    )
-                )
-            )
+            emit(PlayerEvent.Layout(layout))
         }
 
         override fun onCues(cueGroup: CueGroup) {
@@ -385,9 +382,5 @@ class Media3Engine @Inject constructor(
         const val STREAM_TIMEOUT_MS = 15_000
         const val PROGRESS_INTERVAL_MS = 500L
         const val REWIND_STEP_MS = 10_000L
-        const val SAR_SCALE = 1000
-        const val TRACK_OFF = -1
-        const val TRACK_SHIFT = 16
-        const val TRACK_MASK = 0xFFFF
     }
 }
