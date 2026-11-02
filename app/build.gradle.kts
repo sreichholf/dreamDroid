@@ -323,8 +323,9 @@ tasks.withType<Test>().configureEach {
  * The class dirs are AGP 9's build intermediates; if AGP moves them this fails loudly here
  * instead of reporting zero.
  */
-// R, Hilt and BuildConfig classes carry no line data, so they change no percentage — they
-// only add entries to the report's class list, which is why the R jar is not passed at all.
+// Generated code carries a few hundred lines of its own (R, Hilt modules, BuildConfig);
+// leaving it out keeps the percentage about hand-written Kotlin. The R jar is not passed
+// at all, so no dependency's R class lands in the report either.
 val GENERATED = listOf(
     "**/R.class",
     "**/R$*.class",
