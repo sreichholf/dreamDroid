@@ -282,6 +282,7 @@ class TvMultiEpgViewModelTest {
     fun profileSwitchReloadsTheBouquetForTheNewProfile() = runBlocking<Unit> {
         epgMultiBody = epgMultiAround(System.currentTimeMillis() / 1000L)
         val viewModel = viewModel()
+        viewModel.onShown()
         viewModel.open(BOUQUET, "Favourites")
         awaitState(viewModel) { it.grid.channels.isNotEmpty() && !it.grid.syncing }
         val requestsBefore = epgMultiTimes().size
@@ -291,7 +292,7 @@ class TvMultiEpgViewModelTest {
         tvBouquetsGate = bouquetsGate
         // The new profile's receiver answers a programme the old grid cannot show.
         epgMultiBody = epgMultiAround(System.currentTimeMillis() / 1000L, title = "Switched")
-        // A different default proves the current bouquet was kept because it still exists.
+        // A different default proves the Guide kept the hub's bouquet, not the default.
         switchToAnotherProfile(defaultBouquetRef = OTHER_BOUQUET)
 
         val invalidated = awaitState(viewModel) { it.grid.channels.isEmpty() }
@@ -306,6 +307,7 @@ class TvMultiEpgViewModelTest {
 
         assertEquals(BOUQUET, state.bouquetRef)
         assertEquals(BOUQUET, state.grid.bouquetRef)
+        assertEquals(UiText.Raw("Favourites"), state.title)
         assertTrue(
             epgMultiTimes().size > requestsBefore,
             "the switch must refetch the bouquet for the new profile"
@@ -313,27 +315,83 @@ class TvMultiEpgViewModelTest {
     }
 
     @Test
-    fun profileSwitchFallsBackWhenTheBouquetIsGone() = runBlocking<Unit> {
+    fun profileSwitchWithoutTheBouquetWaitsForTheHub() = runBlocking<Unit> {
         epgMultiBody = epgMultiAround(System.currentTimeMillis() / 1000L)
         val viewModel = viewModel()
+        viewModel.onShown()
         viewModel.open(BOUQUET, "Favourites")
         awaitState(viewModel) { it.grid.channels.isNotEmpty() && !it.grid.syncing }
+        val requestsBefore = epgMultiTimes().size
 
         tvBouquetsBody = serviceList(OTHER_BOUQUET, "Other")
-        val other = switchToAnotherProfile(defaultBouquetRef = OTHER_BOUQUET)
+        // The profile default is the old bouquet, which this profile does not list: only the
+        // hub's fallback may load, never the default.
+        val other = switchToAnotherProfile(defaultBouquetRef = BOUQUET)
 
+        // The Guide picks no fallback of its own: it drops the old grid and waits.
+        val waiting = awaitState(viewModel) {
+            it.grid.channels.isEmpty() && it.bouquetRef.isEmpty()
+        }
+        assertEquals(listOf(OTHER_BOUQUET), waiting.bouquets.map { it.reference })
+        assertEquals(requestsBefore, epgMultiTimes().size, "the Guide must start no load here")
+
+        // The hub reconciles to the new profile's only bouquet and hands it over: one load.
+        viewModel.open(OTHER_BOUQUET, "Other")
         val state = awaitState(viewModel) {
-            it.bouquetRef == OTHER_BOUQUET && it.grid.bouquetRef == OTHER_BOUQUET &&
-                it.grid.channels.isNotEmpty() && !it.grid.syncing
+            it.grid.bouquetRef == OTHER_BOUQUET && it.grid.channels.isNotEmpty() && !it.grid.syncing
         }
 
         assertEquals(UiText.Raw("Other"), state.title)
-        // The gate was rebuilt from the new profile's tabs: the fallback bouquet caches.
+        val refsAfterSwitch = epgMultiBouquets().drop(requestsBefore)
+        assertTrue(refsAfterSwitch.isNotEmpty(), "the hub's bouquet must load")
+        assertTrue(
+            refsAfterSwitch.all { it == OTHER_BOUQUET },
+            "only the hub's bouquet loads, got $refsAfterSwitch"
+        )
+        // The gate was rebuilt from the new profile's tabs: the hub's bouquet caches.
         val chunk = MultiEpgWindows.chunkContaining(state.grid.anchorSec)
         assertNotNull(
             receiver.profiles.database.epgDao()
                 .getChunk(other.id!!, OTHER_BOUQUET, chunk.startSec)
         )
+    }
+
+    @Test
+    fun aProfileSwitchWhileHiddenLoadsNothing() = runBlocking<Unit> {
+        epgMultiBody = epgMultiAround(System.currentTimeMillis() / 1000L)
+        val viewModel = viewModel()
+        viewModel.onShown()
+        val collectors = viewModel.jobs()
+        viewModel.open(BOUQUET, "Favourites")
+        viewModel.joinJobsSince(collectors)
+        val painted = awaitState(viewModel) {
+            it.grid.channels.isNotEmpty() && !it.grid.syncing
+        }
+        val requestsBefore = epgMultiTimes().size
+
+        viewModel.onHidden()
+        // Under the unconfined main dispatcher the switch's collector runs before this
+        // returns, so an unchanged job set and request list mean nothing started.
+        epgMultiBody = epgMultiAround(System.currentTimeMillis() / 1000L, title = "Switched")
+        switchToAnotherProfile()
+
+        assertEquals(collectors, viewModel.jobs())
+        assertEquals(requestsBefore, epgMultiTimes().size)
+        assertEquals(painted.grid.channels, viewModel.uiState.value.grid.channels)
+
+        // Back on screen, the hub's bouquet reloads under the new profile, once.
+        viewModel.onShown()
+        val reloaded = awaitState(viewModel) {
+            it.grid.channels.any { channel ->
+                channel.bars.any { bar -> bar.event.title == "Switched" }
+            } && !it.grid.syncing
+        }
+
+        assertEquals(BOUQUET, reloaded.grid.bouquetRef)
+        assertEquals(UiText.Raw("Favourites"), reloaded.title)
+        val afterShow = epgMultiBouquets().drop(requestsBefore)
+        assertTrue(afterShow.isNotEmpty(), "the deferred reload must fetch")
+        assertTrue(afterShow.all { it == BOUQUET }, "only the shown bouquet loads, got $afterShow")
     }
 
     @Test
@@ -407,6 +465,11 @@ class TvMultiEpgViewModelTest {
     private fun epgMultiTimes(): List<String?> = receiver.requests
         .filter { it.requestUrl?.encodedPath == "/web/epgmulti" }
         .map { it.requestUrl?.queryParameter("time") }
+
+    /** The `bRef` of each `/web/epgmulti` request, in order. */
+    private fun epgMultiBouquets(): List<String?> = receiver.requests
+        .filter { it.requestUrl?.encodedPath == "/web/epgmulti" }
+        .map { it.requestUrl?.queryParameter("bRef") }
 
     private fun routes(request: RecordedRequest): MockResponse =
         when (request.requestUrl?.encodedPath) {

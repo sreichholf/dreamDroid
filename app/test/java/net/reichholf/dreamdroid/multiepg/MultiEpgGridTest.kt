@@ -353,7 +353,7 @@ class MultiEpgGridTest {
         val t0 = MultiEpgWindows.CHUNK_SECONDS + 10L
         val sync = MultiEpgSync(
             dao = db.epgDao(),
-            fetch = { _, time, _ ->
+            fetch = { _, _, time, _ ->
                 gate.await()
                 listOf(programme(id = time.toString(), title = "T", start = time))
             },
