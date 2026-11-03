@@ -26,7 +26,7 @@ import org.junit.runner.RunWith
  *
  * `run.sh` cold starts the upgraded app before this runs, so the real `DreamDroid.onCreate`
  * has done the pre-Room import. The test process runs on `HiltTestApplication`, which
- * skips that `onCreate`; the test only repeats its read of the current profile.
+ * skips that `onCreate`; the test repeats its startup load of the current profile.
  */
 @HiltAndroidTest
 @RunWith(AndroidJUnit4::class)
@@ -71,7 +71,7 @@ class Upgrade115Test {
     }
 
     private fun assertCurrentIsSeeded() = runBlocking<Unit> {
-        profiles.loadCurrent()
+        profiles.loadCurrent(DatabaseHelper.source(context))
         assertEquals(SEEDED_ID, profiles.current.value?.id)
     }
 

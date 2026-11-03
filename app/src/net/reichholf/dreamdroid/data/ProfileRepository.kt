@@ -314,14 +314,6 @@ class ProfileRepository @Inject constructor(
         result
     }
 
-    /**
-     * Reads the remembered active profile at process start; see [awaitLoaded]. Imports the
-     * single-receiver settings of dreamDroid 1.x when there are no profiles yet.
-     */
-    suspend fun loadCurrent(): Unit = writes.withLock {
-        loadCurrentLocked(allowLegacyProfile = true)
-    }
-
     private suspend fun loadCurrentLocked(allowLegacyProfile: Boolean) {
         splitLegacyUserInfoOnSavedRows()
         val profileId = store.activeId()
