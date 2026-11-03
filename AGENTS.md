@@ -198,7 +198,7 @@ Claude Code running locally on a machine with the CI JDK, the SDK, and a device 
 
 ## Other traps
 
-- Name a branch after what it does, compressed to a few lowercase words joined by `_`: `restore_servicelist_cols`, not `claude/focused-tesla-3drqa1` or `fix`. If your tool generated a name, rename the branch before the first push.
+- Name a branch after what it does, compressed to a few lowercase words joined by `_`: `restore_servicelist_cols`, not `claude/focused-tesla-3drqa1` or `fix`. Agents have the maintainer's explicit permission to push to a branch named this way instead of a tool-assigned branch (such as `claude/*`), including the first push. Create it under the proper name before the first push. Never push to the generated name and rename afterwards.
 - Keep feature and implementation branches current by rebasing them onto `origin/main`, not by merging `main` into them; then force-push with `--force-with-lease`. A branch merged back into `main` should not carry merges of `main`.
 - Two googleDebug processes cannot share one device.
 - Lint fails on `UnusedResources` and `UnusedIds`, and spotless fails on unused imports. Delete what they flag. A resource only reached by name at runtime (like `resValue` in `app/build.gradle.kts`) goes in the `UnusedResources` ignore list in `app/lint.xml`.
