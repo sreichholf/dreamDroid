@@ -93,12 +93,26 @@ class PhoneNavigatorTest {
 
     @Test
     fun dialogFlagsAndRemountsLiveInTheSharedState() {
-        navigator().requestLeaveConfirm()
-        navigator().onActiveProfileChanged()
+        profiles.repository.setCurrent(profile(id = 1, host = "box"))
+        val navigator = navigator()
+        navigator.requestLeaveConfirm()
+        navigator.onActiveProfileChanged()
+
+        profiles.repository.setCurrent(profile(id = 2, host = "box"))
+        navigator.onActiveProfileChanged()
 
         val next = navigator().navUiState.value
         assertTrue(next.leaveConfirmRequested)
         assertEquals(1, next.epgRemount)
+    }
+
+    @Test
+    fun theFirstProfileCheckLeavesTheEpgMounted() {
+        profiles.repository.setCurrent(profile(id = 1, host = "box"))
+
+        navigator().onActiveProfileChanged()
+
+        assertEquals(0, state.uiState.value.epgRemount)
     }
 
     @Test
@@ -109,7 +123,7 @@ class PhoneNavigatorTest {
         navigator.onActiveProfileChanged()
         navigator.onActiveProfileChanged()
 
-        assertEquals(1, state.uiState.value.epgRemount)
+        assertEquals(0, state.uiState.value.epgRemount)
     }
 
     @Test
@@ -119,7 +133,7 @@ class PhoneNavigatorTest {
 
         navigator().onActiveProfileChanged()
 
-        assertEquals(1, state.uiState.value.epgRemount)
+        assertEquals(0, state.uiState.value.epgRemount)
     }
 
     @Test
@@ -131,7 +145,7 @@ class PhoneNavigatorTest {
         profiles.repository.setCurrent(profile(id = 2, host = "box"))
         navigator.onActiveProfileChanged()
 
-        assertEquals(2, state.uiState.value.epgRemount)
+        assertEquals(1, state.uiState.value.epgRemount)
     }
 
     @Test
@@ -143,7 +157,7 @@ class PhoneNavigatorTest {
         profiles.repository.setCurrent(profile(id = 1, host = "other-box"))
         navigator.onActiveProfileChanged()
 
-        assertEquals(2, state.uiState.value.epgRemount)
+        assertEquals(1, state.uiState.value.epgRemount)
     }
 
     @Test
@@ -161,18 +175,25 @@ class PhoneNavigatorTest {
         assertNotSame(before, after)
         navigator.onActiveProfileChanged()
 
-        assertEquals(1, state.uiState.value.epgRemount)
+        assertEquals(0, state.uiState.value.epgRemount)
     }
 
     @Test
-    fun aProfileAppearingAfterNoneRemountsTheEpg() {
+    fun aCheckWithoutAnActiveProfileChangesNothing() {
+        navigator().onActiveProfileChanged()
+
+        assertEquals(0, state.uiState.value.epgRemount)
+    }
+
+    @Test
+    fun aProfileAppearingAfterNoneKeepsTheEpgAsItIs() {
         val navigator = navigator()
         navigator.onActiveProfileChanged()
 
         profiles.repository.setCurrent(profile(id = 1, host = "box"))
         navigator.onActiveProfileChanged()
 
-        assertEquals(2, state.uiState.value.epgRemount)
+        assertEquals(0, state.uiState.value.epgRemount)
     }
 
     @Test
@@ -181,6 +202,7 @@ class PhoneNavigatorTest {
         val handle = SavedStateHandle()
         val before = PhoneNavHostState(handle)
         navigator(before).onActiveProfileChanged()
+        before.remountEpg()
         val epoch = before.uiState.value.epgRemount
         assertEquals(1, epoch)
 
@@ -222,17 +244,19 @@ class PhoneNavigatorTest {
     }
 
     @Test
-    fun aRestoredProcessWithoutAProfileDoesNotRemount() {
-        profiles.repository.clearCurrent()
+    fun aCheckWithoutAProfileKeepsTheRecordForTheNextOne() {
+        profiles.repository.setCurrent(profile(id = 1, host = "box"))
         val handle = SavedStateHandle()
         val before = PhoneNavHostState(handle)
         navigator(before).onActiveProfileChanged()
-        val epoch = before.uiState.value.epgRemount
 
+        profiles.repository.clearCurrent()
         val restored = PhoneNavHostState(handle)
         navigator(restored).onActiveProfileChanged()
+        profiles.repository.setCurrent(profile(id = 2, host = "box"))
+        navigator(restored).onActiveProfileChanged()
 
-        assertEquals(epoch, restored.uiState.value.epgRemount)
+        assertEquals(1, restored.uiState.value.epgRemount)
     }
 
     private fun profile(id: Int? = null, host: String): Profile = Profile().apply {
