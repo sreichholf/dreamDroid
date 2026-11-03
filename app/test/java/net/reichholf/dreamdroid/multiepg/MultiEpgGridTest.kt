@@ -348,6 +348,37 @@ class MultiEpgGridTest {
     }
 
     @Test
+    fun resetKeepsTheCancelledLoadsSyncCount() = runBlocking {
+        val gate = CompletableDeferred<Unit>()
+        val t0 = MultiEpgWindows.CHUNK_SECONDS + 10L
+        val sync = MultiEpgSync(
+            dao = db.epgDao(),
+            fetch = { _, time, _ ->
+                gate.await()
+                listOf(programme(id = time.toString(), title = "T", start = time))
+            },
+            clockMs = { 1_000_000L },
+            ttlMs = 25L * 60L * 1000L
+        )
+        val grid = MultiEpgGrid(
+            sync = sync,
+            scope = this,
+            profileId = { 1 }
+        )
+        grid.replaceAndLoad("bouquet-a", t0)
+        grid.awaitState { grid.state.value.syncing }
+
+        grid.reset()
+
+        // The cancelled load ends its sync in its finally; reset must not zero the count.
+        assertTrue(grid.state.value.syncing)
+        assertEquals(1, grid.state.value.syncingCount)
+        gate.complete(Unit)
+        grid.awaitIdle()
+        assertFalse(grid.state.value.syncing)
+    }
+
+    @Test
     fun lateInUtcDayOriginWarmsTomorrowIntoRoomWithoutPaintingIt() = runBlocking {
         val chunk = MultiEpgWindows.chunkContaining(MultiEpgWindows.CHUNK_SECONDS + 10L)
         val lateNow = chunk.endSec - 600L

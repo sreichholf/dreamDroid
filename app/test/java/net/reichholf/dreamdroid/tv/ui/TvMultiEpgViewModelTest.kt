@@ -1,6 +1,7 @@
 package net.reichholf.dreamdroid.tv.ui
 
 import androidx.lifecycle.SavedStateHandle
+import java.util.concurrent.CountDownLatch
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
@@ -9,6 +10,7 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
 import kotlinx.coroutines.withTimeout
+import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.LiveStream
 import net.reichholf.dreamdroid.data.ReceiverPluginsRepository
@@ -37,6 +39,7 @@ import okhttp3.mockwebserver.RecordedRequest
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -52,6 +55,14 @@ class TvMultiEpgViewModelTest {
     @Volatile
     private var epgMultiBody: String? = null
 
+    /** The `/web/getservices` answer; null answers the fixture. */
+    @Volatile
+    private var tvBouquetsBody: String? = null
+
+    /** When set, `/web/getservices` waits for it before answering. */
+    @Volatile
+    private var tvBouquetsGate: CountDownLatch? = null
+
     @BeforeEach
     fun setUp() {
         Dispatchers.setMain(UnconfinedTestDispatcher())
@@ -61,6 +72,8 @@ class TvMultiEpgViewModelTest {
 
     @AfterEach
     fun tearDown() {
+        // A test that failed before opening the gate must not leave the dispatcher blocked.
+        tvBouquetsGate?.countDown()
         runBlocking { viewModels.forEach { it.cancelAndJoin() } }
         receiver.stop()
         Dispatchers.resetMain()
@@ -266,6 +279,64 @@ class TvMultiEpgViewModelTest {
     }
 
     @Test
+    fun profileSwitchReloadsTheBouquetForTheNewProfile() = runBlocking<Unit> {
+        epgMultiBody = epgMultiAround(System.currentTimeMillis() / 1000L)
+        val viewModel = viewModel()
+        viewModel.open(BOUQUET, "Favourites")
+        awaitState(viewModel) { it.grid.channels.isNotEmpty() && !it.grid.syncing }
+        val requestsBefore = epgMultiTimes().size
+
+        // Hold the new profile's bouquet list so the invalidation is observable on its own.
+        val bouquetsGate = CountDownLatch(1)
+        tvBouquetsGate = bouquetsGate
+        // The new profile's receiver answers a programme the old grid cannot show.
+        epgMultiBody = epgMultiAround(System.currentTimeMillis() / 1000L, title = "Switched")
+        // A different default proves the current bouquet was kept because it still exists.
+        switchToAnotherProfile(defaultBouquetRef = OTHER_BOUQUET)
+
+        val invalidated = awaitState(viewModel) { it.grid.channels.isEmpty() }
+        assertTrue(invalidated.grid.bouquetRef.isEmpty())
+
+        bouquetsGate.countDown()
+        val state = awaitState(viewModel) {
+            it.grid.channels.any { channel ->
+                channel.bars.any { bar -> bar.event.title == "Switched" }
+            } && !it.grid.syncing
+        }
+
+        assertEquals(BOUQUET, state.bouquetRef)
+        assertEquals(BOUQUET, state.grid.bouquetRef)
+        assertTrue(
+            epgMultiTimes().size > requestsBefore,
+            "the switch must refetch the bouquet for the new profile"
+        )
+    }
+
+    @Test
+    fun profileSwitchFallsBackWhenTheBouquetIsGone() = runBlocking<Unit> {
+        epgMultiBody = epgMultiAround(System.currentTimeMillis() / 1000L)
+        val viewModel = viewModel()
+        viewModel.open(BOUQUET, "Favourites")
+        awaitState(viewModel) { it.grid.channels.isNotEmpty() && !it.grid.syncing }
+
+        tvBouquetsBody = serviceList(OTHER_BOUQUET, "Other")
+        val other = switchToAnotherProfile(defaultBouquetRef = OTHER_BOUQUET)
+
+        val state = awaitState(viewModel) {
+            it.bouquetRef == OTHER_BOUQUET && it.grid.bouquetRef == OTHER_BOUQUET &&
+                it.grid.channels.isNotEmpty() && !it.grid.syncing
+        }
+
+        assertEquals(UiText.Raw("Other"), state.title)
+        // The gate was rebuilt from the new profile's tabs: the fallback bouquet caches.
+        val chunk = MultiEpgWindows.chunkContaining(state.grid.anchorSec)
+        assertNotNull(
+            receiver.profiles.database.epgDao()
+                .getChunk(other.id!!, OTHER_BOUQUET, chunk.startSec)
+        )
+    }
+
+    @Test
     fun refreshRefetchesThePannedChunk() = runBlocking {
         receiver.answer = { request ->
             when (request.requestUrl?.encodedPath) {
@@ -317,6 +388,21 @@ class TvMultiEpgViewModelTest {
         assertEquals(MultiEpgZoom.DEFAULT_MINUTES, viewModel().uiState.value.visibleMinutes)
     }
 
+    /** Activates a second profile on the same receiver, as the TV profile screen does. */
+    private suspend fun switchToAnotherProfile(defaultBouquetRef: String = BOUQUET): Profile {
+        val first = receiver.profiles.repository.current.value!!
+        val other = Profile().apply {
+            name = "other"
+            host = first.host
+            port = first.port
+            defaultBouquetTv = defaultBouquetRef
+            defaultBouquetTvName = "Other"
+        }
+        receiver.profiles.repository.save(other)
+        receiver.profiles.repository.setCurrent(other.id!!, forceEvent = true)
+        return other
+    }
+
     /** The `time` of each `/web/epgmulti` request, in order. */
     private fun epgMultiTimes(): List<String?> = receiver.requests
         .filter { it.requestUrl?.encodedPath == "/web/epgmulti" }
@@ -328,7 +414,10 @@ class TvMultiEpgViewModelTest {
                 epgMultiBody ?: loadWebFixture("epgmulti.xml")
             )
 
-            "/web/getservices" -> MockResponse().setBody(loadWebFixture("getservices.xml"))
+            "/web/getservices" -> {
+                tvBouquetsGate?.await()
+                MockResponse().setBody(tvBouquetsBody ?: loadWebFixture("getservices.xml"))
+            }
 
             "/web/timerlist" -> MockResponse().setBody(loadWebFixture("timerlist.xml"))
 
@@ -343,15 +432,21 @@ class TvMultiEpgViewModelTest {
         }
 
     /** One programme on [BOUQUET_CHANNEL] that started ten minutes before [nowSec]. */
-    private fun epgMultiAround(nowSec: Long): String =
+    private fun epgMultiAround(nowSec: Long, title: String = "Now"): String =
         "<e2eventlist><e2event><e2eventid>1</e2eventid>" +
             "<e2eventstart>${nowSec - 600}</e2eventstart>" +
             "<e2eventduration>3600</e2eventduration>" +
             "<e2eventcurrenttime>$nowSec</e2eventcurrenttime>" +
-            "<e2eventtitle>Now</e2eventtitle>" +
+            "<e2eventtitle>$title</e2eventtitle>" +
             "<e2eventservicereference>$BOUQUET_CHANNEL</e2eventservicereference>" +
             "<e2eventservicename>Das Erste HD</e2eventservicename>" +
             "</e2event></e2eventlist>"
+
+    /** A `/web/getservices` answer with the single user bouquet [ref]. */
+    private fun serviceList(ref: String, name: String): String = "<e2servicelist><e2service>" +
+        "<e2servicereference>$ref</e2servicereference>" +
+        "<e2servicename>$name</e2servicename>" +
+        "</e2service></e2servicelist>"
 
     private fun viewModel(handle: SavedStateHandle = SavedStateHandle()): TvMultiEpgViewModel =
         TvMultiEpgViewModel(

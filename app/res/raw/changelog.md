@@ -10,6 +10,7 @@
 * FIX: Timer cleanup failed with extended security enabled
 * FIX: Offline lists wiped by an unreadable receiver answer
 * FIX: MultiEPG cached another profile's programmes after a profile switch
+* FIX: TV - Guide kept the previous profile's programmes after a switch
 
 ## 2.0.470
 * NEW: Hide bouquets per profile

@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -85,7 +86,8 @@ data class TvMultiEpgUiState(
 
 /**
  * State of the TV hub's Guide. The grid loads on [viewModelScope], so it outlives
- * recomposition, configuration changes and switching to another hub section.
+ * recomposition, configuration changes and switching to another hub section; a profile
+ * switch replaces it with the new profile's bouquet.
  */
 @HiltViewModel
 class TvMultiEpgViewModel @Inject constructor(
@@ -133,6 +135,14 @@ class TvMultiEpgViewModel @Inject constructor(
     private var startJob: Job? = null
     private var streamJob: Job? = null
 
+    init {
+        // [ProfileRepository.switches] has no replay: it fires only when the active profile
+        // really changed, never at start or on a recomposition.
+        viewModelScope.launch(start = CoroutineStart.UNDISPATCHED) {
+            profiles.switches.collect { onProfileSwitched() }
+        }
+    }
+
     /**
      * Shows the bouquet [ref] named [name]: the first call loads the bouquet list with it as
      * the launch bouquet, later calls switch to it ([pickBouquet]).
@@ -152,8 +162,34 @@ class TvMultiEpgViewModel @Inject constructor(
         }
     }
 
+    /**
+     * The active profile changed: drop the grid, bouquet list and persist gate of the
+     * previous profile, then reload the bouquet it showed. [start] refreshes the gate before
+     * it loads, and a bouquet the new profile does not list falls back to its default.
+     */
+    private fun onProfileSwitched() {
+        startJob?.cancel()
+        startJob = null
+        grid.reset()
+        persistGate.knownTabRefs = emptyList()
+        val state = _uiState.value
+        _uiState.update {
+            it.copy(
+                bouquets = emptyList(),
+                pickingBouquet = false,
+                detailEvent = null,
+                editTimerEvent = null
+            )
+        }
+        start(
+            extraRef = state.bouquetRef.takeIf { it.isNotBlank() },
+            extraName = state.bouquetName.takeIf { it.isNotBlank() },
+            keepOnlyIfListed = true
+        )
+    }
+
     /** Loads the bouquet list and the launch bouquet. */
-    private fun start(extraRef: String?, extraName: String?) {
+    private fun start(extraRef: String?, extraName: String?, keepOnlyIfListed: Boolean = false) {
         // No profile: start nothing. startJob stays null, so an open() that comes later can
         // load; the host does not re-open on its own when a profile appears.
         val profile = profiles.current.value ?: return
@@ -161,9 +197,10 @@ class TvMultiEpgViewModel @Inject constructor(
             val tvBouquets = services.tvBouquets()
             persistGate.knownTabRefs = services.userBouquetTabs(tvBouquets).map { it.reference }
             val bouquets = tvBouquets.filter { it.reference.isNotBlank() }
+            val listed = extraRef?.let { ref -> bouquets.firstOrNull { it.reference == ref } }
             val launch = resolveTvMultiEpgLaunchBouquet(
-                extraRef = extraRef,
-                extraName = extraName,
+                extraRef = if (!keepOnlyIfListed || listed != null) extraRef else null,
+                extraName = if (keepOnlyIfListed && listed != null) listed.name else extraName,
                 defaultRef = profile.defaultBouquetTv.orEmpty(),
                 defaultName = profile.defaultBouquetTvName.orEmpty(),
                 firstBouquet = bouquets.firstOrNull()
