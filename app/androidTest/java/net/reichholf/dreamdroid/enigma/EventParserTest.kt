@@ -4,6 +4,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import net.reichholf.dreamdroid.testutil.loadWebFixture
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -14,7 +15,7 @@ class EventParserTest {
     fun parsesEpgserviceFixtureIntoEventValues() {
         val xml = loadWebFixture("epgservice.xml")
         val started = System.nanoTime()
-        val events = EventParser.parse(xml)
+        val events = requireNotNull(EventParser.parse(xml))
         println("EventParser.parse nanos=${System.nanoTime() - started}")
 
         assertEquals(2, events.size)
@@ -44,13 +45,13 @@ class EventParserTest {
     }
 
     @Test
-    fun emptyXmlYieldsNoEvents() {
-        assertEquals(0, EventParser.parse("").size)
+    fun emptyXmlIsNullNotEmptyList() {
+        assertNull(EventParser.parse(""))
     }
 
     @Test
-    fun malformedXmlYieldsNoEvents() {
-        assertEquals(0, EventParser.parse("<e2eventlist><e2event>").size)
+    fun malformedXmlIsNullNotEmptyList() {
+        assertNull(EventParser.parse("<e2eventlist><e2event>"))
     }
 
     @Test
@@ -71,7 +72,7 @@ class EventParserTest {
             </e2event>
             </e2eventlist>
         """.trimIndent().replace("\\u0001", "\u0001")
-        val events = EventParser.parse(xml)
+        val events = requireNotNull(EventParser.parse(xml))
         assertEquals(1, events.size)
         assertEquals("News", events[0].title)
         assertTrue(events[0].description.contains("Has"))

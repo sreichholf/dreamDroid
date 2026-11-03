@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test
 class EpgNowNextParserTest {
     @Test
     fun pairsConsecutiveEventsFromFixture() {
-        val rows = EpgNowNextParser.parse(loadWebFixture("epgnownext.xml"))
+        val rows = requireNotNull(EpgNowNextParser.parse(loadWebFixture("epgnownext.xml")))
 
         assertEquals(3, rows.size)
 
@@ -34,29 +34,31 @@ class EpgNowNextParserTest {
     }
 
     @Test
-    fun emptyXmlYieldsNoRows() {
-        assertEquals(0, EpgNowNextParser.parse("").size)
+    fun emptyXmlIsNullNotEmptyList() {
+        assertNull(EpgNowNextParser.parse(""))
     }
 
     @Test
     fun singleEventIsNowOnlyRow() {
-        val events = EventParser.parse(
-            """
-            <?xml version="1.0" encoding="UTF-8"?>
-            <e2eventlist>
-            <e2event>
-            <e2eventid>1</e2eventid>
-            <e2eventstart>1893456000</e2eventstart>
-            <e2eventduration>60</e2eventduration>
-            <e2eventcurrenttime>1893456000</e2eventcurrenttime>
-            <e2eventtitle>Solo</e2eventtitle>
-            <e2eventdescription/>
-            <e2eventdescriptionextended/>
-            <e2eventservicereference>1:0:1:1:1:1:0:0:0:0:</e2eventservicereference>
-            <e2eventservicename>TV</e2eventservicename>
-            </e2event>
-            </e2eventlist>
-            """.trimIndent()
+        val events = requireNotNull(
+            EventParser.parse(
+                """
+                <?xml version="1.0" encoding="UTF-8"?>
+                <e2eventlist>
+                <e2event>
+                <e2eventid>1</e2eventid>
+                <e2eventstart>1893456000</e2eventstart>
+                <e2eventduration>60</e2eventduration>
+                <e2eventcurrenttime>1893456000</e2eventcurrenttime>
+                <e2eventtitle>Solo</e2eventtitle>
+                <e2eventdescription/>
+                <e2eventdescriptionextended/>
+                <e2eventservicereference>1:0:1:1:1:1:0:0:0:0:</e2eventservicereference>
+                <e2eventservicename>TV</e2eventservicename>
+                </e2event>
+                </e2eventlist>
+                """.trimIndent()
+            )
         )
         val rows = EpgNowNextParser.pairEvents(events)
         assertEquals(1, rows.size)
@@ -67,7 +69,7 @@ class EpgNowNextParserTest {
     @Test
     fun flatEpgNowMustNotPairUnrelatedServices() {
         // epgservice.xml is a flat two-event list for one service; treat like epgnow: one row each.
-        val events = EventParser.parse(loadWebFixture("epgservice.xml"))
+        val events = requireNotNull(EventParser.parse(loadWebFixture("epgservice.xml")))
         assertEquals(2, events.size)
         // Client maps flat lists without pairing (see DreamboxWebIfApi for /web/epgnow).
         val rows = events.map { event ->

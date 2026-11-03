@@ -12,7 +12,7 @@ import org.junit.runner.RunWith
 class ZapListMapperTest {
     @Test
     fun rowsFromDropsMarkersAndKeepsChannels() {
-        val parsed = ServiceParser.parse(loadWebFixture("getservices.xml"))
+        val parsed = requireNotNull(ServiceParser.parse(loadWebFixture("getservices.xml")))
         assertEquals(3, parsed.size)
 
         val rows = ZapListMapper.rowsFrom(parsed)

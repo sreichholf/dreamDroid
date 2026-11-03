@@ -93,7 +93,7 @@ class DreamboxWebIfApi(
 
     private suspend fun fetchServices(param: NameValuePair): EnigmaResponse<List<Service>> =
         withContext(Dispatchers.IO) {
-            http.fetch(URIStore.SERVICES, listOf(param)).mapParsed { xml ->
+            http.fetch(URIStore.SERVICES, listOf(param)).mapParsedList { xml ->
                 ServiceParser.parse(xml)
             }
         }
@@ -102,7 +102,7 @@ class DreamboxWebIfApi(
         uri: String,
         vararg params: NameValuePair
     ): EnigmaResponse<List<Event>> = withContext(Dispatchers.IO) {
-        http.fetch(uri, params.toList()).mapParsed { xml -> EventParser.parse(xml) }
+        http.fetch(uri, params.toList()).mapParsedList { xml -> EventParser.parse(xml) }
     }
 
     /**
@@ -112,12 +112,12 @@ class DreamboxWebIfApi(
     private suspend fun fetchNowNext(param: NameValuePair): EnigmaResponse<List<ServiceNowNext>> =
         withContext(Dispatchers.IO) {
             if (capabilities.nowNext) {
-                http.fetch(URIStore.EPG_NOWNEXT, listOf(param)).mapParsed { xml ->
+                http.fetch(URIStore.EPG_NOWNEXT, listOf(param)).mapParsedList { xml ->
                     EpgNowNextParser.parse(xml)
                 }
             } else {
-                http.fetch(URIStore.EPG_NOW, listOf(param)).mapParsed { xml ->
-                    EventParser.parse(xml).map { event ->
+                http.fetch(URIStore.EPG_NOW, listOf(param)).mapParsedList { xml ->
+                    EventParser.parse(xml)?.map { event ->
                         ServiceNowNext(
                             serviceReference = event.serviceReference,
                             serviceName = event.serviceName,
@@ -416,7 +416,7 @@ class DreamboxWebIfApi(
     override suspend fun bouquetEditorSatellites(mode: BouquetMode): EnigmaResponse<List<Service>> =
         withContext(Dispatchers.IO) {
             http.fetch(URIStore.BOUQUET_EDITOR_SATELLITES, listOf(mode.param()))
-                .mapParsed { xml -> ServiceParser.parse(xml) }
+                .mapParsedList { xml -> ServiceParser.parse(xml) }
         }
 
     override suspend fun addBouquet(mode: BouquetMode, name: String): EnigmaResponse<SimpleResult> =
@@ -544,6 +544,25 @@ class DreamboxWebIfApi(
             is EnigmaHttpResult.Success -> EnigmaResponse(parse(text))
             is EnigmaHttpResult.Failure -> EnigmaResponse(null, error)
         }
+
+    /**
+     * A list read whose parser returns null for a body that is not the expected XML. That is a
+     * [EnigmaFailure.Parse], not an empty answer: the repositories must not cache it.
+     */
+    private fun <T> EnigmaHttpResult.mapParsedList(
+        parse: (String) -> List<T>?
+    ): EnigmaResponse<List<T>> = when (this) {
+        is EnigmaHttpResult.Success -> {
+            val parsed = parse(text)
+            if (parsed != null) {
+                EnigmaResponse(parsed)
+            } else {
+                EnigmaResponse(null, EnigmaHttpError(EnigmaFailure.Parse))
+            }
+        }
+
+        is EnigmaHttpResult.Failure -> EnigmaResponse(null, error)
+    }
 }
 
 private const val SECONDS_PER_MINUTE = 60L

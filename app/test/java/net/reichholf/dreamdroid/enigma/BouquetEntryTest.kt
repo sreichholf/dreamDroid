@@ -60,6 +60,6 @@ class BouquetEntryTest {
     }
 
     private fun kinds(fixture: String, atRoot: Boolean): List<BouquetEntryKind> =
-        ServiceParser.parse(loadWebFixture("bouqueteditor/$fixture"))
+        requireNotNull(ServiceParser.parse(loadWebFixture("bouqueteditor/$fixture")))
             .map { it.toBouquetEntry(atRoot).kind }
 }

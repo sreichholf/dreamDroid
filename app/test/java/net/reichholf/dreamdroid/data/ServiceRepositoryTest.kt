@@ -4,6 +4,7 @@ import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import net.reichholf.dreamdroid.Profile
+import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.enigma.EnigmaFailureException
 import net.reichholf.dreamdroid.enigma.Movie
 import net.reichholf.dreamdroid.enigma.ServiceNowNext
@@ -120,6 +121,64 @@ class ServiceRepositoryTest {
 
         assertFalse(load.cached)
         assertTrue(load.bouquets.tv.isEmpty() && load.bouquets.radio.isEmpty())
+    }
+
+    @Test
+    fun malformedTvIndexWithoutATabStripIsAParseFailure() = runBlocking {
+        lists[TV_ROOTS[0]] = "<e2servicelist><e2service>"
+
+        val load = services.bouquets(forceRefresh = true).last()
+
+        assertEquals(EnigmaFailure.Parse, (load as BouquetListLoad.Failed).error?.failure)
+        assertTrue(services.cachedBouquets().tv.isEmpty())
+    }
+
+    @Test
+    fun malformedTvIndexIsAParseFailureThatKeepsTheTabStrip() = runBlocking {
+        writeStrip("TV", FAVOURITES to "Favourites")
+        lists[TV_ROOTS[0]] = "<e2servicelist><e2service>"
+
+        val load = services.bouquets(forceRefresh = true).last() as BouquetListLoad.Loaded
+
+        assertTrue(load.cached)
+        assertEquals(listOf(FAVOURITES), strip("TV"))
+    }
+
+    @Test
+    fun malformedTvHubIndexDoesNotReplaceTheTvStrip() = runBlocking {
+        writeStrip("TV", FAVOURITES to "Favourites")
+        lists[TV_ROOTS[0]] = "<e2servicelist><e2service>"
+
+        val response = services.tvBouquetTabs()
+
+        assertNull(response.value)
+        assertEquals(EnigmaFailure.Parse, response.error?.failure)
+        assertEquals(listOf(FAVOURITES), strip("TV"))
+    }
+
+    @Test
+    fun malformedRosterDoesNotReplaceTheStoredRoster() = runBlocking {
+        writeStrip("TV", FAVOURITES to "Favourites")
+        services.persistRoster(FAVOURITES, FAVOURITES, listOf(channel))
+        lists[FAVOURITES] = "<e2servicelist><e2service>"
+
+        val loads = services.nowNextList(FAVOURITES, FAVOURITES, forceRefresh = true).toList()
+
+        assertEquals(listOf(NowNextListLoad.Rows(listOf(channel), cached = true)), loads)
+        assertEquals(
+            listOf(CHANNEL),
+            rosterDao.getRoster(PROFILE_ID, FAVOURITES).map { it.serviceRef }
+        )
+    }
+
+    @Test
+    fun malformedBouquetNowNextIsAParseFailureNotAnEmptyList() = runBlocking {
+        receiver.answer = { MockResponse().setBody("<e2eventlist><e2event>") }
+
+        val response = services.bouquetNowNext(FAVOURITES)
+
+        assertNull(response.value)
+        assertEquals(EnigmaFailure.Parse, response.error?.failure)
     }
 
     @Test

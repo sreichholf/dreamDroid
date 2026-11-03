@@ -12,7 +12,7 @@ import org.junit.runner.RunWith
 class EpgListMapperTest {
     @Test
     fun parsesTypedEventFields() {
-        val events = EventParser.parse(loadWebFixture("epgservice.xml"))
+        val events = requireNotNull(EventParser.parse(loadWebFixture("epgservice.xml")))
         val event = events[0]
 
         assertEquals("39150", event.eventId)
