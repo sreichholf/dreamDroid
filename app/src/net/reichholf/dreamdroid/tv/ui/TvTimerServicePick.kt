@@ -1,7 +1,6 @@
 package net.reichholf.dreamdroid.tv.ui
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -113,7 +112,7 @@ fun TvTimerServicePickScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .focusGroup()
+            .tvFocusTrap()
             .testTag("tv_timer_service_pick")
     ) {
         if (rows.isEmpty()) {
@@ -144,7 +143,8 @@ fun TvTimerServicePickScreen(
                                 } else {
                                     Modifier
                                 }
-                            ),
+                            )
+                            .testTag("tv_timer_service_pick_row_$index"),
                         colors = dreamDroidTvCardColors(),
                         scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f)
                     ) {

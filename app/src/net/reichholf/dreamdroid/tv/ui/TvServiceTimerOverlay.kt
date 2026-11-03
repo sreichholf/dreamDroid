@@ -1,7 +1,6 @@
 package net.reichholf.dreamdroid.tv.ui
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -66,7 +65,7 @@ fun TvServiceTimerOverlay(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .focusGroup()
+            .tvFocusTrap()
             .testTag("tv_service_timer_overlay"),
         contentAlignment = Alignment.Center
     ) {
@@ -148,6 +147,7 @@ fun TvServiceTimerOverlay(
             )
         }
     }
+    RestoreFocusAfterOverlay(overlayShown = showNeedsReceiver, focus = firstActionFocus)
 }
 
 private fun eventActionLabel(heading: String, event: Event): String {

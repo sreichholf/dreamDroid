@@ -2,7 +2,6 @@ package net.reichholf.dreamdroid.tv.ui
 
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.LocalActivity
-import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.text.input.TextFieldState
@@ -16,6 +15,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.platform.testTag
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import net.reichholf.dreamdroid.enigma.Service
@@ -34,6 +34,7 @@ fun TvTimerEditorHost(
     isCreate: Boolean,
     onDismiss: () -> Unit,
     onSaved: () -> Unit,
+    trapFocus: Boolean = false,
     modifier: Modifier = Modifier,
     viewModel: TvTimerEditViewModel = hiltViewModel()
 ) {
@@ -66,6 +67,7 @@ fun TvTimerEditorHost(
         onServicePicked = viewModel::onServicePicked,
         onSave = viewModel::save,
         onDismiss = onDismiss,
+        trapFocus = trapFocus,
         modifier = modifier
     )
 }
@@ -74,6 +76,8 @@ fun TvTimerEditorHost(
  * The editor of [uiState] with the in-host service pick, whose ViewModel is
  * [servicePickKey]. While
  * [TimerEditUiState.mutationsBlocked], save shows [TvNeedsReceiverOverlay] instead.
+ * [trapFocus] keeps the D-pad in the editor where it is a modal overlay; the Timers
+ * section page leaves Up to the hub top bar.
  */
 @Composable
 fun TvTimerEditorContent(
@@ -85,6 +89,7 @@ fun TvTimerEditorContent(
     onServicePicked: (Service) -> Unit,
     onSave: () -> Unit,
     onDismiss: () -> Unit,
+    trapFocus: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     var pickingService by remember { mutableStateOf(false) }
@@ -108,7 +113,13 @@ fun TvTimerEditorContent(
         }
     }
 
-    Box(modifier = modifier.fillMaxSize().focusGroup()) {
+    val trapModifier = if (trapFocus) Modifier.tvFocusTrap() else Modifier
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .then(trapModifier)
+            .testTag("tv_timer_editor")
+    ) {
         if (pickingService) {
             TvTimerServicePick(
                 viewModelKey = servicePickKey,
@@ -147,4 +158,5 @@ fun TvTimerEditorContent(
             TvNeedsReceiverOverlay(onDismiss = { showNeedsReceiver = false })
         }
     }
+    RestoreFocusAfterOverlay(overlayShown = showNeedsReceiver, focus = initialFocus)
 }

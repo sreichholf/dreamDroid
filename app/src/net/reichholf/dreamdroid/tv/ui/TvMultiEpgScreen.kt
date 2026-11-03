@@ -222,6 +222,23 @@ fun TvMultiEpgScreen(
     val scope = rememberCoroutineScope()
     var pendingPanRight by remember { mutableStateOf<TvMultiEpgPanRequest?>(null) }
     var gridFocused by remember { mutableStateOf(false) }
+    // A detail or editor overlay takes the D-pad; dismissing it puts focus back on the grid
+    // cursor. The bouquet picker has its own restore to the chip, so leave that one alone.
+    var wasKeysEnabled by remember { mutableStateOf(keysEnabled) }
+    var wasPickingBouquet by remember { mutableStateOf(pickingBouquet) }
+    LaunchedEffect(keysEnabled, pickingBouquet) {
+        val restoreGrid = keysEnabled && !wasKeysEnabled && !wasPickingBouquet
+        wasKeysEnabled = keysEnabled
+        wasPickingBouquet = pickingBouquet
+        if (restoreGrid && channels.isNotEmpty()) {
+            withFrameNanos {}
+            try {
+                gridFocus.requestFocus()
+            } catch (_: IllegalStateException) {
+                // Grid not in composition (empty bouquet).
+            }
+        }
+    }
 
     LaunchedEffect(timelineStartSec) {
         if (timelineStartSec == 0L) {
