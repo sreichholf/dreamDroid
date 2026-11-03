@@ -49,7 +49,11 @@ class CommonsNetPiconFtp(private val client: FTPClient = FTPClient()) : PiconFtp
     private fun reply(ok: Boolean): FtpReply = FtpReply(ok, client.replyCode, client.replyString)
 
     private companion object {
-        /** Long enough for a busy receiver, short enough to fail before the FGS timeout. */
+        /**
+         * Bound one socket wait. A receiver that accepts the connection and then stops
+         * answering must fail the sync instead of blocking the worker. These are not tied
+         * to the foreground service: it keeps the worker alive, and its own limit is hours.
+         */
         const val CONNECT_TIMEOUT_MS = 15_000
         const val DEFAULT_TIMEOUT_MS = 30_000
         const val DATA_TIMEOUT_MS = 30_000
