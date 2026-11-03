@@ -20,6 +20,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
@@ -78,7 +79,9 @@ fun TimerEditContent(
     showSaveFab: Boolean = false,
     onSave: () -> Unit = {},
     initialFocusRequester: FocusRequester? = null,
-    serviceFocusRequester: FocusRequester? = null
+    serviceFocusRequester: FocusRequester? = null,
+    saveFocusRequester: FocusRequester? = null,
+    upFocusRequester: FocusRequester? = null
 ) {
     ShowShellUserMessage(uiState.saveError, actions::onSaveErrorShown)
     val form = uiState.form(name.text) ?: return
@@ -98,6 +101,8 @@ fun TimerEditContent(
         onSave = onSave,
         initialFocusRequester = initialFocusRequester,
         serviceFocusRequester = serviceFocusRequester,
+        saveFocusRequester = saveFocusRequester,
+        upFocusRequester = upFocusRequester,
         modifier = modifier
     )
 
@@ -189,7 +194,9 @@ fun TimerEditScreen(
     mutating: Boolean = false,
     onSave: () -> Unit = {},
     initialFocusRequester: FocusRequester? = null,
-    serviceFocusRequester: FocusRequester? = null
+    serviceFocusRequester: FocusRequester? = null,
+    saveFocusRequester: FocusRequester? = null,
+    upFocusRequester: FocusRequester? = null
 ) {
     val resources = LocalResources.current
     val dateFormat = remember { SimpleDateFormat("yyyy-MM-dd", Locale.US) }
@@ -216,8 +223,15 @@ fun TimerEditScreen(
                     state = name,
                     label = stringResource(R.string.title),
                     contentDescription = "Title",
-                    modifier =
-                        initialFocusRequester?.let { Modifier.focusRequester(it) } ?: Modifier
+                    modifier = Modifier
+                        .then(
+                            initialFocusRequester?.let { Modifier.focusRequester(it) } ?: Modifier
+                        )
+                        .then(
+                            upFocusRequester?.let { target ->
+                                Modifier.focusProperties { up = target }
+                            } ?: Modifier
+                        )
                 )
                 EditOutlinedTextField(
                     state = description,
@@ -334,7 +348,8 @@ fun TimerEditScreen(
                 EditFormSaveRow(
                     label = saveLabel,
                     onSave = onSave,
-                    enabled = !mutating
+                    enabled = !mutating,
+                    modifier = saveFocusRequester?.let { Modifier.focusRequester(it) } ?: Modifier
                 )
             }
             if (showSaveFab && !tvForm) {

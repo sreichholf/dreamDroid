@@ -4,8 +4,11 @@ import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsFocused
+import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onNode
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.pressKey
@@ -91,7 +94,9 @@ class TvHubInfoOverlayFocusTest {
             composeRule.onAllNodesWithTag("hub_service_card").fetchSemanticsNodes().isNotEmpty()
         }
 
-        val card = composeRule.onAllNodesWithTag("hub_service_card")[0]
+        val card = composeRule.onNode(
+            hasTestTag("hub_service_card") and hasText("Das Erste HD", substring = true)
+        )
         card.requestFocus()
         card.performKeyInput { pressKey(Key.Info) }
         composeRule.waitForIdle()

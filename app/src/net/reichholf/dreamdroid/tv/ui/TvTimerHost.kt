@@ -84,7 +84,14 @@ fun TvTimerHostContent(
     var showNeedsReceiver by remember { mutableStateOf(false) }
     val listFocus = remember { FocusRequester() }
     fun online(action: () -> Unit) {
-        if (uiState.mutationsBlocked) showNeedsReceiver = true else action()
+        if (uiState.mutationsBlocked) {
+            // Saved before the overlay takes focus: the list can only restore a child it
+            // remembered while it still had one.
+            listFocus.saveFocusedChild()
+            showNeedsReceiver = true
+        } else {
+            action()
+        }
     }
 
     BackHandler(enabled = uiState.page !is TvTimerPage.List) {

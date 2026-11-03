@@ -102,11 +102,7 @@ fun TvTimerServicePickScreen(
         if (rows.isEmpty()) {
             return@LaunchedEffect
         }
-        try {
-            firstRowFocus.requestFocus()
-        } catch (_: IllegalStateException) {
-            // Overlay not attached yet.
-        }
+        firstRowFocus.requestFocus()
     }
 
     Box(

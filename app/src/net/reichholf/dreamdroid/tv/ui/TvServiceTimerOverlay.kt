@@ -56,11 +56,7 @@ fun TvServiceTimerOverlay(
     val selectedEvent = if (selectedIsNext) service.next else service.now
     BackHandler(onBack = onDismiss)
     LaunchedEffect(service.serviceReference) {
-        try {
-            firstActionFocus.requestFocus()
-        } catch (_: IllegalStateException) {
-            // Overlay not attached yet.
-        }
+        firstActionFocus.requestFocus()
     }
     Box(
         modifier = modifier

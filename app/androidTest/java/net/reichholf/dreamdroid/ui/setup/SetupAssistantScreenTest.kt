@@ -6,11 +6,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.input.InputMode
 import androidx.compose.ui.input.InputModeManager
 import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalInputModeManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.LiveRegionMode
@@ -924,8 +926,10 @@ class SetupAssistantScreenTest {
         val gate = CompletableDeferred<Unit>()
         val viewModel = model(documents = GatedDocuments(MemoryDocuments(), gate))
         lateinit var inputModeManager: InputModeManager
+        lateinit var focusManager: FocusManager
         composeRule.setContent {
             inputModeManager = LocalInputModeManager.current
+            focusManager = LocalFocusManager.current
             DreamDroidTheme {
                 SetupAssistantScreen(
                     viewModel = viewModel,
@@ -949,8 +953,12 @@ class SetupAssistantScreenTest {
         composeRule.runOnIdle { viewModel.restoreFrom(RESTORE_URI) }
         assertTrue(viewModel.uiState.value.restoring)
         composeRule.waitForIdle()
-        // Both Welcome actions are disabled while the read runs, so the button loses focus.
-        restore.assertIsNotEnabled().assertIsNotFocused()
+        // Both Welcome actions are disabled while the read runs. Clear the remote's focus so
+        // the restore is what has to put it back on Restore when the read ends on Welcome.
+        restore.assertIsNotEnabled()
+        composeRule.runOnIdle { focusManager.clearFocus() }
+        composeRule.waitForIdle()
+        restore.assertIsNotFocused()
 
         gate.complete(Unit)
         composeRule.waitUntil(timeoutMillis = 5_000) {

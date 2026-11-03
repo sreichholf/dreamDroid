@@ -106,7 +106,8 @@ class TvTimerEditorHostTest {
             state(isCreate = true).copy(mutationsBlocked = true),
             name = "Blocked save",
             onSave = { saves++ },
-            onDismiss = { dismissed = true }
+            onDismiss = { dismissed = true },
+            trapFocus = true
         )
 
         activateSave()
@@ -117,6 +118,9 @@ class TvTimerEditorHostTest {
         composeRule.onNodeWithTag("hub_stream_unavailable").assertDoesNotExist()
         assertEquals(0, saves)
         assertFalse(dismissed)
+        // Save opened the overlay: the modal editor hands the remote back to Save, not to
+        // the first field.
+        composeRule.onNodeWithText(saveLabel()).assertIsFocused()
     }
 
     @Test
@@ -202,13 +206,14 @@ class TvTimerEditorHostTest {
         state: TimerEditUiState,
         name: String,
         onSave: () -> Unit = {},
-        onDismiss: () -> Unit = {}
+        onDismiss: () -> Unit = {},
+        trapFocus: Boolean = false
     ) {
         var showEditor by mutableStateOf(false)
         composeRule.setContent {
             inputModeManager = LocalInputModeManager.current
             if (showEditor) {
-                Editor(state, name, onSave, onDismiss)
+                Editor(state, name, onSave, onDismiss, trapFocus)
             }
         }
         composeRule.runOnIdle { inputModeManager.requestInputMode(InputMode.Keyboard) }
@@ -257,7 +262,8 @@ class TvTimerEditorHostTest {
         state: TimerEditUiState,
         name: String,
         onSave: () -> Unit = {},
-        onDismiss: () -> Unit = {}
+        onDismiss: () -> Unit = {},
+        trapFocus: Boolean = false
     ) {
         DreamDroidTvTheme {
             Box(modifier = Modifier.fillMaxSize()) {
@@ -269,7 +275,8 @@ class TvTimerEditorHostTest {
                     servicePickKey = tvTimerServicePickKey(null),
                     onServicePicked = {},
                     onSave = onSave,
-                    onDismiss = onDismiss
+                    onDismiss = onDismiss,
+                    trapFocus = trapFocus
                 )
             }
         }

@@ -96,11 +96,15 @@ fun TvTimerEditorContent(
     var showNeedsReceiver by remember { mutableStateOf(false) }
     val initialFocus = remember { FocusRequester() }
     val serviceFocus = remember { FocusRequester() }
+    val saveFocus = remember { FocusRequester() }
     var returnedFromPicker by remember { mutableStateOf(false) }
     val formShown = !pickingService && uiState.timer != null
     // A tab switch that reveals the open editor must leave focus on the bar: only a real
     // open (from the list, with focus there) takes it into the form.
     val tabNavigation by rememberUpdatedState(LocalTvHubTabNavigation.current)
+    // The section editor's Up target. A scrollable form has no focus target above its first
+    // field, so a D-pad Up there clears focus instead of leaving the form.
+    val topBarFocus = LocalTvHubTopBarFocus.current.takeUnless { trapFocus }
 
     BackHandler(enabled = !pickingService, onBack = onDismiss)
 
@@ -143,6 +147,8 @@ fun TvTimerEditorContent(
                 showSaveFab = true,
                 initialFocusRequester = initialFocus,
                 serviceFocusRequester = serviceFocus,
+                saveFocusRequester = saveFocus,
+                upFocusRequester = topBarFocus,
                 onSave = {
                     if (uiState.mutationsBlocked) {
                         showNeedsReceiver = true
@@ -158,5 +164,6 @@ fun TvTimerEditorContent(
             TvNeedsReceiverOverlay(onDismiss = { showNeedsReceiver = false })
         }
     }
-    RestoreFocusAfterOverlay(overlayShown = showNeedsReceiver, focus = initialFocus)
+    // Save opened the overlay, so Save gets the remote back, not the first field.
+    RestoreFocusAfterOverlay(overlayShown = showNeedsReceiver, focus = saveFocus)
 }

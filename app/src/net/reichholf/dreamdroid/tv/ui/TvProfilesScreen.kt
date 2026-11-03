@@ -67,11 +67,7 @@ fun TvProfilesScreen(
             return@LaunchedEffect
         }
         listState.scrollToItem(activeIndex + 2)
-        try {
-            activeFocusRequester.requestFocus()
-        } catch (_: IllegalStateException) {
-            // Item not yet attached.
-        }
+        activeFocusRequester.requestFocus()
     }
 
     LazyColumn(

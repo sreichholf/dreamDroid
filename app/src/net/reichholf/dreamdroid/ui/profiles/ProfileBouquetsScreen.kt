@@ -49,11 +49,7 @@ fun ProfileBouquetsScreen(
     LaunchedEffect(tvForm, state.loading, hasRows) {
         if (tvForm && hasRows && !state.loading) {
             withFrameNanos {}
-            try {
-                firstRowFocus.requestFocus()
-            } catch (_: IllegalStateException) {
-                // The row is not attached yet.
-            }
+            firstRowFocus.requestFocus()
         }
     }
 

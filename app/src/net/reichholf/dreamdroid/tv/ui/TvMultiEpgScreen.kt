@@ -232,11 +232,7 @@ fun TvMultiEpgScreen(
         wasPickingBouquet = pickingBouquet
         if (restoreGrid && channels.isNotEmpty()) {
             withFrameNanos {}
-            try {
-                gridFocus.requestFocus()
-            } catch (_: IllegalStateException) {
-                // Grid not in composition (empty bouquet).
-            }
+            gridFocus.requestFocus()
         }
     }
 
@@ -462,11 +458,7 @@ fun TvMultiEpgScreen(
                 onVisibleMinutesChange?.invoke(minutes)
             },
             onDownToGrid = {
-                try {
-                    gridFocus.requestFocus()
-                } catch (_: IllegalStateException) {
-                    // Grid not in composition (empty bouquet).
-                }
+                gridFocus.requestFocus()
             },
             keysEnabled = keysEnabled
         )
@@ -701,11 +693,7 @@ private fun TvMultiEpgChrome(
             menuWasOpen = true
         } else if (menuWasOpen) {
             menuWasOpen = false
-            try {
-                bouquetChipFocus.requestFocus()
-            } catch (_: IllegalStateException) {
-                // Toolbar not attached.
-            }
+            bouquetChipFocus.requestFocus()
         }
     }
     Row(

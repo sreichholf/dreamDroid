@@ -130,6 +130,8 @@ private fun TvTimerRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            // The restorer's properties apply to the focus target below them, the group.
+            .focusRestorer()
             .focusGroup(),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically
