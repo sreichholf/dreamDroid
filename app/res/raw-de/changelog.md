@@ -4,8 +4,8 @@
 * UPD: Video-Player verbessert
 * FIX: Player - Sendungsinfo und Senderliste fehlten bei Streams aus dem Zap-Raster oder vom aktuellen Sender
 * FIX: Player - Aufnahmen begannen nach dem Verlassen der App von vorne
-* FIX: Player - ein Stream, der nicht startet, meldet den Fehler statt die Bedienung tot zu lassen
-* FIX: Ungültige Hostnamen in Profilen werden abgelehnt
+* FIX: Player - Bedienung tot nach fehlgeschlagenem Stream-Start
+* UPD: Ungültige Hostnamen in Profilen werden abgelehnt
 * UPD: Picon-Sync meldet teilweise Downloads
 * UPD: Cloud-Backup und Geräteübertragung übertragen keine App-Daten; nutze Backup & Wiederherstellung
 * FIX: Picon-Sync meldete Erfolg, obwohl nichts heruntergeladen wurde

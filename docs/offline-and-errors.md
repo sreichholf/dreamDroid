@@ -82,7 +82,7 @@ MultiEPG’s +24 h prefetch of the bouquet **already on screen** is using it, an
 Hub TV/Radio tabs (`buildDedicatedBouquets` in `HubBouquetSelection.kt`):
 
 - If `loadBouquetList` returned children of `servicerefstv[0]` / `servicerefsradio[0]`, those children **are** the user-bouquet tabs (Favourites, Sports, …). Then dedicated **Provider** (`[1]`) and **All Services** (`[2]`) are appended.
-- If the HTTP list was **empty**, `buildDedicatedBouquets` falls back to showing the dedicated roots themselves (index 0 = aggregate Bouquets). That fallback tab is **not** a user bouquet. Never `epgmulti` it; do not treat `FROM BOUQUET "bouquets.tv"` as a cacheable EPG container.
+- If the loaded list is **empty** (the receiver returned no bouquets, or it failed with no Room tab strip), `buildDedicatedBouquets` falls back to showing the dedicated roots themselves (index 0 = aggregate Bouquets). That fallback tab is **not** a user bouquet. Never `epgmulti` it; do not treat `FROM BOUQUET "bouquets.tv"` as a cacheable EPG container.
 
 `Service.isDirectory` is **too coarse** to be the cache guard: it is true for user-bouquet tabs, nested folders, Provider, satellites, and the aggregate index (`FROM BOUQUET` / `FROM PROVIDERS` / `FROM SATELLITES`).
 
