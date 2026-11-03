@@ -59,6 +59,39 @@ class PhoneNavigatorTest {
     }
 
     @Test
+    fun drawerEpgCarriesANestedDefaultsTabToTheList() {
+        val current = profile(id = 1, host = "box")
+        current.setDefaultRefValues(FOLDER, "Satellites")
+        current.setDefaultRef2Values(TAB, "Favourites")
+        profiles.repository.setCurrent(current)
+
+        assertTrue(navigator().navigateToDrawerEpg())
+
+        val route = state.pending.drawerRoot as Epg
+        assertEquals(FOLDER, route.serviceRef)
+        assertEquals(TAB, route.tabRootRef)
+    }
+
+    @Test
+    fun drawerMultiEpgCarriesANestedDefaultsTab() {
+        val preferences = MemorySharedPreferences()
+        DrawerEpgMode.save(preferences, DrawerEpgMode.MULTI)
+        val current = profile(id = 1, host = "box")
+        current.setDefaultRefValues(FOLDER, "Satellites")
+        current.setDefaultRef2Values(TAB, "Favourites")
+        profiles.repository.setCurrent(current)
+
+        assertTrue(navigator(preferences = preferences).navigateToDrawerEpg())
+
+        val listRoute = state.pending.drawerRoot as Epg
+        assertEquals(FOLDER, listRoute.serviceRef)
+        assertEquals(TAB, listRoute.tabRootRef)
+        val multiRoute = state.pending.multiEpg!!
+        assertEquals(FOLDER, multiRoute.serviceRef)
+        assertEquals(TAB, multiRoute.tabRootRef)
+    }
+
+    @Test
     fun dialogFlagsAndRemountsLiveInTheSharedState() {
         navigator().requestLeaveConfirm()
         navigator().onActiveProfileChanged()
@@ -207,17 +240,26 @@ class PhoneNavigatorTest {
         this.host = host
     }
 
-    private fun navigator(state: PhoneNavHostState = this.state) = PhoneNavigator(
+    private fun navigator(
+        state: PhoneNavHostState = this.state,
+        preferences: MemorySharedPreferences = MemorySharedPreferences()
+    ) = PhoneNavigator(
         state = state,
         lifecycleOwner = ResumedOwner(),
         highlighter = null,
         profiles = profiles.repository,
-        settings = SettingsRepository(MemorySharedPreferences()),
+        settings = SettingsRepository(preferences),
         sessions = profiles.sessions
     )
 
     private class ResumedOwner : LifecycleOwner {
         override val lifecycle: Lifecycle =
             LifecycleRegistry.createUnsafe(this).apply { currentState = Lifecycle.State.RESUMED }
+    }
+
+    private companion object {
+        const val TAB =
+            "1:7:1:0:0:0:0:0:0:0:FROM BOUQUET \"userbouquet.tab.tv\" ORDER BY bouquet"
+        const val FOLDER = "1:7:1:0:0:0:0:0:0:0:FROM SATELLITES ORDER BY satellite"
     }
 }

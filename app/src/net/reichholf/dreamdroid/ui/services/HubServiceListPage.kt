@@ -125,9 +125,17 @@ fun HubServiceListPage(
                 handle.navigateToServiceEpg(effect.reference, effect.name)
             }
 
-            is HubServiceEffect.MultiEpg -> handle.navigateToMultiEpg(effect.reference, effect.name)
+            is HubServiceEffect.MultiEpg -> handle.navigateToMultiEpg(
+                effect.reference,
+                effect.name,
+                tabRootRef = effect.tabRootRef
+            )
 
-            is HubServiceEffect.ListEpg -> handle.navigateToEpg(effect.reference, effect.name)
+            is HubServiceEffect.ListEpg -> handle.navigateToEpg(
+                effect.reference,
+                effect.name,
+                tabRootRef = effect.tabRootRef
+            )
 
             is HubServiceEffect.Stream -> {
                 val row = effect.row

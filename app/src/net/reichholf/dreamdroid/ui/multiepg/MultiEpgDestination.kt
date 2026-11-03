@@ -63,12 +63,19 @@ fun MultiEpgDestination(
     menuSession.bouquetRef = bouquetRef
     menuSession.bouquetName = bouquetName
     menuSession.visibleStartSec = visibleStartSec
+    menuSession.tabRootRef = route.tabRootRef.ifEmpty { null }
 
     ShellTitle(uiState.title)
     BindShellTopBarActions(menuSession.topBarActions(stringResource(R.string.epg_list)))
 
-    LaunchedEffect(remountEpoch, bouquetRef) {
-        viewModel.ensureLoaded(remountEpoch, bouquetRef, bouquetName, launchSec)
+    LaunchedEffect(remountEpoch, bouquetRef, route.tabRootRef) {
+        viewModel.ensureLoaded(
+            remountEpoch,
+            bouquetRef,
+            bouquetName,
+            launchSec,
+            tabRootRef = route.tabRootRef.ifEmpty { null }
+        )
     }
 
     var nowSec by remember { mutableLongStateOf(MultiEpgNowClock.sec()) }
@@ -135,6 +142,7 @@ internal class MultiEpgTopBarSession {
     var bouquetRef: String = ""
     var bouquetName: String = ""
     var visibleStartSec: Long = 0
+    var tabRootRef: String? = null
 
     /** The list-EPG jump, once a bouquet is set. */
     fun topBarActions(listEpgLabel: String): List<ShellTopBarAction> = if (bouquetRef.isEmpty()) {
@@ -153,6 +161,11 @@ internal class MultiEpgTopBarSession {
     fun openListEpg() {
         val ctx = context ?: return
         DrawerEpgMode.saveList(ctx)
-        handle?.navigateToEpg(bouquetRef, bouquetName, timeSec = visibleStartSec)
+        handle?.navigateToEpg(
+            bouquetRef,
+            bouquetName,
+            timeSec = visibleStartSec,
+            tabRootRef = tabRootRef
+        )
     }
 }

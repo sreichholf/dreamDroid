@@ -114,6 +114,40 @@ class MultiEpgViewModelTest {
     }
 
     @Test
+    fun aNestedFolderIsStoredOnlyWithItsHubTab() = runBlocking {
+        receiver.writeTabStrip(Service(BOUQUET, "Favourites"))
+        val dao = receiver.profiles.database.epgDao()
+
+        val withoutRoot = viewModel()
+        withoutRoot.ensureLoaded(0, FOLDER, "Satellites", NOW)
+        awaitState(withoutRoot) { it.grid.channels.isNotEmpty() && !it.grid.syncing }
+        assertNull(dao.getChunk(PROFILE_ID, FOLDER, chunk.startSec))
+
+        val withRoot = viewModel()
+        withRoot.ensureLoaded(0, FOLDER, "Satellites", NOW, tabRootRef = BOUQUET)
+        awaitState(withRoot) { it.grid.channels.isNotEmpty() && !it.grid.syncing }
+        assertNotNull(dao.getChunk(PROFILE_ID, FOLDER, chunk.startSec))
+    }
+
+    @Test
+    fun addingATabRootLoadsTheFolderAgain() = runBlocking {
+        receiver.writeTabStrip(Service(BOUQUET, "Favourites"))
+        val viewModel = viewModel()
+        viewModel.ensureLoaded(0, FOLDER, "Satellites", NOW)
+        awaitState(viewModel) { it.grid.channels.isNotEmpty() && !it.grid.syncing }
+        val before = epgMultiRequests()
+
+        viewModel.ensureLoaded(0, FOLDER, "Satellites", NOW, tabRootRef = BOUQUET)
+        awaitState(viewModel) {
+            !it.grid.syncing && epgMultiRequests() > before
+        }
+
+        assertNotNull(
+            receiver.profiles.database.epgDao().getChunk(PROFILE_ID, FOLDER, chunk.startSec)
+        )
+    }
+
+    @Test
     fun offlinePaintsRoomWithoutAskingTheReceiver() = runBlocking {
         receiver.writeChunk(BOUQUET, NOW, listOf(event("Cached", NOW)))
         receiver.goOffline()
@@ -345,5 +379,8 @@ class MultiEpgViewModelTest {
     companion object {
         /** Inside the fixture's events. */
         const val NOW = 1_893_456_000L + 600L
+
+        /** A nested folder opened under [BOUQUET]. */
+        const val FOLDER = "1:7:1:0:0:0:0:0:0:0:FROM SATELLITES ORDER BY satellite"
     }
 }

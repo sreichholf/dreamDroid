@@ -69,7 +69,7 @@ class MultiEpgGrid(
     private val fetchTimers: suspend (profileId: Int) -> List<Timer> = { _ -> emptyList() },
     private val loadBouquetServices: suspend (profileId: Int, bouquetRef: String) -> List<Service> =
         { _, _ -> emptyList() },
-    private val persistBouquet: (String) -> Boolean = { true },
+    private val persistBouquet: (ref: String, tabRootRef: String?) -> Boolean = { _, _ -> true },
     private val shouldSkipReceiverHttp: (Boolean) -> Boolean = { false },
     private val isSessionOffline: () -> Boolean = { false },
     private val loadCachedRoster: suspend (Int, String) -> List<Service>? =
@@ -89,6 +89,7 @@ class MultiEpgGrid(
     private var prefetchJob: Job? = null
     private var queuedWarm: WarmTarget? = null
     private var windowJob: Job? = null
+    private var tabRootRef: String? = null
     private val gridMutex = Mutex()
     private val eventsByWindow = ConcurrentHashMap<Long, List<Event>>()
     private var bouquetRoster: List<Service> = emptyList()
@@ -120,9 +121,12 @@ class MultiEpgGrid(
 
     /**
      * Drop the painted grid immediately and load [bouquetRef] at [anchorSec].
-     * [anchorSec] becomes the left clamp ("now") for this grid.
+     * [anchorSec] becomes the left clamp ("now") for this grid. [tabRootRef] is the hub tab
+     * the bouquet was opened under, which decides whether the chunks persist; it stays with
+     * the session until the next [replaceAndLoad].
      */
-    fun replaceAndLoad(bouquetRef: String, anchorSec: Long) {
+    fun replaceAndLoad(bouquetRef: String, anchorSec: Long, tabRootRef: String? = null) {
+        this.tabRootRef = tabRootRef
         dropPainted()
         _state.update {
             it.copy(
@@ -215,7 +219,7 @@ class MultiEpgGrid(
             var timersDeferred: Deferred<List<Timer>>? = null
             try {
                 val id = profileId()
-                val persist = persistBouquet(ref)
+                val persist = persistBouquet(ref, tabRootRef)
                 val peek = if (!forceRefresh) {
                     withContext(Dispatchers.IO) {
                         sync.peekChunk(id, ref, anchorSec)
@@ -385,7 +389,7 @@ class MultiEpgGrid(
      */
     private fun warmNextChunk(profileId: Int, anchor: Long) {
         val ref = bouquetRef.trim()
-        if (ref.isEmpty() || !persistBouquet(ref) || isSessionOffline()) {
+        if (ref.isEmpty() || !persistBouquet(ref, tabRootRef) || isSessionOffline()) {
             return
         }
         val target = WarmTarget(
@@ -448,7 +452,7 @@ class MultiEpgGrid(
             return
         }
         val id = profileId()
-        val persist = persistBouquet(ref)
+        val persist = persistBouquet(ref, tabRootRef)
         val peek = withContext(Dispatchers.IO) {
             sync.peekChunk(id, ref, unixSec)
         }

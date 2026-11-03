@@ -90,19 +90,28 @@ class MultiEpgViewModel @Inject constructor(
     }.stateIn(viewModelScope, SharingStarted.Eagerly, _uiState.value)
 
     private var bouquetRef: String = ""
-    private var appliedKey: Pair<Int, String>? = null
-    private var inFlightKey: Pair<Int, String>? = null
+    private var tabRootRef: String? = null
+    private var appliedKey: Triple<Int, String, String>? = null
+    private var inFlightKey: Triple<Int, String, String>? = null
     private var loadGeneration: Int = 0
     private var loadJob: Job? = null
 
     /**
-     * Loads [bouquetRef] at [anchorSec] when [remountEpoch] or the bouquet changed.
-     * A repeat call for the same pair leaves the in-flight or finished load alone.
+     * Loads [bouquetRef] at [anchorSec] when [remountEpoch], the bouquet, or its
+     * [tabRootRef] changed. A repeat call for the same triple leaves the in-flight or
+     * finished load alone.
      */
-    fun ensureLoaded(remountEpoch: Int, bouquetRef: String, bouquetName: String, anchorSec: Long) {
+    fun ensureLoaded(
+        remountEpoch: Int,
+        bouquetRef: String,
+        bouquetName: String,
+        anchorSec: Long,
+        tabRootRef: String? = null
+    ) {
         _uiState.update { it.copy(bouquetName = bouquetName) }
         this.bouquetRef = bouquetRef
-        val key = remountEpoch to bouquetRef
+        this.tabRootRef = tabRootRef
+        val key = Triple(remountEpoch, bouquetRef, tabRootRef.orEmpty())
         if (appliedKey == key || inFlightKey == key) {
             return
         }
@@ -116,7 +125,7 @@ class MultiEpgViewModel @Inject constructor(
                     return@launch
                 }
                 appliedKey = key
-                grid.replaceAndLoad(bouquetRef, anchorSec)
+                grid.replaceAndLoad(bouquetRef, anchorSec, tabRootRef)
             } finally {
                 if (generation == loadGeneration) {
                     inFlightKey = null
@@ -127,7 +136,7 @@ class MultiEpgViewModel @Inject constructor(
 
     /** Reloads the bouquet with [nowSec] as the new left edge. */
     fun jumpToNow(nowSec: Long) {
-        grid.replaceAndLoad(bouquetRef, nowSec)
+        grid.replaceAndLoad(bouquetRef, nowSec, tabRootRef)
     }
 
     fun previousDay() {
@@ -180,7 +189,9 @@ internal fun newMultiEpgGrid(
     },
     loadBouquetServices = services::bouquetServices,
     // Writes need the profile that asked for the rows; without one there is no id to key them by.
-    persistBouquet = { ref -> profiles.current.value != null && persistGate.persist(ref) },
+    persistBouquet = { ref, tabRootRef ->
+        profiles.current.value != null && persistGate.persist(ref, tabRootRef)
+    },
     shouldSkipReceiverHttp = { hasCache ->
         sessions.status.value.shouldSkipReceiverHttp(hasCache)
     },

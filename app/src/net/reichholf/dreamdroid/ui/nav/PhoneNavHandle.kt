@@ -54,14 +54,16 @@ interface PhoneNavHandle {
     fun navigateToEpg(
         serviceReference: String?,
         serviceName: String?,
-        timeSec: Long? = null
+        timeSec: Long? = null,
+        tabRootRef: String? = null
     ): Boolean
     fun navigateToDrawerEpg(): Boolean
     fun navigateToMultiEpg(
         serviceReference: String?,
         serviceName: String?,
         focusedServiceRef: String? = null,
-        timeSec: Long? = null
+        timeSec: Long? = null,
+        tabRootRef: String? = null
     ): Boolean
     fun navigateToServiceEpg(serviceReference: String?, serviceName: String?): Boolean
     fun navigateToEpgSearch(query: String?): Boolean
