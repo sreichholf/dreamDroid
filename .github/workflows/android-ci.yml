@@ -321,7 +321,7 @@ jobs:
       # androidx.test.espresso's idling resource calls the removed
       # InputManager.getInstance(). These classes exercise the platform paths that differ on
       # the targetSdk. No spaces: the runner splits on commas and does not trim.
-      TARGET_SDK_CLASSES: "net.reichholf.dreamdroid.helpers.LocalNetworkPermissionTest,net.reichholf.dreamdroid.activities.LauncherIntentTest"
+      TARGET_SDK_CLASSES: "net.reichholf.dreamdroid.helpers.LocalNetworkPermissionTest,net.reichholf.dreamdroid.activities.MainActivityTargetSdkTest,net.reichholf.dreamdroid.activities.LauncherIntentTest"
     steps:
       - name: Checkout
         uses: actions/checkout@v5
