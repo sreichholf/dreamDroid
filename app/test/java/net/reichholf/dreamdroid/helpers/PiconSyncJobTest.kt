@@ -143,7 +143,7 @@ class PiconSyncJobTest {
     }
 
     @Test
-    fun aListingEntryThatEscapesTheFolderIsSkipped() {
+    fun aListingOfOnlyUnsafeNamesIsAnError() {
         val escape = File(dir.parentFile, "${dir.name}-escape.png")
         ftp.picons = listOf(
             "../${escape.name}",
@@ -153,14 +153,77 @@ class PiconSyncJobTest {
 
         val result = runBlocking { job().run() }
 
+        assertEquals(0, result.totalFiles)
         assertEquals(0, result.downloadedFiles)
-        assertTrue(
-            result.downloadedNothing,
-            "a listing outside the folder must not count as stored"
-        )
+        assertNotNull(result.error, "a listing the sync cannot use must be reported")
         assertTrue(ftp.retrieved.isEmpty(), "an unsafe name must not reach RETR")
         assertFalse(escape.exists())
         assertFalse(File(dir, "absolute.png").exists())
+    }
+
+    @Test
+    fun unsafeNamesAreNotCounted() {
+        ftp.picons = listOf("ard.png", "../zdf.png", "sub/zdf.png")
+        ftp.contents = mapOf("ard.png" to ARD)
+
+        val result = runBlocking { job().run() }
+
+        assertEquals(PiconSyncResult(1, 1, null), result)
+        assertEquals(
+            1,
+            events.single { it.event == PiconSyncEvent.Checking }.totalFiles,
+            "the progress total must count only the names the sync can store"
+        )
+        assertEquals(listOf("ard.png"), ftp.retrieved)
+    }
+
+    @Test
+    fun aListingOverTheFileLimitFailsBeforeDownloading() {
+        ftp.picons = List(PiconSyncJob.MAX_PICON_FILES + 1) { "$it.png" }
+
+        val result = runBlocking { job().run() }
+
+        assertEquals(0, result.totalFiles)
+        assertEquals(0, result.downloadedFiles)
+        assertTrue(
+            result.error?.contains(PiconSyncJob.MAX_PICON_FILES.toString()) == true,
+            "the limit must be in the result: ${result.error}"
+        )
+        assertTrue(ftp.retrieved.isEmpty(), "an oversized listing must not start downloading")
+    }
+
+    @Test
+    fun aPiconOverTheSizeLimitFailsTheSync() {
+        File(dir, "ard.png").writeBytes(EXISTING)
+        ftp.picons = listOf("ard.png", "zdf.png")
+        ftp.contents = mapOf(
+            "ard.png" to ByteArray(PiconSyncJob.MAX_PICON_BYTES.toInt() + 1),
+            "zdf.png" to ZDF
+        )
+
+        val result = runBlocking { job().run() }
+
+        assertEquals(2, result.totalFiles)
+        assertEquals(0, result.downloadedFiles)
+        assertTrue(
+            result.error?.contains("ard.png") == true,
+            "the refused picon must be in the result: ${result.error}"
+        )
+        assertArrayEquals(EXISTING, File(dir, "ard.png").readBytes())
+        assertFalse(File(dir, "ard.png.part").exists())
+        assertFalse(File(dir, "zdf.png").exists(), "an aborted sync must not download on")
+    }
+
+    @Test
+    fun aPiconAtTheSizeLimitIsStored() {
+        val content = ByteArray(PiconSyncJob.MAX_PICON_BYTES.toInt()) { 7 }
+        ftp.picons = listOf("ard.png")
+        ftp.contents = mapOf("ard.png" to content)
+
+        val result = runBlocking { job().run() }
+
+        assertEquals(PiconSyncResult(1, 1, null), result)
+        assertArrayEquals(content, File(dir, "ard.png").readBytes())
     }
 
     @Test

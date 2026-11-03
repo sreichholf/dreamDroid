@@ -65,13 +65,17 @@ object PiconFtpSync {
     /**
      * [remoteName] when the sync may store it in the picon folder, null when it must skip
      * the entry. The listing comes from the receiver, so it is not trusted: a path
-     * separator, `..` or an absolute path would put the file outside the folder.
+     * separator or an absolute path would put the file outside the folder, and the `..`
+     * segment would climb out of it. A name that merely contains two dots (`ard..png`)
+     * is a normal file name and stays.
      */
     fun localFileName(remoteName: String): String? {
         if (remoteName.isEmpty()) return null
         if (remoteName.contains('/') || remoteName.contains('\\')) return null
-        if (remoteName.contains("..")) return null
         if (File(remoteName).isAbsolute) return null
+        // Separators are rejected above, so the name is a single segment and only the
+        // segment `..` itself can leave the folder.
+        if (remoteName == "..") return null
         return remoteName
     }
 

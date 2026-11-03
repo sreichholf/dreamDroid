@@ -5,6 +5,7 @@ import java.io.BufferedOutputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
+import java.io.OutputStream
 
 /** Whose picons to sync: the receiver, its login, and the picon folder on it. */
 data class PiconSyncTarget(
@@ -34,9 +35,9 @@ data class PiconSyncProgress(
     val downloadedFiles: Int = 0
 )
 
-/** How a sync ended: how many picons the receiver listed, how many arrived, and why not. */
+/** How a sync ended: how many picons it tried to download, how many arrived, and why not. */
 data class PiconSyncResult(val totalFiles: Int, val downloadedFiles: Int, val error: String?) {
-    /** The receiver listed picons and not one of them could be stored. */
+    /** The sync tried picons and not one of them could be stored. */
     val downloadedNothing: Boolean
         get() = error == null && totalFiles > 0 && downloadedFiles == 0
 }
@@ -45,6 +46,9 @@ data class PiconSyncResult(val totalFiles: Int, val downloadedFiles: Int, val er
  * One picon sync into [localDir]: the `.png` files the receiver lists over [ftp], each
  * downloaded to a partial file and renamed when the transfer completed. An existing picon
  * survives a failed transfer.
+ *
+ * A listing is bounded by `MAX_PICON_FILES` and one transfer by `MAX_PICON_BYTES`, so a
+ * receiver that lists a huge folder or serves a huge file cannot keep the sync running.
  *
  * [onProgress] runs before every step, and [isStopped] between them, so a cancelled worker
  * stops downloading instead of finishing the folder.
@@ -100,7 +104,26 @@ class PiconSyncJob(
         }
 
         publish(PiconSyncEvent.Listing)
-        val picons = ftp.listPicons()
+        val listed = ftp.listPicons()
+        if (listed.size > MAX_PICON_FILES) {
+            return PiconSyncResult(
+                0,
+                0,
+                "The receiver listed ${listed.size} picons, more than the $MAX_PICON_FILES limit"
+            )
+        }
+        val picons = listed.mapNotNull(PiconFtpSync::localFileName)
+        if (picons.isEmpty() && listed.isNotEmpty()) {
+            return PiconSyncResult(
+                0,
+                0,
+                "The receiver listed ${listed.size} picon names that are not safe file names"
+            )
+        }
+        val rejected = listed.size - picons.size
+        if (rejected > 0) {
+            Log.w(TAG, "Skipping $rejected listed picons with unsafe file names")
+        }
         totalFiles = picons.size
         publish(PiconSyncEvent.Checking)
         for (name in picons) {
@@ -117,22 +140,24 @@ class PiconSyncJob(
 
     /**
      * Downloads one picon through a partial file. A failed retrieve deletes that partial
-     * and leaves any existing png in place. A listed name that does not resolve to a file
-     * directly inside [localDir] is skipped without a retrieve.
+     * and leaves any existing png in place. A name that does not resolve to a file directly
+     * inside [localDir] is skipped without a retrieve.
      */
-    private fun store(fileName: String): Boolean {
-        val name = PiconFtpSync.localFileName(fileName)
-        val destination = name?.let(::localDestination)
-        if (name == null || destination == null) {
-            Log.e(TAG, "Refusing picon with an unsafe file name: $fileName")
+    private fun store(name: String): Boolean {
+        val destination = localDestination(name)
+        if (destination == null) {
+            Log.e(TAG, "Refusing picon that resolves outside the picon folder: $name")
             return false
         }
         val partial = File(destination.parentFile, "${destination.name}.part")
         partial.delete()
         val reply = try {
-            BufferedOutputStream(FileOutputStream(partial)).use { output ->
-                ftp.retrieve(name, output)
+            BufferedOutputStream(FileOutputStream(partial)).use { file ->
+                ftp.retrieve(name, SizeLimitedOutputStream(file, MAX_PICON_BYTES))
             }
+        } catch (e: PiconTooLargeException) {
+            partial.delete()
+            throw IOException("Picon $name is larger than $MAX_PICON_BYTES bytes", e)
         } catch (e: Exception) {
             Log.e(TAG, "Failed to download picon with filename $name", e)
             FtpReply(ok = false, code = 0, text = null)
@@ -148,7 +173,11 @@ class PiconSyncJob(
         }
     }
 
-    /** [name] inside the canonical [localDir], or null when it resolves outside it. */
+    /**
+     * [name] inside the canonical [localDir], or null when a symlink in the folder points
+     * outside it. [name] is one safe segment (see [PiconFtpSync.localFileName]), so symlink
+     * resolution is the only way it can leave the folder.
+     */
     private fun localDestination(name: String): File? = try {
         val dir = localDir.canonicalFile
         val file = File(dir, name).canonicalFile
@@ -192,8 +221,54 @@ class PiconSyncJob(
     private fun failed(step: PiconFtpSync.FtpStep): PiconSyncResult =
         PiconSyncResult(totalFiles, downloadedFiles, failedOrNull(step))
 
-    private companion object {
-        const val TAG = "PiconSyncJob"
-        const val NOMEDIA = ".nomedia"
+    internal companion object {
+        /** A picon folder larger than this is refused instead of walked. */
+        const val MAX_PICON_FILES = 10_000
+
+        /** A picon is a small PNG; a transfer past this fails the sync. */
+        const val MAX_PICON_BYTES = 8L * 1024 * 1024
+
+        private const val TAG = "PiconSyncJob"
+        private const val NOMEDIA = ".nomedia"
     }
 }
+
+/** Writes at most [maxBytes]; a longer transfer fails instead of filling the disk. */
+private class SizeLimitedOutputStream(
+    private val delegate: OutputStream,
+    private val maxBytes: Long
+) : OutputStream() {
+    private var written = 0L
+
+    override fun write(b: Int) {
+        checkRoom(1)
+        delegate.write(b)
+        written++
+    }
+
+    override fun write(b: ByteArray, off: Int, len: Int) {
+        checkRoom(len)
+        delegate.write(b, off, len)
+        written += len
+    }
+
+    override fun flush() {
+        delegate.flush()
+    }
+
+    override fun close() {
+        delegate.close()
+    }
+
+    private fun checkRoom(len: Int) {
+        if (written + len > maxBytes) {
+            throw PiconTooLargeException("Picon exceeds the $maxBytes byte limit")
+        }
+    }
+}
+
+/**
+ * A transfer that hit the size cap. Its own type, so [PiconSyncJob] fails the sync instead of
+ * skipping the file on a control connection the aborted transfer left out of sync.
+ */
+private class PiconTooLargeException(message: String) : IOException(message)

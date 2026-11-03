@@ -157,6 +157,7 @@ class PiconFtpSyncTest {
     @Test
     fun namesThatLeaveThePiconFolderAreRejected() {
         assertNull(PiconFtpSync.localFileName(""))
+        assertNull(PiconFtpSync.localFileName(".."))
         assertNull(PiconFtpSync.localFileName("../ard.png"))
         assertNull(PiconFtpSync.localFileName("picons/../ard.png"))
         assertNull(PiconFtpSync.localFileName("sub/ard.png"))
@@ -167,6 +168,12 @@ class PiconFtpSyncTest {
     @Test
     fun aPlainPngNameIsKept() {
         assertEquals("ard.png", PiconFtpSync.localFileName("ard.png"))
+    }
+
+    @Test
+    fun dotsInsideANameAreNotATraversalSegment() {
+        assertEquals("ard..png", PiconFtpSync.localFileName("ard..png"))
+        assertEquals("..ard.png", PiconFtpSync.localFileName("..ard.png"))
     }
 
     @Test
