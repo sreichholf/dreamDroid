@@ -11,6 +11,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsFocused
+import androidx.compose.ui.test.assertIsNotFocused
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -127,17 +128,19 @@ class TvTimerHostContentTest {
     @Test
     fun blockedToggleRestoresTheTimerRow() {
         val timer = Timer(name = "Existing", serviceName = "ARD")
+        val second = Timer(name = "Second", serviceName = "ZDF")
         composeRule.setContent {
             Host(
                 TvTimerHostUiState(
-                    timers = listOf(timer),
+                    timers = listOf(timer, second),
                     emptyMessage = null,
                     mutationsBlocked = true
                 )
             )
         }
 
-        val row = composeRule.onNodeWithTag("tv_timers_row_0")
+        // The second row: a fallback to the list's first row must not pass this.
+        val row = composeRule.onNodeWithTag("tv_timers_row_1")
         row.requestFocus()
         row.performKeyInput { pressKey(Key.DirectionCenter) }
         composeRule.waitForIdle()
@@ -149,6 +152,7 @@ class TvTimerHostContentTest {
         composeRule.waitForIdle()
 
         row.assertIsFocused()
+        composeRule.onNodeWithTag("tv_timers_row_0").assertIsNotFocused()
     }
 
     @Composable
