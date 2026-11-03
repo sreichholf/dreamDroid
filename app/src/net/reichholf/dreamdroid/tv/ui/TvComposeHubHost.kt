@@ -471,17 +471,23 @@ fun ComposeTvHubChrome(
     val lastCardFocus = remember { FocusRequester() }
     var restoreFocusAfterOverlay by remember { mutableStateOf(false) }
     LaunchedEffect(showStreamUnavailable, restoreFocusAfterOverlay) {
-        if (restoreFocusAfterOverlay && !showStreamUnavailable) {
-            withFrameNanos {}
-            if (
-                !lastCardFocus.requestFocus() &&
-                gridFocus?.restoreFocusedChild() != true &&
-                gridFocus?.requestFocus(FocusDirection.Enter) != true
-            ) {
-                liveTabFocusRequester.requestFocus()
-            }
-            restoreFocusAfterOverlay = false
+        if (!restoreFocusAfterOverlay || showStreamUnavailable) {
+            return@LaunchedEffect
         }
+        // The overlay's focus trap is still composed in the frame that closes it and
+        // cancels the request, so retry until the card takes focus.
+        repeat(8) {
+            withFrameNanos {}
+            val restored = lastCardFocus.requestFocus() ||
+                gridFocus?.restoreFocusedChild() == true ||
+                gridFocus?.requestFocus(FocusDirection.Enter) == true
+            if (restored) {
+                restoreFocusAfterOverlay = false
+                return@LaunchedEffect
+            }
+        }
+        liveTabFocusRequester.requestFocus()
+        restoreFocusAfterOverlay = false
     }
     var initialGridFocusDone by remember { mutableStateOf(false) }
     LaunchedEffect(selectedBouquet?.bouquet?.reference, liveContentFocus) {
