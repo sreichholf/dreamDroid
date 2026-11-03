@@ -1,5 +1,9 @@
 package net.reichholf.dreamdroid.ui.setup
 
+import androidx.compose.foundation.focusable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.getValue
@@ -931,13 +935,23 @@ class SetupAssistantScreenTest {
             inputModeManager = LocalInputModeManager.current
             focusManager = LocalFocusManager.current
             DreamDroidTheme {
-                SetupAssistantScreen(
-                    viewModel = viewModel,
-                    localNetworkGranted = true,
-                    onRequestLocalNetwork = {},
-                    onFinished = {},
-                    onLeave = {}
-                )
+                Box(modifier = Modifier.fillMaxSize()) {
+                    SetupAssistantScreen(
+                        viewModel = viewModel,
+                        localNetworkGranted = true,
+                        onRequestLocalNetwork = {},
+                        onFinished = {},
+                        onLeave = {}
+                    )
+                    // A target outside the wizard, so the test can move the remote off a
+                    // disabled action: a disabled focus target can survive clearFocus.
+                    Box(
+                        modifier = Modifier
+                            .size(1.dp)
+                            .testTag("setup_focus_elsewhere")
+                            .focusable()
+                    )
+                }
             }
         }
         // A remote drives the TV setup; buttons take focus only outside touch mode.
@@ -953,10 +967,15 @@ class SetupAssistantScreenTest {
         composeRule.runOnIdle { viewModel.restoreFrom(RESTORE_URI) }
         assertTrue(viewModel.uiState.value.restoring)
         composeRule.waitForIdle()
-        // Both Welcome actions are disabled while the read runs. Clear the remote's focus so
+        // Both Welcome actions are disabled while the read runs. Move the remote off them so
         // the restore is what has to put it back on Restore when the read ends on Welcome.
+        // A disabled focus target can survive a plain clearFocus; force it, then focus a
+        // node outside the wizard so the test does not depend on that.
         restore.assertIsNotEnabled()
-        composeRule.runOnIdle { focusManager.clearFocus() }
+        composeRule.runOnIdle { focusManager.clearFocus(force = true) }
+        composeRule.waitForIdle()
+        composeRule.onNodeWithTag("setup_focus_elsewhere")
+            .performSemanticsAction(SemanticsActions.RequestFocus)
         composeRule.waitForIdle()
         restore.assertIsNotFocused()
 
