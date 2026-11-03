@@ -1,16 +1,17 @@
 ### WICHTIG: Für https Verbindungen mit selbst signierten Zertifikaten muss ab sofort im jeweiligen Profil 'Alle Zertifikate' aktiviert werden!
 
 ## 2.0.471
+* NEU: Bouquets pro Profil ausblenden
 * UPD: Video-Player verbessert
 * FIX: Player - Sendungsinfo und Senderliste fehlten bei Streams aus dem Zap-Raster oder vom aktuellen Sender
 * FIX: Player - Aufnahmen begannen nach dem Verlassen der App von vorne
 * FIX: Player - Bedienung tot nach fehlgeschlagenem Stream-Start
-* UPD: Ungültige Hostnamen in Profilen werden abgelehnt
+* UPD: Prüfung der Hostnamen in Profilen
 * UPD: Picon-Sync meldet teilweise Downloads
-* UPD: Cloud-Backup und Geräteübertragung übertragen keine App-Daten; nutze Backup & Wiederherstellung
+* DEL: App-Daten in Cloud-Backup und Geräteübertragung
 * FIX: Picon-Sync meldete Erfolg, obwohl nichts heruntergeladen wurde
-* FIX: Picon-Sync hängt nicht mehr bei blockierter Verbindung
-* FIX: Picon-Sync schlägt im Hintergrund nicht mehr stillschweigend fehl
+* FIX: Picon-Sync hing bei blockierter Verbindung
+* FIX: Picon-Sync schlug im Hintergrund stillschweigend fehl
 * FIX: TV - D-Pad-Fokus bleibt in Overlays und kehrt zum Auslöser zurück
 * FIX: Aufnahmen in sehr großen Ordnern werden nicht geladen
 * FIX: Timer-Bereinigung mit aktivierter erweiterter Sicherheit fehlgeschlagen
@@ -27,7 +28,6 @@
 * FIX: MultiEPG speicherte ein verschachteltes Bouquet nicht für Offline
 
 ## 2.0.470
-* NEU: Bouquets pro Profil ausblenden
 * NEU: Sicherung im Einrichtungsassistenten wiederherstellen
 * NEU: Kanal-EPG aus der EPG-Detailansicht
 * UPD: TV - Profil- und Timer-Editor passen zum Hub
