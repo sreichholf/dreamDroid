@@ -15,7 +15,8 @@ import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.ProfileRepository
-import net.reichholf.dreamdroid.helpers.isValidHost
+import net.reichholf.dreamdroid.helpers.HostField
+import net.reichholf.dreamdroid.helpers.invalidHost
 import net.reichholf.dreamdroid.ui.profiles.ProfileForm
 import net.reichholf.dreamdroid.ui.profiles.ProfileListItem
 import net.reichholf.dreamdroid.ui.profiles.ProfileTextFields
@@ -152,24 +153,15 @@ class TvProfilesHostViewModel @Inject constructor(private val profiles: ProfileR
         val profile = editing ?: return
         val form = _uiState.value.form ?: return
         fields.applyTo(profile, form)
-        if (!isValidHost(profile.host)) {
-            val message = if (profile.host.isNullOrBlank()) {
-                R.string.host_empty
-            } else {
-                R.string.illegal_host
-            }
+        val invalid = profile.invalidHost()
+        if (invalid != null) {
+            val message = UiText.Resource(
+                if (invalid.value.isBlank()) R.string.host_empty else R.string.illegal_host
+            )
             _uiState.update {
                 it.copy(
-                    hostError = UiText.Resource(message),
-                    event = TvProfilesEvent.Save(saved = false, currentProfile = false)
-                )
-            }
-            return
-        }
-        if (!profile.streamHost.isNullOrEmpty() && !isValidHost(profile.streamHost)) {
-            _uiState.update {
-                it.copy(
-                    streamHostError = UiText.Resource(R.string.illegal_host),
+                    hostError = if (invalid.field == HostField.Host) message else null,
+                    streamHostError = if (invalid.field == HostField.StreamHost) message else null,
                     event = TvProfilesEvent.Save(saved = false, currentProfile = false)
                 )
             }
