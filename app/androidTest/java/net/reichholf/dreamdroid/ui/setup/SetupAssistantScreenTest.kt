@@ -873,6 +873,49 @@ class SetupAssistantScreenTest {
     }
 
     @Test
+    fun aFailedBackupReadPutsTheRemoteBackOnRestore() {
+        val gate = CompletableDeferred<Unit>()
+        val viewModel = model(documents = GatedDocuments(MemoryDocuments(), gate))
+        lateinit var inputModeManager: InputModeManager
+        composeRule.setContent {
+            inputModeManager = LocalInputModeManager.current
+            DreamDroidTheme {
+                SetupAssistantScreen(
+                    viewModel = viewModel,
+                    localNetworkGranted = true,
+                    onRequestLocalNetwork = {},
+                    onFinished = {},
+                    onLeave = {}
+                )
+            }
+        }
+        // A remote drives the TV setup; buttons take focus only outside touch mode.
+        composeRule.runOnIdle { inputModeManager.requestInputMode(InputMode.Keyboard) }
+        composeRule.runOnIdle { assertEquals(InputMode.Keyboard, inputModeManager.inputMode) }
+        composeRule.mainClock.advanceTimeBy(2_000)
+        composeRule.waitForIdle()
+
+        val restore = composeRule.onNodeWithTag("setup_restore")
+        restore.performSemanticsAction(SemanticsActions.RequestFocus)
+        restore.assertIsFocused()
+
+        composeRule.runOnIdle { viewModel.restoreFrom(RESTORE_URI) }
+        assertTrue(viewModel.uiState.value.restoring)
+        composeRule.waitForIdle()
+        // Both Welcome actions are disabled while the read runs, so the button loses focus.
+        restore.assertIsNotEnabled().assertIsNotFocused()
+
+        gate.complete(Unit)
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            viewModel.uiState.value.restoreError != null
+        }
+        composeRule.waitForIdle()
+
+        // The read failed and Welcome stays: the remote must land on Restore again.
+        restore.assertIsEnabled().assertIsFocused()
+    }
+
+    @Test
     fun findWithoutLocalNetworkOffersTheGrantAction() {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val viewModel = model()
@@ -1038,7 +1081,8 @@ class SetupAssistantScreenTest {
         onSearch: suspend () -> List<Profile> = { emptyList() },
         onCheck: suspend (Profile) -> ProfileCheckResult = { ProfileCheckResult() },
         profiles: ProfileRepository = this.profiles,
-        backupRepository: BackupRepository = backups
+        backupRepository: BackupRepository = backups,
+        documents: BackupDocuments = this.documents
     ): SetupAssistantViewModel = SetupAssistantViewModel(
         SavedStateHandle(),
         profiles,
@@ -1084,6 +1128,17 @@ class SetupAssistantScreenTest {
         override suspend fun write(uri: String, text: String): Boolean {
             files[uri] = text
             return true
+        }
+    }
+
+    /** Holds a document read until [gate] completes, so a test can read the busy state. */
+    private class GatedDocuments(
+        private val delegate: BackupDocuments,
+        private val gate: CompletableDeferred<Unit>
+    ) : BackupDocuments by delegate {
+        override suspend fun read(uri: String, maxChars: Int): String? {
+            gate.await()
+            return delegate.read(uri, maxChars)
         }
     }
 

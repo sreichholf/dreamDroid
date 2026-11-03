@@ -91,10 +91,6 @@ class SetupAssistantViewModel @Inject constructor(
     private var searchJob: Job? = null
     private var checkJob: Job? = null
     private var saveJob: Job? = null
-    private var restoreJob: Job? = null
-
-    /** Bumped per picked backup, so a read the user replaced cannot change the wizard. */
-    private var restoreRead = 0
 
     init {
         viewModelScope.launch {
@@ -246,31 +242,19 @@ class SetupAssistantViewModel @Inject constructor(
     }
 
     /**
-     * Reads the backup the user picked. A second pick replaces a read still in flight, and a
-     * result that arrives after the wizard left Welcome is dropped. An unreadable file, or
-     * one without profiles, stays on Welcome with [SetupAssistantUiState.restoreError].
+     * Reads the backup the user picked. [SetupAssistantUiState.restoring] owns Welcome for the
+     * whole read: Start waits, the picker is disabled, and a pick that arrives meanwhile is
+     * ignored. An unreadable file, or one without profiles, stays on Welcome with
+     * [SetupAssistantUiState.restoreError].
      */
     fun restoreFrom(uri: String) {
-        if (_uiState.value.draft.step != SetupStep.Welcome) {
-            // The picker was opened before a read finished and the wizard moved on.
+        val state = _uiState.value
+        if (state.draft.step != SetupStep.Welcome || state.restoring) {
             return
         }
-        restoreJob?.cancel()
-        val read = ++restoreRead
         _uiState.update { it.copy(restoring = true, restoreError = null) }
-        restoreJob = viewModelScope.launch {
-            val content = imports.read(uri)
-            if (read != restoreRead) {
-                // A newer pick owns the state, including the restoring flag.
-                return@launch
-            }
-            val opened = content != null && imports.openContent(content)
-            if (_uiState.value.draft.step != SetupStep.Welcome) {
-                // The user moved on while the file was read: do not pull them back.
-                imports.clear()
-                _uiState.update { it.copy(restoring = false) }
-                return@launch
-            }
+        viewModelScope.launch {
+            val opened = imports.open(uri)
             val hasProfiles = imports.review.value?.profiles?.isNotEmpty() == true
             if (!opened || !hasProfiles) {
                 imports.clear()
@@ -347,8 +331,8 @@ class SetupAssistantViewModel @Inject constructor(
             return
         }
         val profile = toProfile(profileName.text.ifBlank { host.text.trim() })
-        _uiState.update { it.copy(saving = true) }
         saveJob = viewModelScope.launch {
+            _uiState.update { it.copy(saving = true) }
             try {
                 withContext(Dispatchers.IO) {
                     profiles.save(profile)
@@ -397,9 +381,6 @@ class SetupAssistantViewModel @Inject constructor(
         searchJob = null
         checkJob?.cancel()
         checkJob = null
-        restoreJob?.cancel()
-        restoreJob = null
-        restoreRead++
         imports.clear()
         host.set("")
         port.set(SetupDefaults.PORT_TEXT)

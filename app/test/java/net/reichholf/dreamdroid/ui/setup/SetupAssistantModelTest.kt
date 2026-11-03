@@ -106,6 +106,28 @@ class SetupAssistantModelTest {
     }
 
     @Test
+    fun wizardProfileKeepsSelfSignedRecordingsOnHttp() {
+        val profile = wizardProfile(
+            name = "Box",
+            host = "box.local",
+            port = 443,
+            useHttps = true,
+            login = false,
+            user = "root",
+            pass = "dreambox",
+            trustAllCerts = true
+        )
+        // VLC and external players cannot verify a self-signed certificate, so the file
+        // endpoint stays where every player can open it.
+        assertEquals(80, profile.filePort)
+        assertFalse(profile.fileSsl)
+        assertEquals(
+            "http://box.local:80/file?file=rec.ts",
+            EnigmaUrls.fileStream(profile, "1:0:1", "rec.ts")
+        )
+    }
+
+    @Test
     fun wizardProfileTrustsCertificatesOnlyForHttps() {
         val profile = wizardProfile(
             name = "Living room",

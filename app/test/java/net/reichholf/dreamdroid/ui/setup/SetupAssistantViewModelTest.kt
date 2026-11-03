@@ -9,14 +9,12 @@ import com.google.gson.GsonBuilder
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
-import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
@@ -378,7 +376,7 @@ class SetupAssistantViewModelTest {
     }
 
     @Test
-    fun aReplacedReadCannotChangeTheReview() = runTest {
+    fun aPickWhileAReadRunsIsIgnored() = runTest {
         documents.files[FIRST_RESTORE_URI] = backupJson(
             Profile.getDefault().apply {
                 name = "First"
@@ -398,19 +396,17 @@ class SetupAssistantViewModelTest {
         viewModel.restoreFrom(FIRST_RESTORE_URI)
         assertTrue(viewModel.uiState.value.restoring)
 
+        // The read owns Welcome: the picker is disabled and a pick that still arrives does
+        // not start a second read or replace the first review.
         viewModel.restoreFrom(RESTORE_URI)
+        assertFalse(gated.returned.contains(RESTORE_URI))
+
+        firstRead.complete(Unit)
         val step = viewModel.uiState.first { it.draft.step == SetupStep.Import }
 
         assertFalse(step.restoring)
-        assertEquals(listOf("Second"), viewModel.importReview.value!!.profiles.map { it.name })
-
-        // The replaced read survives its cancellation and returns a file: the generation
-        // guard must drop it instead of replacing the second review.
-        firstRead.complete(Unit)
-        assertTrue(gated.returned.contains(FIRST_RESTORE_URI))
-        assertEquals(SetupStep.Import, viewModel.uiState.value.draft.step)
-        assertFalse(viewModel.uiState.value.restoring)
-        assertEquals(listOf("Second"), viewModel.importReview.value!!.profiles.map { it.name })
+        assertEquals(listOf("First"), viewModel.importReview.value!!.profiles.map { it.name })
+        assertEquals(listOf(FIRST_RESTORE_URI), gated.returned)
     }
 
     @Test
@@ -505,18 +501,14 @@ class SetupAssistantViewModelTest {
         }
     }
 
-    /**
-     * Holds a document read until its gate completes, even after the read was cancelled, so a
-     * test can prove a replaced read is dropped by the generation guard rather than by
-     * cancellation.
-     */
+    /** Holds a document read until its gate completes, so a test can inspect the busy state. */
     private class GatedDocuments(
         private val delegate: BackupDocuments,
         private val gates: Map<String, CompletableDeferred<Unit>>,
         val returned: MutableList<String> = mutableListOf()
     ) : BackupDocuments by delegate {
         override suspend fun read(uri: String, maxChars: Int): String? {
-            gates[uri]?.let { gate -> withContext(NonCancellable) { gate.await() } }
+            gates[uri]?.await()
             return delegate.read(uri, maxChars).also { returned += uri }
         }
     }

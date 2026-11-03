@@ -78,15 +78,9 @@ class BackupImport(
 
     /** Reads the document at [uri] and asks what to take from it. False when it is unusable. */
     suspend fun open(uri: String): Boolean {
-        val content = read(uri) ?: return false
-        return openContent(content)
+        val content = documents.read(uri, MAX_CONTENT_CHARS) ?: return false
+        return review(content)
     }
-
-    /** The document at [uri], or null when it cannot be read or is larger than allowed. */
-    suspend fun read(uri: String): String? = documents.read(uri, MAX_CONTENT_CHARS)
-
-    /** [open] of content [read] already returned, for a caller that may have moved on. */
-    suspend fun openContent(content: String): Boolean = review(content)
 
     /** [open] of the file saved before process death; false when nothing is saved or parses. */
     suspend fun reopenSaved(): Boolean {

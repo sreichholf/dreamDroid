@@ -312,6 +312,25 @@ fun SetupAssistantScreen(
                                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                             val startAction = rememberRemoteFocus()
                                             val restoreAction = rememberRemoteFocus()
+                                            val restoreFocus = remember { FocusRequester() }
+                                            // Both actions are disabled while the picked backup
+                                            // is read, which drops the remote's focus. When the
+                                            // read ends on Welcome, put it back on Restore. The
+                                            // outgoing content stays composed through the exit
+                                            // animation, so only a wizard still on Welcome counts.
+                                            var wasRestoring by remember {
+                                                mutableStateOf(restoring)
+                                            }
+                                            LaunchedEffect(restoring, step) {
+                                                if (wasRestoring && !restoring &&
+                                                    step == SetupStep.Welcome
+                                                ) {
+                                                    runCatching {
+                                                        restoreFocus.requestFocus()
+                                                    }
+                                                }
+                                                wasRestoring = restoring
+                                            }
                                             Row(
                                                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                                                 verticalAlignment = Alignment.CenterVertically,
@@ -336,6 +355,7 @@ fun SetupAssistantScreen(
                                                         ButtonDefaults.textButtonColors()
                                                     ),
                                                     modifier = restoreAction.modifier
+                                                        .focusRequester(restoreFocus)
                                                         .testTag("setup_restore")
                                                 ) {
                                                     if (restoring) {
