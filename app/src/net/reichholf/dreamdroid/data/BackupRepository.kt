@@ -23,9 +23,9 @@ import net.reichholf.dreamdroid.helpers.isValidHost
 import net.reichholf.dreamdroid.helpers.splitLegacyUserInfo
 
 /**
- * Backup files: every stored preference and the saved profiles, as Gson JSON. Profile
- * writes go through [ProfileRepository], preference writes through [SettingsRepository].
- * Main-safe.
+ * Backup files: the stored preferences except device-local keys, and the saved profiles, as
+ * Gson JSON. Profile writes go through [ProfileRepository], preference writes through
+ * [SettingsRepository]. Main-safe.
  */
 @Singleton
 class BackupRepository @Inject constructor(
@@ -80,6 +80,9 @@ class BackupRepository @Inject constructor(
      * An illegal host is refused here as a last resort. The import review marks such a
      * profile and cannot select it, so only a direct caller reaches this check.
      *
+     * Without the password choice, the settings also lose the 1.x receiver passwords, so a
+     * file cannot write them while its profiles keep the saved ones.
+     *
      * @return false when a chosen profile has an illegal host or the profiles could not be
      * written. Nothing is changed then.
      */
@@ -117,6 +120,9 @@ class BackupRepository @Inject constructor(
                     settings.restore(
                         imported
                             .filter { it.key != DreamDroid.CURRENT_PROFILE }
+                            .filter {
+                                passwordsIncluded != false || !isLegacyReceiverPassword(it.key)
+                            }
                             .associate { it.key to typedValue(it) }
                     )
                 }
@@ -148,10 +154,23 @@ class BackupRepository @Inject constructor(
  */
 data class ImportChoice(val profiles: Set<Int>, val passwords: Boolean, val settings: Boolean)
 
-/** False for a file exported without passwords, or one whose profiles have none. */
+/**
+ * True when the file holds a password in a profile or in the 1.x settings. A legacy
+ * settings-only file has no profiles, so the settings block is the only place to look.
+ * A file that was exported without passwords never counts, even if it still holds one of
+ * the 1.x keys: 2.0.470 wrote them although the file says it has none.
+ */
 val BackupData.carriesPasswords: Boolean
-    get() = passwordsIncluded != false &&
-        profiles.any { !it.pass.isNullOrEmpty() || !it.encoderPass.isNullOrEmpty() }
+    get() {
+        if (passwordsIncluded == false) {
+            return false
+        }
+        val profileHasPassword =
+            profiles.any { !it.pass.isNullOrEmpty() || !it.encoderPass.isNullOrEmpty() }
+        val settingHasPassword =
+            settings.orEmpty().any { isLegacyReceiverPassword(it.key) && it.value.isNotEmpty() }
+        return profileHasPassword || settingHasPassword
+    }
 
 /**
  * Profile row to insert.
@@ -196,12 +215,15 @@ internal fun profileToInsert(
 
 /**
  * Copy of [source] for the export file. Profile objects are cloned before passwords are cleared
- * so the in-memory backup is not mutated.
+ * so the in-memory backup is not mutated. Without [includePasswords] the settings also lose
+ * the 1.x receiver passwords (`pass`, `encoder_pass`), which a 1.15 TV install left in the
+ * default preferences.
  */
 internal fun backupCopyForExport(source: BackupData, includePasswords: Boolean): BackupData {
     val gson = GsonBuilder().create()
     val copy = BackupData()
     copy.settings = source.settings
+        ?.filter { includePasswords || !isLegacyReceiverPassword(it.key) }
         ?.map { GenericSetting(it.key, it.value, it.type) }
         ?.toMutableList()
     copy.uri = source.uri
@@ -216,6 +238,9 @@ internal fun backupCopyForExport(source: BackupData, includePasswords: Boolean):
     }
     return copy
 }
+
+/** `pass` is the 1.x webif password, `encoder_pass` the stream one. */
+private fun isLegacyReceiverPassword(key: String): Boolean = key == "pass" || key.endsWith("_pass")
 
 /**
  * Returns a backup that can be applied in full, or null when [content] is missing, malformed,

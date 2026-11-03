@@ -145,6 +145,33 @@ class BackupPasswordPolicyTest {
     }
 
     @Test
+    fun exportCopyWithoutPasswordsDropsTheLegacyReceiverPasswordsFromSettings() {
+        val source = BackupData()
+        source.addGenericSetting(GenericSetting("host", "10.0.0.1", "String"))
+        source.addGenericSetting(GenericSetting("pass", "old-webif-pass", "String"))
+        source.addGenericSetting(GenericSetting("encoder_pass", "old-encoder-pass", "String"))
+
+        val copy = backupCopyForExport(source, includePasswords = false)
+
+        assertEquals(listOf("host"), copy.settings!!.map { it.key })
+        val json = GsonBuilder().create().toJson(copy)
+        assertFalse(json.contains("old-webif-pass"))
+        assertFalse(json.contains("old-encoder-pass"))
+    }
+
+    @Test
+    fun exportCopyWithPasswordsKeepsTheLegacyReceiverPasswordsFromSettings() {
+        val source = BackupData()
+        source.addGenericSetting(GenericSetting("pass", "old-webif-pass", "String"))
+        source.addGenericSetting(GenericSetting("encoder_pass", "old-encoder-pass", "String"))
+
+        val copy = backupCopyForExport(source, includePasswords = true)
+
+        assertEquals(setOf("pass", "encoder_pass"), copy.settings!!.map { it.key }.toSet())
+        assertEquals("old-webif-pass", copy.settings!!.first { it.key == "pass" }.value)
+    }
+
+    @Test
     fun exportCopyKeepsPasswordsWhenIncluded() {
         val source = BackupData()
         source.addProfile(profile(name = "Box", pass = "secret-pass", encoderPass = "secret-enc"))

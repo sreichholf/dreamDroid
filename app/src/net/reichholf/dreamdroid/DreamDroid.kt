@@ -98,6 +98,7 @@ class DreamDroid : Application() {
 
         initChannels()
         loadProfiles()
+        ioScope.launch { DreamDroidBackupAgent.replaceOldCloudBackup(this@DreamDroid) }
         PiconImageLoader.install(this)
         pruneExpiredMultiEpgCache()
     }

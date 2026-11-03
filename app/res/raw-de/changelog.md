@@ -7,6 +7,7 @@
 * FIX: Player - ein Stream, der nicht startet, meldet den Fehler statt die Bedienung tot zu lassen
 * FIX: Ungültige Hostnamen in Profilen werden abgelehnt
 * UPD: Picon-Sync meldet teilweise Downloads
+* UPD: Cloud-Backup und Geräteübertragung übertragen keine App-Daten; nutze Backup & Wiederherstellung
 * FIX: Picon-Sync meldete Erfolg, obwohl nichts heruntergeladen wurde
 * FIX: Picon-Sync hängt nicht mehr bei blockierter Verbindung
 * FIX: Picon-Sync schlägt im Hintergrund nicht mehr stillschweigend fehl
@@ -21,6 +22,7 @@
 * FIX: "Alle Zertifikate" wurde im Einrichtungsassistenten auf einen anderen Receiver übernommen
 * FIX: Aufnahmen mit HTTPS- oder eigenen Port-Profilen aus dem Einrichtungsassistenten spielten nicht ab
 * UPD: Einrichtungsassistent erklärt den Zugriff auf das lokale Netzwerk
+* FIX: Backup-Export ohne Passwörter enthielt alte Receiver-Passwörter
 
 ## 2.0.470
 * NEU: Bouquets pro Profil ausblenden
