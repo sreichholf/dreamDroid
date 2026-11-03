@@ -11,7 +11,6 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.requestFocus
@@ -20,6 +19,7 @@ import net.reichholf.dreamdroid.enigma.ServiceNowNext
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTvTheme
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 
@@ -190,10 +190,7 @@ class TvServiceTimerOverlayTest {
         node.requestFocus()
         node.performKeyInput { pressKey(Key.DirectionCenter) }
         composeRule.waitForIdle()
-        if (!invoked()) {
-            node.performClick()
-            composeRule.waitForIdle()
-        }
+        assertTrue(invoked())
     }
 
     private fun demoService() = ServiceNowNext(

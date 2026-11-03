@@ -21,7 +21,6 @@ import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.platform.LocalInputModeManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.ExperimentalTestApi
-import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.assertIsNotFocused
@@ -31,7 +30,6 @@ import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.requestFocus
@@ -314,9 +312,11 @@ class TvFocusTrapTest {
         ok.assertIsFocused()
         opener.assertIsNotFocused()
 
-        ok.performClick()
-        composeRule.waitForIdle()
-        composeRule.onAllNodesWithTag("hub_stream_unavailable").assertCountEquals(0)
+        // OK on the remote: a TV Surface has no touch handling, so performClick would not close it.
+        ok.performKeyInput { pressKey(Key.DirectionCenter) }
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            composeRule.onAllNodesWithTag("hub_stream_unavailable").fetchSemanticsNodes().isEmpty()
+        }
 
         composeRule.waitUntil(timeoutMillis = 5_000) {
             runCatching { opener.assertIsFocused() }.isSuccess

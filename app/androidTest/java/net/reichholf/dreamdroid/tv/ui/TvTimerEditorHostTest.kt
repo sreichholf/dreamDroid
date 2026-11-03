@@ -15,6 +15,7 @@ import androidx.compose.ui.input.InputModeManager
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.platform.LocalInputModeManager
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertHeightIsAtLeast
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsFocused
@@ -24,7 +25,6 @@ import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.pressKey
@@ -237,24 +237,14 @@ class TvTimerEditorHostTest {
         composeRule.waitForIdle()
     }
 
-    /**
-     * OK is a TV Surface. It handles D-pad center. Android [performClick] is a
-     * touch click, which that surface ignores.
-     */
+    /** OK is a TV Surface: it takes D-pad center only, a touch performClick() does nothing. */
     private fun dismissNeedsReceiver() {
         val ok = composeRule.onNodeWithTag("hub_stream_unavailable_ok")
         ok.assertIsDisplayed()
         ok.requestFocus()
         ok.performKeyInput { pressKey(Key.DirectionCenter) }
         composeRule.waitForIdle()
-        if (
-            composeRule.onAllNodesWithTag("hub_stream_unavailable")
-                .fetchSemanticsNodes()
-                .isNotEmpty()
-        ) {
-            ok.performClick()
-            composeRule.waitForIdle()
-        }
+        composeRule.onAllNodesWithTag("hub_stream_unavailable").assertCountEquals(0)
     }
 
     @Composable

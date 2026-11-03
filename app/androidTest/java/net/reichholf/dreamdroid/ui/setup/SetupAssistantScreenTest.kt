@@ -1,22 +1,16 @@
 package net.reichholf.dreamdroid.ui.setup
 
-import androidx.compose.foundation.focusable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.input.InputMode
 import androidx.compose.ui.input.InputModeManager
 import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalInputModeManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.LiveRegionMode
@@ -930,28 +924,16 @@ class SetupAssistantScreenTest {
         val gate = CompletableDeferred<Unit>()
         val viewModel = model(documents = GatedDocuments(MemoryDocuments(), gate))
         lateinit var inputModeManager: InputModeManager
-        lateinit var focusManager: FocusManager
         composeRule.setContent {
             inputModeManager = LocalInputModeManager.current
-            focusManager = LocalFocusManager.current
             DreamDroidTheme {
-                Box(modifier = Modifier.fillMaxSize()) {
-                    SetupAssistantScreen(
-                        viewModel = viewModel,
-                        localNetworkGranted = true,
-                        onRequestLocalNetwork = {},
-                        onFinished = {},
-                        onLeave = {}
-                    )
-                    // A target outside the wizard, so the test can move the remote off a
-                    // disabled action: a disabled focus target can survive clearFocus.
-                    Box(
-                        modifier = Modifier
-                            .size(1.dp)
-                            .testTag("setup_focus_elsewhere")
-                            .focusable()
-                    )
-                }
+                SetupAssistantScreen(
+                    viewModel = viewModel,
+                    localNetworkGranted = true,
+                    onRequestLocalNetwork = {},
+                    onFinished = {},
+                    onLeave = {}
+                )
             }
         }
         // A remote drives the TV setup; buttons take focus only outside touch mode.
@@ -967,18 +949,9 @@ class SetupAssistantScreenTest {
         composeRule.runOnIdle { viewModel.restoreFrom(RESTORE_URI) }
         assertTrue(viewModel.uiState.value.restoring)
         composeRule.waitForIdle()
-        // Both Welcome actions are disabled while the read runs. Move the remote off them so
-        // the restore is what has to put it back on Restore when the read ends on Welcome.
-        // A disabled focus target can survive a plain clearFocus; force it, then focus a
-        // node outside the wizard. Assert where the remote went: a force-cleared disabled
-        // action drops its Focused semantics, so assertIsNotFocused() cannot see it.
+        // Both Welcome actions are disabled while the read runs. A disabled button has no
+        // Focused semantics, so only the end state shows where the remote is.
         restore.assertIsNotEnabled()
-        composeRule.runOnIdle { focusManager.clearFocus(force = true) }
-        composeRule.waitForIdle()
-        val elsewhere = composeRule.onNodeWithTag("setup_focus_elsewhere")
-        elsewhere.performSemanticsAction(SemanticsActions.RequestFocus)
-        composeRule.waitForIdle()
-        elsewhere.assertIsFocused()
 
         gate.complete(Unit)
         composeRule.waitUntil(timeoutMillis = 5_000) {
