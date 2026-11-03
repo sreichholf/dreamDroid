@@ -24,6 +24,7 @@
 * UPD: Setup assistant explains local network access
 * FIX: Backup export without passwords included old receiver passwords
 * FIX: Profiles missing after the upgrade from 1.15
+* FIX: MultiEPG did not cache a nested bouquet for Offline
 
 ## 2.0.470
 * NEW: Hide bouquets per profile

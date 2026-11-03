@@ -500,7 +500,11 @@ class HubServiceListViewModelTest {
 
         viewModel.toggleDefaultBouquet()
         val set = viewModel.uiState.first { it.isDefaultBouquet }
-        assertEquals(TAB, receiver.profiles.repository.current.value!!.defaultBouquetTv)
+        val profile = receiver.profiles.repository.current.value!!
+        assertEquals(TAB, profile.defaultBouquetTv)
+        assertEquals("Tab", profile.defaultBouquetTvName)
+        assertNull(profile.defaultParentBouquetTv, "a tab is its own root, so it has no parent")
+        assertNull(profile.defaultParentBouquetTvName)
         assertEquals(
             UiText.Resource(
                 R.string.default_bouquet_set_to_name,
@@ -513,7 +517,47 @@ class HubServiceListViewModelTest {
         viewModel.toggleDefaultBouquet()
         val reset = viewModel.uiState.first { !it.isDefaultBouquet }
         assertNull(receiver.profiles.repository.current.value!!.defaultBouquetTv)
+        assertNull(receiver.profiles.repository.current.value!!.defaultBouquetTvName)
+        assertNull(receiver.profiles.repository.current.value!!.defaultParentBouquetTv)
+        assertNull(receiver.profiles.repository.current.value!!.defaultParentBouquetTvName)
         assertNull(reset.userMessage)
+    }
+
+    @Test
+    fun defaultOfAFolderKeepsTheTabAsItsParent() = runBlocking {
+        receiver.writeTabStrip(Service(TAB, "Tab"))
+        val viewModel = viewModel()
+        viewModel.settled()
+        viewModel.openDirectory(0)
+        val folder = viewModel.settled()
+
+        viewModel.toggleDefaultBouquet()
+        viewModel.uiState.first { it.isDefaultBouquet }
+
+        val profile = receiver.profiles.repository.current.value!!
+        assertEquals(folder.currentRef, profile.defaultBouquetTv)
+        assertEquals(folder.currentName, profile.defaultBouquetTvName)
+        assertEquals(TAB, profile.defaultParentBouquetTv)
+        assertEquals("Tab", profile.defaultParentBouquetTvName)
+    }
+
+    @Test
+    fun defaultOfAFolderWithoutAKnownTabStoresNoParent() = runBlocking {
+        val viewModel = viewModel()
+        viewModel.settled()
+        viewModel.openDirectory(0)
+        val folder = viewModel.settled()
+
+        viewModel.toggleDefaultBouquet()
+        viewModel.uiState.first { it.isDefaultBouquet }
+
+        val profile = receiver.profiles.repository.current.value!!
+        assertEquals(folder.currentRef, profile.defaultBouquetTv)
+        assertNull(
+            profile.defaultParentBouquetTv,
+            "an unknown tab is not stored; the drawer's cache gate fails closed on it"
+        )
+        assertNull(profile.defaultParentBouquetTvName)
     }
 
     @Test
@@ -543,19 +587,34 @@ class HubServiceListViewModelTest {
 
         viewModel.openMultiEpg()
 
-        assertEquals(HubServiceEffect.MultiEpg(TAB, "Tab"), viewModel.uiState.value.effect)
+        assertEquals(HubServiceEffect.MultiEpg(TAB, "Tab", TAB), viewModel.uiState.value.effect)
         assertTrue(DrawerEpgMode.isMulti(preferences))
         assertTrue(settings.drawerEpgMulti)
         viewModel.onEffectHandled()
 
         viewModel.openListEpg()
 
-        assertEquals(HubServiceEffect.ListEpg(TAB, "Tab"), viewModel.uiState.value.effect)
+        assertEquals(HubServiceEffect.ListEpg(TAB, "Tab", TAB), viewModel.uiState.value.effect)
         assertEquals(
             DrawerEpgMode.LIST,
             preferences.getString(DreamDroid.PREFS_KEY_DRAWER_EPG_MODE, null)
         )
         assertFalse(settings.drawerEpgMulti)
+    }
+
+    @Test
+    fun multiEpgOfAFolderKeepsTheTabAsItsRoot() = runBlocking {
+        val viewModel = viewModel()
+        viewModel.settled()
+        viewModel.openDirectory(0)
+        val folder = viewModel.settled()
+
+        viewModel.openMultiEpg()
+
+        assertEquals(
+            HubServiceEffect.MultiEpg(folder.currentRef, folder.currentName, TAB),
+            viewModel.uiState.value.effect
+        )
     }
 
     @Test

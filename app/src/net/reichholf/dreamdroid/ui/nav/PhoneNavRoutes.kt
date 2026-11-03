@@ -320,7 +320,9 @@ data class EpgSearch(val query: String = "")
 data class Epg(
     val serviceRef: String = "",
     val serviceName: String = "",
-    val timeSec: Long = PhoneNavRoutes.ABSENT_TIME_SEC
+    val timeSec: Long = PhoneNavRoutes.ABSENT_TIME_SEC,
+    /** The hub tab the bouquet was opened under, for the Room persist guard. */
+    val tabRootRef: String = ""
 ) {
     fun timeOrNull(): Long? = timeSec.takeIf { it >= 0L }
 }
@@ -331,7 +333,9 @@ data class MultiEpg(
     val serviceRef: String = "",
     val serviceName: String = "",
     val focusedServiceRef: String = "",
-    val timeSec: Long = PhoneNavRoutes.ABSENT_TIME_SEC
+    val timeSec: Long = PhoneNavRoutes.ABSENT_TIME_SEC,
+    /** The hub tab the bouquet was opened under, for the Room persist guard. */
+    val tabRootRef: String = ""
 ) {
     fun timeOrNull(): Long? = timeSec.takeIf { it >= 0L }
 

@@ -24,6 +24,7 @@
 * UPD: Einrichtungsassistent erklärt den Zugriff auf das lokale Netzwerk
 * FIX: Backup-Export ohne Passwörter enthielt alte Receiver-Passwörter
 * FIX: Profile fehlten nach dem Upgrade von 1.15
+* FIX: MultiEPG speicherte ein verschachteltes Bouquet nicht für Offline
 
 ## 2.0.470
 * NEU: Bouquets pro Profil ausblenden

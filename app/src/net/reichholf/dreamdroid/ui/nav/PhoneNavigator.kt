@@ -232,12 +232,14 @@ class PhoneNavigator(
     override fun navigateToEpg(
         serviceReference: String?,
         serviceName: String?,
-        timeSec: Long?
+        timeSec: Long?,
+        tabRootRef: String?
     ): Boolean {
         val route = Epg(
             serviceRef = serviceReference.orEmpty(),
             serviceName = serviceName.orEmpty(),
-            timeSec = timeSec ?: PhoneNavRoutes.ABSENT_TIME_SEC
+            timeSec = timeSec ?: PhoneNavRoutes.ABSENT_TIME_SEC,
+            tabRootRef = tabRootRef.orEmpty()
         )
         val controller = navController
         if (controller == null) {
@@ -267,14 +269,24 @@ class PhoneNavigator(
         val profile = profiles.current.value ?: return false
         val ref = profile.defaultBouquetTv
         val name = profile.defaultBouquetTvName
+        // A nested default stores the tab it was set from; a tab is its own root.
+        val tabRootRef = profile.defaultParentBouquetTv
         if (!settings.drawerEpgMulti) {
-            return navigateToEpg(ref, name)
+            return navigateToEpg(ref, name, tabRootRef = tabRootRef)
         }
-        val listRoute = Epg(serviceRef = ref.orEmpty(), serviceName = name.orEmpty())
+        val listRoute = Epg(
+            serviceRef = ref.orEmpty(),
+            serviceName = name.orEmpty(),
+            tabRootRef = tabRootRef.orEmpty()
+        )
         val controller = navController
         if (controller == null) {
             pending.drawerRoot = listRoute
-            pending.multiEpg = MultiEpg(serviceRef = ref.orEmpty(), serviceName = name.orEmpty())
+            pending.multiEpg = MultiEpg(
+                serviceRef = ref.orEmpty(),
+                serviceName = name.orEmpty(),
+                tabRootRef = tabRootRef.orEmpty()
+            )
             return true
         }
         val currentRoute = routeKey(controller.currentDestination?.route)
@@ -287,20 +299,22 @@ class PhoneNavigator(
             state.clearResultRequestCodes()
             controller.navigateDrawerRoot(listRoute)
         }
-        return navigateToMultiEpg(ref, name)
+        return navigateToMultiEpg(ref, name, tabRootRef = tabRootRef)
     }
 
     override fun navigateToMultiEpg(
         serviceReference: String?,
         serviceName: String?,
         focusedServiceRef: String?,
-        timeSec: Long?
+        timeSec: Long?,
+        tabRootRef: String?
     ): Boolean {
         val route = MultiEpg(
             serviceRef = serviceReference.orEmpty(),
             serviceName = serviceName.orEmpty(),
             focusedServiceRef = focusedServiceRef.orEmpty(),
-            timeSec = timeSec ?: PhoneNavRoutes.ABSENT_TIME_SEC
+            timeSec = timeSec ?: PhoneNavRoutes.ABSENT_TIME_SEC,
+            tabRootRef = tabRootRef.orEmpty()
         )
         val controller = navController
         if (controller == null) {
@@ -431,7 +445,8 @@ class PhoneNavigator(
                 multi.serviceRef.ifEmpty { null },
                 multi.serviceName.ifEmpty { null },
                 multi.focusedOrNull(),
-                multi.timeOrNull()
+                multi.timeOrNull(),
+                multi.tabRootRef.ifEmpty { null }
             )
         }
     }

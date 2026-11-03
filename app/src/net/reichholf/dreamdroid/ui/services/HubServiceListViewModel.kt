@@ -53,11 +53,13 @@ sealed interface HubServiceEffect {
         val stream: LiveStream.Ready
     ) : HubServiceEffect
 
-    /** Open MultiEPG of the list [reference]. */
-    data class MultiEpg(val reference: String, val name: String) : HubServiceEffect
+    /** Open MultiEPG of the list [reference], opened under the hub tab [tabRootRef]. */
+    data class MultiEpg(val reference: String, val name: String, val tabRootRef: String) :
+        HubServiceEffect
 
-    /** Open the list EPG of [reference]. */
-    data class ListEpg(val reference: String, val name: String) : HubServiceEffect
+    /** Open the list EPG of [reference], opened under the hub tab [tabRootRef]. */
+    data class ListEpg(val reference: String, val name: String, val tabRootRef: String) :
+        HubServiceEffect
 
     /** A zap finished; the hub refreshes what is playing. */
     data object Zapped : HubServiceEffect
@@ -282,14 +284,14 @@ class HubServiceListViewModel @AssistedInject constructor(
     fun openMultiEpg() {
         val state = _uiState.value
         settings.drawerEpgMulti = true
-        effect(HubServiceEffect.MultiEpg(state.currentRef, state.currentName))
+        effect(HubServiceEffect.MultiEpg(state.currentRef, state.currentName, rootRef))
     }
 
     /** List EPG of the list on screen, which also becomes the drawer's EPG view. */
     fun openListEpg() {
         val state = _uiState.value
         settings.drawerEpgMulti = false
-        effect(HubServiceEffect.ListEpg(state.currentRef, state.currentName))
+        effect(HubServiceEffect.ListEpg(state.currentRef, state.currentName, rootRef))
     }
 
     fun onEffectHandled() {
@@ -316,12 +318,22 @@ class HubServiceListViewModel @AssistedInject constructor(
         }
         val profile = profiles.current.value ?: return
         val reset = profile.defaultBouquetTv == state.currentRef
-        if (reset) {
-            profile.defaultBouquetTv = null
-        } else {
-            profile.setDefaultRefValues(state.currentRef, state.currentName)
-        }
         viewModelScope.launch {
+            if (reset) {
+                profile.setDefaultRefValues(null, null)
+                profile.setDefaultRef2Values(null, null)
+            } else {
+                profile.setDefaultRefValues(state.currentRef, state.currentName)
+                // A nested default keeps the tab it was set from, so the drawer's MultiEPG
+                // can key its cache on it. Only a tab of this profile is stored: an unknown
+                // root would be a foreign ref after a switch, and the cache gate fails
+                // closed on it. A default that is the tab itself has no parent.
+                val parent = rootRef.takeIf {
+                    state.currentRef != rootRef &&
+                        services.isCacheableContainer(state.currentRef, rootRef)
+                }
+                profile.setDefaultRef2Values(parent, parent?.let { bouquet.name })
+            }
             withContext(Dispatchers.IO) { profiles.save(profile) }
             _uiState.update {
                 it.copy(

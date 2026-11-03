@@ -56,7 +56,14 @@ fun EpgBouquetDestination(
     ShellTitle(uiState.title)
     val nowSec = { (System.currentTimeMillis() / 1000L).toInt() }
     val openMultiEpg = { atSec: Long ->
-        openBouquetMultiEpg(context, handle, uiState.bouquetRef, uiState.bouquetName, atSec)
+        openBouquetMultiEpg(
+            context,
+            handle,
+            uiState.bouquetRef,
+            uiState.bouquetName,
+            atSec,
+            tabRootRef = route.tabRootRef.ifEmpty { null }
+        )
     }
     BindShellTopBarActions(
         epgBouquetTopBarActions(
@@ -167,13 +174,19 @@ internal fun openBouquetMultiEpg(
     handle: PhoneNavHandle?,
     bouquetRef: String,
     bouquetName: String,
-    timeSec: Long
+    timeSec: Long,
+    tabRootRef: String? = null
 ) {
     if (bouquetRef.isEmpty()) {
         return
     }
     DrawerEpgMode.saveMulti(context)
-    handle?.navigateToMultiEpg(bouquetRef, bouquetName, timeSec = timeSec)
+    handle?.navigateToMultiEpg(
+        bouquetRef,
+        bouquetName,
+        timeSec = timeSec,
+        tabRootRef = tabRootRef
+    )
 }
 
 /** MultiEPG jump (once a bouquet is set) and the bouquet picker. */

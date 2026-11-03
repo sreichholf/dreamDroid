@@ -732,7 +732,7 @@ class MultiEpgGridTest {
             sync = sync,
             scope = this,
             profileId = { 1 },
-            persistBouquet = { false }
+            persistBouquet = { _, _ -> false }
         )
         grid.replaceAndLoad("bouquet-a", now)
         grid.awaitIdle()
@@ -1145,7 +1145,7 @@ class MultiEpgGridTest {
             sync = sync,
             scope = this,
             profileId = { 1 },
-            persistBouquet = { false },
+            persistBouquet = { _, _ -> false },
             shouldSkipReceiverHttp = { hasCache -> hasCache },
             loadBouquetServices = { _, _ ->
                 bouquetCalls.incrementAndGet()
@@ -1194,7 +1194,7 @@ class MultiEpgGridTest {
             sync = sync,
             scope = this,
             profileId = { 1 },
-            persistBouquet = { false },
+            persistBouquet = { _, _ -> false },
             isSessionOffline = { true },
             loadBouquetServices = { _, _ ->
                 bouquetCalls.incrementAndGet()
@@ -1236,7 +1236,7 @@ class MultiEpgGridTest {
             sync = sync,
             scope = this,
             profileId = { 1 },
-            persistBouquet = { false },
+            persistBouquet = { _, _ -> false },
             isSessionOffline = { true },
             loadBouquetServices = { _, _ ->
                 bouquetCalls.incrementAndGet()
@@ -1308,7 +1308,7 @@ class MultiEpgGridTest {
             sync = sync,
             scope = this,
             profileId = { 1 },
-            persistBouquet = { false },
+            persistBouquet = { _, _ -> false },
             isSessionOffline = { true },
             loadBouquetServices = { _, _ ->
                 throw EnigmaFailureException(
@@ -1356,7 +1356,7 @@ class MultiEpgGridTest {
             sync = sync,
             scope = this,
             profileId = { 1 },
-            persistBouquet = { false },
+            persistBouquet = { _, _ -> false },
             isSessionOffline = { true },
             loadBouquetServices = { _, _ ->
                 bouquetCalls.incrementAndGet()
@@ -1465,6 +1465,42 @@ class MultiEpgGridTest {
         assertNull(db.epgDao().getChunk(2, "bouquet-a", chunkStart))
     }
 
+    @Test
+    fun aNestedFolderPersistsOnlyWithItsTabRoot() = runBlocking {
+        val t0 = MultiEpgWindows.CHUNK_SECONDS + 10L
+        val chunkStart = MultiEpgWindows.chunkContaining(t0).startSec
+        val gate = MultiEpgPersistGate(emptySet())
+        gate.knownTabRefs = listOf(BOUQUET)
+        val sync = MultiEpgSync(
+            dao = db.epgDao(),
+            fetch = { _, _, time, _ ->
+                listOf(programme(id = "e-$time", title = "T", start = time))
+            },
+            clockMs = { 1_000_000L },
+            ttlMs = 25L * 60L * 1000L
+        )
+        val grid = MultiEpgGrid(
+            sync = sync,
+            scope = this,
+            profileId = { 1 },
+            persistBouquet = gate::persist
+        )
+
+        grid.replaceAndLoad(FOLDER, t0)
+        grid.awaitIdle()
+        assertNull(
+            db.epgDao().getChunk(1, FOLDER, chunkStart),
+            "a nested folder without its tab root must not cache"
+        )
+
+        grid.replaceAndLoad(FOLDER, t0, tabRootRef = BOUQUET)
+        grid.awaitIdle()
+        assertNotNull(
+            db.epgDao().getChunk(1, FOLDER, chunkStart),
+            "the hub tab makes the nested folder cacheable"
+        )
+    }
+
     private fun titleOnFocusedChunk(grid: MultiEpgGrid, unixSec: Long): String =
         titleOnFocusedChunkOrNull(grid, unixSec)
             ?: error(gridDump(grid, unixSec))
@@ -1514,5 +1550,11 @@ class MultiEpgGridTest {
         // The grid publishes every change on [MultiEpgGrid.state]; wake on each emission.
         withTimeoutOrNull(timeoutMs) { state.first { condition() } }
             ?: error("timed out waiting for grid condition ${dump()}")
+    }
+
+    private companion object {
+        const val BOUQUET =
+            "1:7:1:0:0:0:0:0:0:0:FROM BOUQUET \"userbouquet.favourites.tv\" ORDER BY bouquet"
+        const val FOLDER = "1:7:1:0:0:0:0:0:0:0:FROM SATELLITES ORDER BY satellite"
     }
 }
