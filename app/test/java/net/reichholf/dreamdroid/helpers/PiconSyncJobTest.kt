@@ -1,10 +1,13 @@
 package net.reichholf.dreamdroid.helpers
 
+import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.IOException
 import java.io.OutputStream
 import java.nio.file.Files
 import kotlinx.coroutines.runBlocking
+import org.apache.commons.net.io.CopyStreamException
+import org.apache.commons.net.io.Util
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -178,18 +181,20 @@ class PiconSyncJobTest {
     }
 
     @Test
-    fun aListingOverTheFileLimitFailsBeforeDownloading() {
+    fun aListingOverTheFileLimitIsSyncedUpToTheLimit() {
         ftp.picons = List(PiconSyncJob.MAX_PICON_FILES + 1) { "$it.png" }
+        ftp.retrieveReply = FtpReply(false, 550, "No such file")
 
         val result = runBlocking { job().run() }
 
-        assertEquals(0, result.totalFiles)
-        assertEquals(0, result.downloadedFiles)
-        assertTrue(
-            result.error?.contains(PiconSyncJob.MAX_PICON_FILES.toString()) == true,
-            "the limit must be in the result: ${result.error}"
+        assertNull(result.error, "a large picon folder must not fail the sync")
+        assertEquals(PiconSyncJob.MAX_PICON_FILES + 1, result.totalFiles)
+        assertEquals(PiconSyncJob.MAX_PICON_FILES, ftp.retrieved.size)
+        assertEquals("0.png", ftp.retrieved.first())
+        assertFalse(
+            "${PiconSyncJob.MAX_PICON_FILES}.png" in ftp.retrieved,
+            "picons past the limit must not be retrieved"
         )
-        assertTrue(ftp.retrieved.isEmpty(), "an oversized listing must not start downloading")
     }
 
     @Test
@@ -212,6 +217,11 @@ class PiconSyncJobTest {
         assertArrayEquals(EXISTING, File(dir, "ard.png").readBytes())
         assertFalse(File(dir, "ard.png.part").exists())
         assertFalse(File(dir, "zdf.png").exists(), "an aborted sync must not download on")
+        assertEquals(listOf("ard.png"), ftp.retrieved)
+        assertTrue(
+            ftp.thrown is CopyStreamException,
+            "the fake must surface the size error the way commons-net does: ${ftp.thrown}"
+        )
     }
 
     @Test
@@ -334,6 +344,8 @@ private class FakePiconFtp : PiconFtp {
     var failRetrieveFor: Set<String> = emptySet()
     var connectThrows: Exception? = null
     var listingThrows: Exception? = null
+    var thrown: Exception? = null
+        private set
 
     override fun connect(host: String) {
         connectThrows?.let { throw it }
@@ -362,7 +374,15 @@ private class FakePiconFtp : PiconFtp {
             return FtpReply(ok = false, code = 550, text = "No such file")
         }
         if (retrieveReply.ok) {
-            contents[name]?.let { to.write(it) }
+            // Copies the way FTPClient.retrieveFile does, so a failing stream arrives wrapped.
+            contents[name]?.let {
+                try {
+                    Util.copyStream(ByteArrayInputStream(it), to)
+                } catch (e: CopyStreamException) {
+                    thrown = e
+                    throw e
+                }
+            }
         }
         return retrieveReply
     }
