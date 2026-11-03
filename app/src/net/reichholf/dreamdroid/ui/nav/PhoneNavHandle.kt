@@ -91,6 +91,8 @@ interface PhoneNavHandle {
     fun showAutoTimerAfterSave(id: Int, name: String): Boolean
     fun deliverPickResult(resultCode: Int, data: Intent?)
     fun dispatchPendingComposeActivityResult()
+
+    /** The active profile may have changed; the EPG remounts only for a new one. */
     fun onActiveProfileChanged()
     fun onHostActivityResult(requestCode: Int, resultCode: Int, data: Intent?)
 }

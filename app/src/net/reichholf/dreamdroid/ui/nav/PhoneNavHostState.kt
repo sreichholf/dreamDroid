@@ -73,6 +73,8 @@ class PhoneNavHostState @Inject constructor(private val savedStateHandle: SavedS
     private var startRouteSaved: Boolean = false
     private var heldResult: PendingComposeActivityResult? = null
     private var heldResultData: Intent? = null
+    private var remountedProfile: Profile? = null
+    private var hasRemountedProfile: Boolean = false
 
     init {
         val bag = readPhoneNavStateBag(savedStateHandle)
@@ -137,6 +139,27 @@ class PhoneNavHostState @Inject constructor(private val savedStateHandle: SavedS
 
     fun remountEpg() {
         _uiState.update { it.copy(epgRemount = it.epgRemount + 1) }
+    }
+
+    /**
+     * Remounts the EPG and MultiEPG only when [profile] differs from the one they were
+     * last mounted for, using the repository's [Profile.hasSameSettings] identity. A
+     * profile check that finds the same receiver leaves the EPG's time, bouquet and
+     * scroll alone; a switch or edited connection settings still remount it.
+     */
+    fun remountEpgForProfile(profile: Profile?) {
+        val previous = remountedProfile
+        val sameProfile = if (profile == null || previous == null) {
+            profile === previous
+        } else {
+            profile.hasSameSettings(previous)
+        }
+        val changed = !hasRemountedProfile || !sameProfile
+        hasRemountedProfile = true
+        remountedProfile = profile
+        if (changed) {
+            remountEpg()
+        }
     }
 
     fun remountEpgSearch() {

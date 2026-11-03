@@ -15,6 +15,7 @@
 * FIX: Offline lists wiped by an unreadable receiver answer
 * FIX: MultiEPG cached another profile's programmes after a profile switch
 * FIX: TV - Guide kept the previous profile's programmes after a switch
+* FIX: EPG lost time and bouquet when returning to the app
 
 ## 2.0.470
 * NEW: Hide bouquets per profile

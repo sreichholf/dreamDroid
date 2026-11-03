@@ -5,6 +5,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
 import androidx.lifecycle.SavedStateHandle
+import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.data.SettingsRepository
 import net.reichholf.dreamdroid.testutil.MemorySharedPreferences
 import net.reichholf.dreamdroid.testutil.TestProfiles
@@ -63,6 +64,56 @@ class PhoneNavigatorTest {
         val next = navigator().navUiState.value
         assertTrue(next.leaveConfirmRequested)
         assertEquals(1, next.epgRemount)
+    }
+
+    @Test
+    fun aCheckForTheSameProfileKeepsTheEpgMounted() {
+        profiles.repository.setCurrent(profile(id = 1, host = "box"))
+        val navigator = navigator()
+
+        navigator.onActiveProfileChanged()
+        navigator.onActiveProfileChanged()
+
+        assertEquals(1, state.uiState.value.epgRemount)
+    }
+
+    @Test
+    fun aRecreatedNavigatorDoesNotRemountForTheSameProfile() {
+        profiles.repository.setCurrent(profile(id = 1, host = "box"))
+        navigator().onActiveProfileChanged()
+
+        navigator().onActiveProfileChanged()
+
+        assertEquals(1, state.uiState.value.epgRemount)
+    }
+
+    @Test
+    fun anotherProfileRemountsTheEpg() {
+        profiles.repository.setCurrent(profile(id = 1, host = "box"))
+        val navigator = navigator()
+        navigator.onActiveProfileChanged()
+
+        profiles.repository.setCurrent(profile(id = 2, host = "box"))
+        navigator.onActiveProfileChanged()
+
+        assertEquals(2, state.uiState.value.epgRemount)
+    }
+
+    @Test
+    fun editedConnectionSettingsRemountTheEpg() {
+        profiles.repository.setCurrent(profile(id = 1, host = "box"))
+        val navigator = navigator()
+        navigator.onActiveProfileChanged()
+
+        profiles.repository.setCurrent(profile(id = 1, host = "other-box"))
+        navigator.onActiveProfileChanged()
+
+        assertEquals(2, state.uiState.value.epgRemount)
+    }
+
+    private fun profile(id: Int, host: String): Profile = Profile().apply {
+        this.id = id
+        this.host = host
     }
 
     private fun navigator() = PhoneNavigator(
