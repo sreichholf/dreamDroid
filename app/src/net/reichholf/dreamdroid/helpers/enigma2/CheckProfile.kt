@@ -48,16 +48,13 @@ object CheckProfile {
         profiles: ProfileRepository,
         capabilities: WebIfCapabilitiesRepository
     ): ProfileCheckResult {
-        val host = profile.host ?: return ProfileCheckResult()
+        val host = profile.host
         if (!isValidHost(host)) {
-            return ProfileCheckResult(
-                hasError = true,
-                errorTextId = R.string.illegal_host,
-                failure = EnigmaFailure.Unreachable(
-                    EnigmaFailure.UnreachableReason.IllegalHost,
-                    host
-                )
-            )
+            return illegalHost(host.orEmpty())
+        }
+        val streamHost = profile.streamHost
+        if (!streamHost.isNullOrEmpty() && !isValidHost(streamHost)) {
+            return illegalHost(streamHost)
         }
         val port = profile.port
         if (port <= 0 || port > 65535) {
@@ -117,6 +114,12 @@ object CheckProfile {
         errorTextId = R.string.connection_error,
         errorText = failure.userMessageText().takeUnless { it is UiText.Raw && it.text.isBlank() },
         failure = failure
+    )
+
+    private fun illegalHost(detail: String) = ProfileCheckResult(
+        hasError = true,
+        errorTextId = R.string.illegal_host,
+        failure = EnigmaFailure.Unreachable(EnigmaFailure.UnreachableReason.IllegalHost, detail)
     )
 
     /**

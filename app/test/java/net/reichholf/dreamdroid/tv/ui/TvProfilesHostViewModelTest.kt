@@ -95,6 +95,39 @@ class TvProfilesHostViewModelTest {
     }
 
     @Test
+    fun anIllegalHostIsNotSaved() = runBlocking<Unit> {
+        val viewModel = viewModel()
+        viewModel.showAdd()
+        type(viewModel.fields.name, "Kitchen")
+        type(viewModel.fields.host, "receiver.local@attacker.example")
+
+        viewModel.save()
+
+        val state = viewModel.uiState.value
+        assertEquals(UiText.Resource(R.string.illegal_host), state.hostError)
+        assertEquals(TvProfilesEvent.Save(saved = false, currentProfile = false), state.event)
+        assertEquals(TvProfilesPage.Add, state.page)
+        assertTrue(profiles.profiles().isEmpty())
+    }
+
+    @Test
+    fun anIllegalStreamHostIsNotSaved() = runBlocking<Unit> {
+        val viewModel = viewModel()
+        viewModel.showAdd()
+        type(viewModel.fields.name, "Kitchen")
+        type(viewModel.fields.host, "10.0.0.4")
+        type(viewModel.fields.streamHost, "stream.local/path")
+
+        viewModel.save()
+
+        val state = viewModel.uiState.value
+        assertEquals(UiText.Resource(R.string.illegal_host), state.streamHostError)
+        assertEquals(TvProfilesEvent.Save(saved = false, currentProfile = false), state.event)
+        assertEquals(TvProfilesPage.Add, state.page)
+        assertTrue(profiles.profiles().isEmpty())
+    }
+
+    @Test
     fun savingTheActiveProfileSwitchesToTheNewSettings() = runTest {
         val living = saved("Living Room")
         profiles.setCurrent(living.id!!, forceEvent = true)

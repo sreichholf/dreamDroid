@@ -22,6 +22,7 @@ import net.reichholf.dreamdroid.data.ProfileCheckRepository
 import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.data.ReceiverDiscovery
 import net.reichholf.dreamdroid.enigma.ProfileCheckResult
+import net.reichholf.dreamdroid.helpers.isValidHost
 import net.reichholf.dreamdroid.ui.backup.BackupImport
 import net.reichholf.dreamdroid.ui.backup.ImportReview
 import net.reichholf.dreamdroid.ui.text.SavedTextField
@@ -39,6 +40,7 @@ data class SetupAssistantUiState(
     val searched: Boolean = false,
     val checking: Boolean = false,
     val checkResult: ProfileCheckResult? = null,
+    val saveError: UiText? = null,
     val restoring: Boolean = false,
     val restoreError: UiText? = null,
     val finished: Boolean = false
@@ -307,6 +309,12 @@ class SetupAssistantViewModel @Inject constructor(
             return
         }
         val profile = toProfile(profileName.text.ifBlank { host.text.trim() })
+        if (!isValidHost(profile.host) ||
+            (!profile.streamHost.isNullOrEmpty() && !isValidHost(profile.streamHost))
+        ) {
+            _uiState.update { it.copy(saveError = UiText.Resource(R.string.illegal_host)) }
+            return
+        }
         saveJob = viewModelScope.launch {
             withContext(Dispatchers.IO) {
                 profiles.save(profile)
@@ -338,7 +346,7 @@ class SetupAssistantViewModel @Inject constructor(
     private fun clearCheckResult() {
         checkJob?.cancel()
         checkJob = null
-        _uiState.update { it.copy(checkResult = null, checking = false) }
+        _uiState.update { it.copy(checkResult = null, checking = false, saveError = null) }
     }
 
     private fun reset() {
