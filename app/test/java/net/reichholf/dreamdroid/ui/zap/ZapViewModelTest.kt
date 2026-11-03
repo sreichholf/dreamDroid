@@ -218,9 +218,10 @@ class ZapViewModelTest {
     }
 
     @Test
-    fun longPressStreamsThroughTheDestination() = runBlocking<Unit> {
+    fun longPressStreamsTheServiceWithItsBouquet() = runBlocking<Unit> {
+        useDefaultBouquet()
         val viewModel = viewModel()
-        viewModel.onEffectHandled()
+        viewModel.settled()
         val service = Service(CHANNEL, "Das Erste HD")
 
         viewModel.stream(service)
@@ -230,6 +231,7 @@ class ZapViewModelTest {
         assertEquals(
             ZapEffect.Stream(
                 service,
+                BOUQUET,
                 LiveStream.Ready(CHANNEL, EnigmaUrls.stream(profiles.current.value!!, CHANNEL))
             ),
             effect

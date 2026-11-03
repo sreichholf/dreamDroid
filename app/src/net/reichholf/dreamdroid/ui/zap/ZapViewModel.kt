@@ -28,8 +28,9 @@ sealed interface ZapEffect {
     /** Open the bouquet picker; its answer comes back through `onBouquetPicked`. */
     data object PickBouquet : ZapEffect
 
-    /** Play [stream] of [service]. */
-    data class Stream(val service: Service, val stream: LiveStream.Ready) : ZapEffect
+    /** Play [stream] of [service], a channel of the list [bouquetRef]. */
+    data class Stream(val service: Service, val bouquetRef: String?, val stream: LiveStream.Ready) :
+        ZapEffect
 }
 
 /**
@@ -153,13 +154,15 @@ class ZapViewModel @Inject constructor(
         }
     }
 
-    /** Streams [service] once the receiver can ([ReceiverRepository.liveStream]). */
+    /** Streams [service] of the shown bouquet once the receiver can. */
     fun stream(service: Service) {
+        val bouquetRef = saved.bouquetRef.takeIf { it.isNotEmpty() }
         streamJob?.cancel()
         streamJob = viewModelScope.launch {
             when (val stream = receiver.liveStream(service.reference)) {
-                is LiveStream.Ready ->
-                    _uiState.update { it.copy(effect = ZapEffect.Stream(service, stream)) }
+                is LiveStream.Ready -> _uiState.update {
+                    it.copy(effect = ZapEffect.Stream(service, bouquetRef, stream))
+                }
 
                 is LiveStream.Failed -> _uiState.update { it.copy(userMessage = stream.message) }
             }

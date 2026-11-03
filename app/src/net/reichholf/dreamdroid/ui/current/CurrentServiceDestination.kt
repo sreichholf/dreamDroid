@@ -79,6 +79,7 @@ internal fun startServiceStream(
                 context,
                 stream.stream,
                 stream.name,
+                stream.bouquetRef,
                 serviceInfo = ServiceNowNext(
                     serviceReference = stream.stream.reference,
                     serviceName = stream.name

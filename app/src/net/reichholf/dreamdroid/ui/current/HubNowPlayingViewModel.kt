@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.LastLiveStreamRepository
 import net.reichholf.dreamdroid.data.LiveStream
 import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.data.ReceiverRepository
@@ -81,6 +82,7 @@ class HubNowPlayingViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     private val receiver: ReceiverRepository,
     private val profiles: ProfileRepository,
+    private val lastStreams: LastLiveStreamRepository,
     private val sessions: SessionConnectionHolder,
     settings: SettingsRepository
 ) : ViewModel() {
@@ -176,13 +178,13 @@ class HubNowPlayingViewModel @Inject constructor(
         }
         streamJob?.cancel()
         streamJob = viewModelScope.launch {
-            _uiState.update {
-                when (val stream = receiver.liveStream(service.reference)) {
-                    is LiveStream.Ready ->
-                        it.copy(stream = CurrentServiceStream(service.name, stream))
-
-                    is LiveStream.Failed -> it.copy(userMessage = stream.message)
+            val bouquetRef = currentServiceBouquetRef(service.reference, profiles, lastStreams)
+            when (val stream = receiver.liveStream(service.reference)) {
+                is LiveStream.Ready -> _uiState.update {
+                    it.copy(stream = CurrentServiceStream(service.name, bouquetRef, stream))
                 }
+
+                is LiveStream.Failed -> _uiState.update { it.copy(userMessage = stream.message) }
             }
         }
     }

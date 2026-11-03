@@ -16,6 +16,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import java.util.concurrent.atomic.AtomicInteger
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
+import net.reichholf.dreamdroid.data.LastLiveStreamRepository
 import net.reichholf.dreamdroid.data.ReceiverRepository
 import net.reichholf.dreamdroid.data.SettingsRepository
 import net.reichholf.dreamdroid.data.WebIfCapabilitiesRepository
@@ -77,6 +78,7 @@ class HubNowPlayingRetentionTest {
             .putBoolean(DreamDroid.PREFS_KEY_NOW_PLAYING_STRIP, true)
             .commit()
     }
+    private val lastStreams = LastLiveStreamRepository(preferences, profiles)
 
     @After
     fun tearDown() {
@@ -111,6 +113,7 @@ class HubNowPlayingRetentionTest {
                                 createSavedStateHandle(),
                                 receiver,
                                 profiles,
+                                lastStreams,
                                 sessions,
                                 settings
                             )

@@ -10,10 +10,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.LastLiveStreamRepository
 import net.reichholf.dreamdroid.data.LiveStream
 import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.data.ReceiverRepository
@@ -22,8 +24,29 @@ import net.reichholf.dreamdroid.enigma.CurrentService
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import net.reichholf.dreamdroid.ui.text.UiText
 
-/** Play [stream] of the service [name], then report with `onStreamStarted`. */
-data class CurrentServiceStream(val name: String, val stream: LiveStream.Ready)
+/**
+ * Play [stream] of the service [name], a channel of the list [bouquetRef], then report with
+ * `onStreamStarted`.
+ */
+data class CurrentServiceStream(
+    val name: String,
+    val bouquetRef: String?,
+    val stream: LiveStream.Ready
+)
+
+/**
+ * The bouquet the player loads now/next and its channel list from: the one the service last
+ * streamed from, else the profile's default TV bouquet. Null when neither is known.
+ */
+internal suspend fun currentServiceBouquetRef(
+    serviceRef: String,
+    profiles: ProfileRepository,
+    lastStreams: LastLiveStreamRepository
+): String? {
+    val lastStream = lastStreams.lastStream.first()
+    return lastStream?.takeIf { it.reference == serviceRef }?.bouquetRef
+        ?: profiles.current.value?.defaultBouquetTv?.takeIf { it.isNotEmpty() }
+}
 
 /**
  * The Current service screen. [current] is the last `/web/getcurrent` that named a service
@@ -57,6 +80,7 @@ class CurrentServiceViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     private val receiver: ReceiverRepository,
     private val profiles: ProfileRepository,
+    private val lastStreams: LastLiveStreamRepository,
     sessions: SessionConnectionHolder,
     settings: SettingsRepository
 ) : ViewModel() {
@@ -120,13 +144,13 @@ class CurrentServiceViewModel @Inject constructor(
         }
         streamJob?.cancel()
         streamJob = viewModelScope.launch {
-            _uiState.update {
-                when (val stream = receiver.liveStream(service.reference)) {
-                    is LiveStream.Ready ->
-                        it.copy(stream = CurrentServiceStream(service.name, stream))
-
-                    is LiveStream.Failed -> it.copy(userMessage = stream.message)
+            val bouquetRef = currentServiceBouquetRef(service.reference, profiles, lastStreams)
+            when (val stream = receiver.liveStream(service.reference)) {
+                is LiveStream.Ready -> _uiState.update {
+                    it.copy(stream = CurrentServiceStream(service.name, bouquetRef, stream))
                 }
+
+                is LiveStream.Failed -> _uiState.update { it.copy(userMessage = stream.message) }
             }
         }
     }

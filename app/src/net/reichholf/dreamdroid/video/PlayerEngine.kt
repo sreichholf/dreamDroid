@@ -28,6 +28,7 @@ data class PlayerState(
  * A stream for [VideoPlayer.playUri]. [hwAccelFlags] are [VlcEngine.MEDIA_HWACCEL_ENABLED] and
  * [VlcEngine.MEDIA_HWACCEL_FORCE]; [bufferMs] is how much the engine buffers before it plays.
  * A [live] stream is opened again when it fails or ends (see [LiveReconnect]).
+ * [startPositionMs] is where a recording starts; live streams always start at the live edge.
  */
 data class PlayRequest(
     val url: String,
@@ -35,8 +36,15 @@ data class PlayRequest(
     val hwAccelFlags: Int,
     val bufferMs: Int,
     val live: Boolean,
-    val preferredAudioLanguage: String = ""
+    val preferredAudioLanguage: String = "",
+    val startPositionMs: Long = 0L
 )
+
+/**
+ * Where a stream starts again after its player was released or an engine handed it over: a
+ * recording at [timeMs], a live stream at the live edge.
+ */
+fun resumePositionMs(live: Boolean, timeMs: Long): Long = if (live) 0L else timeMs.coerceAtLeast(0L)
 
 /** The decoder library that plays a stream in the integrated player. */
 enum class Engine(val prefValue: String) {
