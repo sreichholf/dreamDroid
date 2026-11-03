@@ -142,7 +142,7 @@ Split in two. **14a** moves the widget, picons, the HTTP stack, live streams, an
 - `PiconSyncWorker`: see decision 7.
 - `EnigmaOkHttp` becomes an injected `@Singleton` that takes `@ApplicationContext` for `DreamDroidTrustManager`. `EnigmaHttp` requires a profile, and `EnigmaClient` requires its `EnigmaHttp`.
 - Delete everything in **End state** that is still there. At this point the compiler lists any caller that is left.
-- `DreamDroidBackupAgent` needs nothing: it only names files. It must stay free of injection, because a restore can run the agent in a process whose Application is not `DreamDroid`.
+- `DreamDroidBackupAgent` needs nothing: it declares no backup helpers, so cloud backup carries no app data. It must stay free of injection, because a restore can run the agent in a process whose Application is not `DreamDroid`.
 
 14b as landed: `MainActivity` injects `ProfileRepository`. `SessionConnectionHolder` is an `@Singleton` with an `@Inject` constructor, and `PhoneShell` takes `boxActionsBlocked` from the status `MainActivity` already collects. The picon sync, the last `ShellMessages` poster, runs from `SettingsViewModel` through an injected `PiconSyncScheduler` (WorkManager; a fake in the JVM test, since WorkManager does not run there) and reports started / still running as `SettingsUiState.userMessage`. `DatabaseModule` builds the database with `AppDatabase.build`; `DreamDroid` gets it injected for the pre-Room import. Instrumented tests that drive real activities read the app's singletons from the fields Hilt injected into `DreamDroid` (`testutil/DreamDroidApp.kt`).
 

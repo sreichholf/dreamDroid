@@ -113,6 +113,27 @@ class BackupViewModelTest {
     }
 
     @Test
+    fun exportWithSettingsLeavesTheLegacyReceiverPasswordsOutByDefault() = runTest {
+        saved("Living Room", "10.0.0.1")
+        preferences.edit()
+            .putString("host", "10.0.0.1")
+            .putString("pass", "old-webif-pass")
+            .putString("encoder_pass", "old-encoder-pass")
+            .apply()
+        val viewModel = viewModel()
+        viewModel.uiState.first { it.profiles.size == 1 }
+
+        viewModel.setExportSettings(true)
+        viewModel.exportTo(URI)
+        viewModel.uiState.first { it.userMessage != null }
+
+        val json = documents.files.getValue(URI)
+        assertFalse(json.contains("old-webif-pass"))
+        assertFalse(json.contains("old-encoder-pass"))
+        assertTrue(json.contains("\"host\""))
+    }
+
+    @Test
     fun exportKeepsPasswordsOnceChosen() = runTest {
         saved("Living Room", "10.0.0.1", pass = "secret")
         val viewModel = viewModel()
@@ -301,6 +322,51 @@ class BackupViewModelTest {
             profiles.profiles().associate { it.name to (it.host to it.pass) }
         )
         assertFalse(preferences.getBoolean(DreamDroid.PREFS_KEY_INSTANT_ZAP, false))
+    }
+
+    @Test
+    fun importWithoutPasswordsLeavesTheLegacyReceiverPasswordsOutOfTheSettings() = runTest {
+        val data = BackupData()
+        data.passwordsIncluded = true
+        data.addProfile(receiver("Kitchen", "10.0.0.3").apply { pass = "from-file" })
+        data.addGenericSetting(GenericSetting("host", "10.0.0.9", "String"))
+        data.addGenericSetting(GenericSetting("pass", "from-file", "String"))
+        data.addGenericSetting(GenericSetting("encoder_pass", "from-file-enc", "String"))
+        documents.files[URI] = GsonBuilder().create().toJson(data)
+        val viewModel = viewModel()
+        viewModel.importFrom(URI)
+        val review = viewModel.importReview.first { it != null }!!
+        assertTrue(review.passwordsAvailable && review.includePasswords)
+
+        viewModel.setImportPasswords(false)
+        viewModel.confirmImport()
+        viewModel.uiState.first { it.userMessage != null }
+
+        assertEquals("10.0.0.9", preferences.getString("host", null))
+        assertFalse(preferences.contains("pass"))
+        assertFalse(preferences.contains("encoder_pass"))
+        assertEquals("", profiles.profiles().single().pass)
+    }
+
+    @Test
+    fun aSettingsOnlyLegacyFileRestoresItsPasswordWhenChosen() = runTest {
+        val data = BackupData()
+        data.addGenericSetting(GenericSetting("host", "10.0.0.9", "String"))
+        data.addGenericSetting(GenericSetting("pass", "from-file", "String"))
+        documents.files[URI] = GsonBuilder().create().toJson(data)
+        val viewModel = viewModel()
+
+        viewModel.importFrom(URI)
+        val review = viewModel.importReview.first { it != null }!!
+
+        assertTrue(review.passwordsAvailable)
+        assertTrue(review.passwordsSelectable)
+        assertTrue(review.passwordsChecked)
+        viewModel.confirmImport()
+        viewModel.uiState.first { it.userMessage != null }
+
+        assertEquals("10.0.0.9", preferences.getString("host", null))
+        assertEquals("from-file", preferences.getString("pass", null))
     }
 
     @Test

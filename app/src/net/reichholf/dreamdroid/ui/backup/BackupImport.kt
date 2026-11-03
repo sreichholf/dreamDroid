@@ -42,9 +42,9 @@ data class ImportReview(
     val selectedProfiles: Int
         get() = profiles.count { it.checked && it.illegalHost == null }
 
-    /** Passwords come with a chosen profile only. */
+    /** Passwords come with a chosen profile or with the settings. */
     val passwordsSelectable: Boolean
-        get() = passwordsAvailable && selectedProfiles > 0
+        get() = passwordsAvailable && (selectedProfiles > 0 || includeSettings)
 
     /** What the passwords switch shows: off whenever it cannot be chosen. */
     val passwordsChecked: Boolean

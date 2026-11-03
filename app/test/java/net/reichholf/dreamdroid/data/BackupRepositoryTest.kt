@@ -301,6 +301,78 @@ class BackupRepositoryTest {
     }
 
     @Test
+    fun aSettingsOnlyFileCarriesItsLegacyReceiverPasswordOnlyWhenTheFileAllowsIt() {
+        val data = BackupData()
+        data.addGenericSetting(GenericSetting("pass", "secret", "String"))
+        assertTrue(data.carriesPasswords)
+
+        data.passwordsIncluded = false
+        assertFalse(data.carriesPasswords)
+
+        val empty = BackupData()
+        empty.addGenericSetting(GenericSetting("pass", "", "String"))
+        assertFalse(empty.carriesPasswords)
+    }
+
+    @Test
+    fun importWithoutPasswordsLeavesTheLegacyReceiverPasswordsOutOfTheSettings() =
+        runBlocking<Unit> {
+            val data = BackupData()
+            data.passwordsIncluded = true
+            data.addGenericSetting(GenericSetting("host", "10.0.0.9", "String"))
+            data.addGenericSetting(GenericSetting("pass", "from-file", "String"))
+            data.addGenericSetting(GenericSetting("encoder_pass", "from-file-enc", "String"))
+            val backup = checkNotNull(backups.parse(json(data)))
+
+            assertTrue(
+                backups.importBackup(
+                    backup,
+                    ImportChoice(profiles = emptySet(), passwords = false, settings = true)
+                )
+            )
+
+            assertEquals("10.0.0.9", preferences.getString("host", null))
+            assertFalse(preferences.contains("pass"))
+            assertFalse(preferences.contains("encoder_pass"))
+        }
+
+    @Test
+    fun importWithPasswordsRestoresTheLegacyReceiverPasswordsFromTheSettings() = runBlocking<Unit> {
+        val data = BackupData()
+        data.passwordsIncluded = true
+        data.addGenericSetting(GenericSetting("pass", "from-file", "String"))
+        data.addGenericSetting(GenericSetting("encoder_pass", "from-file-enc", "String"))
+        val backup = checkNotNull(backups.parse(json(data)))
+
+        assertTrue(
+            backups.importBackup(
+                backup,
+                ImportChoice(profiles = emptySet(), passwords = true, settings = true)
+            )
+        )
+
+        assertEquals("from-file", preferences.getString("pass", null))
+        assertEquals("from-file-enc", preferences.getString("encoder_pass", null))
+    }
+
+    @Test
+    fun aFileMarkedWithoutPasswordsRestoresNoLeakedLegacyPassword() = runBlocking<Unit> {
+        val data = BackupData()
+        data.passwordsIncluded = false
+        data.addGenericSetting(GenericSetting("pass", "leaked", "String"))
+        val backup = checkNotNull(backups.parse(json(data)))
+
+        assertTrue(
+            backups.importBackup(
+                backup,
+                ImportChoice(profiles = emptySet(), passwords = true, settings = true)
+            )
+        )
+
+        assertFalse(preferences.contains("pass"))
+    }
+
+    @Test
     fun exportWithoutPasswordsClearsThemInTheFileOnly() = runBlocking<Unit> {
         saved("Living Room", "10.0.0.1").also {
             it.pass = "secret"

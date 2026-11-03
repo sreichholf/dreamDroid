@@ -7,6 +7,7 @@
 * FIX: Player - a stream that fails to start reports it instead of leaving the controls dead
 * FIX: Invalid profile host names are rejected
 * UPD: Picon sync reports a partial download
+* UPD: Cloud backup and device transfer carry no app data; use Backup & Restore
 * FIX: Picon sync reported success when nothing was downloaded
 * FIX: Picon sync no longer hangs on a stalled connection
 * FIX: Picon sync no longer fails silently in the background
@@ -21,6 +22,7 @@
 * FIX: "All certificates" carried to another receiver in the setup assistant
 * FIX: Recordings not playing with HTTPS or custom-port profiles from the setup assistant
 * UPD: Setup assistant explains local network access
+* FIX: Backup export without passwords included old receiver passwords
 
 ## 2.0.470
 * NEW: Hide bouquets per profile
