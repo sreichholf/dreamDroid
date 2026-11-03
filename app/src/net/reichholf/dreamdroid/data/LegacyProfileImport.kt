@@ -13,7 +13,7 @@ import net.reichholf.dreamdroid.room.PiconSeed
 interface LegacyProfileSource {
     /**
      * Profiles in the leftover file. Empty when it is missing or has no rows; null when it
-     * exists but cannot be read, which a later start cannot fix by retrying.
+     * exists but cannot be read, which the import settles by deleting it.
      */
     suspend fun read(): List<Profile>?
 
@@ -25,41 +25,32 @@ interface LegacyProfileSource {
 data class LegacyImportResult(
     val imported: Int,
     /**
-     * True when Room is the profile source: the leftover was imported, or there was
-     * nothing left to import. The 1.x preferences can then be consumed.
+     * True when the leftover is settled: its rows are in Room or it was deleted, so Room
+     * is the profile source and the 1.x preferences can be consumed.
      */
     val complete: Boolean,
     /**
-     * True when a later start should run the import again. The caller must then not build
-     * a profile from the 1.x preferences, because that row would make Room non-empty and
-     * block the retry.
+     * True when the import failed and a later start must run it again. The caller must then
+     * not build a profile from the 1.x preferences: the leftover holds the profiles, and
+     * that row would sit next to them.
      */
     val retryable: Boolean = false
 )
 
 /**
- * Copies the pre-Room `dreamdroid` profiles into Room. All rows go in through one
- * [ProfileStore.transaction], so a failure leaves Room as it was and the file in place for
- * the next start. The rows keep their legacy ids and a retry runs on the rolled-back store,
- * so it adds each row once. The file is deleted only after the transaction committed.
+ * Copies the pre-Room `dreamdroid` profiles into Room and settles the leftover. The rows
+ * Room does not have yet go in through one [ProfileStore.transaction], so a failure leaves
+ * Room as it was and the file in place for the next start; the file is deleted only after
+ * that transaction committed. A row counts as present when Room already has its id or its
+ * name, so a leftover that overlaps a 1.15 Room database adds only the missing rows and a
+ * retry adds none. Names are compared with Room's rows only: two distinct leftover profiles
+ * that share a name both import.
  */
 class LegacyProfileImport(private val store: ProfileStore) {
     suspend fun run(source: LegacyProfileSource, picons: PiconSeed): LegacyImportResult {
-        if (store.profiles().isNotEmpty()) {
-            return skipExisting(source)
-        }
-        val rows = readOrNull(source) ?: return LegacyImportResult(0, complete = false)
-        if (rows.isEmpty()) {
-            delete(source)
-            return LegacyImportResult(0, complete = true)
-        }
-        try {
-            store.transaction {
-                rows.forEach {
-                    picons.applyTo(it)
-                    it.id = store.add(it).toInt()
-                }
-            }
+        val rows = readOrNull(source) ?: return dropUnreadable(source)
+        val imported = try {
+            store.transaction { importMissing(rows, picons) }
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
@@ -67,15 +58,42 @@ class LegacyProfileImport(private val store: ProfileStore) {
             return LegacyImportResult(0, complete = false, retryable = true)
         }
         delete(source)
-        return LegacyImportResult(rows.size, complete = true)
+        return LegacyImportResult(imported, complete = true)
     }
 
-    /** Room is the source already; a leftover without rows is stale and goes. */
-    private suspend fun skipExisting(source: LegacyProfileSource): LegacyImportResult {
-        val rows = readOrNull(source) ?: return LegacyImportResult(0, complete = false)
-        if (rows.isNotEmpty()) {
-            return LegacyImportResult(0, complete = false)
+    /**
+     * Adds the rows Room does not have yet and returns how many. Runs inside [run]'s
+     * transaction, so the rows it reads are the ones it writes against. The sets stay the
+     * rows Room had when the transaction started, so rows of the leftover do not dedupe
+     * each other.
+     */
+    private suspend fun importMissing(rows: List<Profile>, picons: PiconSeed): Int {
+        val knownIds = HashSet<Int>()
+        val knownNames = HashSet<String>()
+        store.profiles().forEach { known ->
+            known.id?.let { knownIds.add(it) }
+            known.name?.takeIf { it.isNotBlank() }?.let { knownNames.add(it) }
         }
+        var imported = 0
+        for (row in rows) {
+            val id = row.id
+            val name = row.name?.takeIf { it.isNotBlank() }
+            if ((id != null && id in knownIds) || (name != null && name in knownNames)) {
+                continue
+            }
+            picons.applyTo(row)
+            row.id = store.add(row).toInt()
+            imported++
+        }
+        return imported
+    }
+
+    /**
+     * A leftover that cannot be read cannot be imported on a later start either. Deleting
+     * it lets the 1.x settings settle, so their receiver password stops outliving the
+     * import.
+     */
+    private suspend fun dropUnreadable(source: LegacyProfileSource): LegacyImportResult {
         delete(source)
         return LegacyImportResult(0, complete = true)
     }

@@ -154,10 +154,8 @@ class DatabaseHelperMigrateTest {
     }
 
     @Test
-    fun skipsWhenRoomAlreadyHasProfiles() = runBlocking<Unit> {
-        runBlocking {
-            room.profileDao().addProfile(Profile().apply { name = "RoomFirst" })
-        }
+    fun mergesLeftoverRowsIntoExistingRoomProfiles() = runBlocking<Unit> {
+        room.profileDao().addProfile(Profile().apply { name = "RoomFirst" })
         writeLegacy {
             execSQL(
                 """
@@ -168,22 +166,20 @@ class DatabaseHelperMigrateTest {
                 )
                 """.trimIndent()
             )
-            execSQL("INSERT INTO profiles (_id, profile, host) VALUES (1, 'Legacy', '1.2.3.4')")
+            execSQL("INSERT INTO profiles (_id, profile, host) VALUES (7, 'Legacy', '1.2.3.4')")
         }
 
         val result = migrate()
-        assertEquals(0, result.imported)
-        assertFalse(result.complete)
+        assertEquals(1, result.imported)
+        assertTrue(result.complete)
         assertFalse(result.retryable)
-        assertTrue(DatabaseHelper.databaseFile(context).exists())
-        val names = runBlocking {
-            room.profileDao().getProfiles().map { it.name }
-        }
-        assertEquals(listOf("RoomFirst"), names)
+        assertFalse(DatabaseHelper.databaseFile(context).exists())
+        val names = room.profileDao().getProfiles().map { it.name }.toSet()
+        assertEquals(setOf("RoomFirst", "Legacy"), names)
     }
 
     @Test
-    fun corruptFileIsLeftInPlace() = runBlocking<Unit> {
+    fun corruptFileIsDeletedAndSettlesTheImport() = runBlocking<Unit> {
         val file = DatabaseHelper.databaseFile(context)
         file.parentFile?.mkdirs()
         file.writeText("not a sqlite database")
@@ -191,9 +187,9 @@ class DatabaseHelperMigrateTest {
         assertTrue(DatabaseHelper.readProfiles(context).isEmpty())
         val result = migrate()
         assertEquals(0, result.imported)
-        assertFalse(result.complete)
+        assertTrue(result.complete)
         assertFalse(result.retryable)
-        assertTrue(file.exists())
+        assertFalse(file.exists())
     }
 
     private fun migrate(

@@ -300,10 +300,10 @@ class ProfileRepository @Inject constructor(
 
     /**
      * Imports the pre-Room profile database [source], then reads the remembered active
-     * profile; see [awaitLoaded]. The rows go in through one transaction, so a failed
-     * import leaves Room as it was and the next start retries. The 1.x settings are
-     * consumed only once the leftover is settled, and a retryable failure does not build a
-     * profile from them, so it cannot block the retry.
+     * profile; see [awaitLoaded]. The rows Room does not have yet go in through one
+     * transaction, so a failed import leaves Room as it was and the next start retries.
+     * The 1.x settings are consumed only once the leftover is settled, and a retryable
+     * failure does not build a profile from them, so it does not duplicate their rows.
      */
     suspend fun loadCurrent(source: LegacyProfileSource): LegacyImportResult = writes.withLock {
         val result = LegacyProfileImport(store).run(source, store.piconDefaults())

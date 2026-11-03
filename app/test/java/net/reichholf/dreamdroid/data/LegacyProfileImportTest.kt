@@ -53,7 +53,7 @@ class LegacyProfileImportTest {
     }
 
     @Test
-    fun aFailedImportKeepsTheLegacySettingsAndDoesNotBlockTheRetry() = runBlocking<Unit> {
+    fun aFailedImportKeepsTheLegacySettingsAndSkipsThePrefsProfile() = runBlocking<Unit> {
         val source = FakeLegacySource(listOf(profile(1, "legacy")))
         val store = ImportStore(prefsProfile = profile(null, "from-prefs")).apply {
             failAddAt = 1
@@ -85,17 +85,19 @@ class LegacyProfileImportTest {
     }
 
     @Test
-    fun anUnreadableLeftoverFallsBackToThePrefsProfileAndKeepsTheSettings() = runBlocking<Unit> {
+    fun aCorruptLeftoverIsDeletedAndTheLegacySettingsAreConsumed() = runBlocking<Unit> {
         val source = FakeLegacySource(null)
         val store = ImportStore(prefsProfile = profile(null, "from-prefs"))
         val repo = ProfileRepository(store, WebIfCapabilitiesRepository())
 
         val result = repo.loadCurrent(source)
 
-        assertFalse(result.complete)
+        assertTrue(result.complete)
         assertFalse(result.retryable)
-        assertFalse(source.deleted)
-        assertFalse(store.legacySettingsConsumed)
+        assertEquals(0, result.imported)
+        assertTrue(source.deleted)
+        assertTrue(store.legacySettingsConsumed)
+        assertEquals(listOf("from-prefs"), store.profiles().map { it.name })
         assertEquals("from-prefs", repo.current.value?.name)
     }
 
@@ -116,20 +118,75 @@ class LegacyProfileImportTest {
     }
 
     @Test
-    fun roomProfilesWinAndTheLeftoverStays() = runBlocking<Unit> {
-        val source = FakeLegacySource(listOf(profile(1, "legacy")))
+    fun aLeftoverNextToRoomProfilesImportsTheMissingRows() = runBlocking<Unit> {
+        val source = FakeLegacySource(listOf(profile(5, "room"), profile(1, "legacy")))
         val store = ImportStore(rows = listOf(profile(5, "room")))
         val repo = ProfileRepository(store, WebIfCapabilitiesRepository())
 
         val result = repo.loadCurrent(source)
 
-        assertFalse(result.complete)
+        assertTrue(result.complete)
         assertFalse(result.retryable)
-        assertEquals(0, result.imported)
-        assertFalse(source.deleted)
-        assertFalse(store.legacySettingsConsumed)
-        assertEquals(listOf(5), store.profiles().map { it.id })
+        assertEquals(1, result.imported)
+        assertTrue(source.deleted)
+        assertTrue(store.legacySettingsConsumed)
+        assertEquals(listOf(5, 1), store.profiles().map { it.id })
         assertEquals(5, repo.current.value?.id)
+    }
+
+    @Test
+    fun aRowRoomHasUnderAnotherIdIsNotImportedAgain() = runBlocking<Unit> {
+        val source = FakeLegacySource(listOf(profile(1, "room")))
+        val store = ImportStore(rows = listOf(profile(5, "room")))
+
+        val result = LegacyProfileImport(store).run(source, PICONS)
+
+        assertTrue(result.complete)
+        assertEquals(0, result.imported)
+        assertTrue(source.deleted)
+        assertEquals(listOf(5), store.profiles().map { it.id })
+    }
+
+    @Test
+    fun aRetriedImportAddsNoDuplicateRows() = runBlocking<Unit> {
+        val source = FakeLegacySource(
+            listOf(profile(5, "room"), profile(1, "legacy")),
+            deleteSucceeds = false
+        )
+        val store = ImportStore(rows = listOf(profile(5, "room")))
+        val importer = LegacyProfileImport(store)
+
+        val imported = importer.run(source, PICONS)
+
+        assertTrue(imported.complete)
+        assertEquals(1, imported.imported)
+        assertFalse(source.deleted)
+
+        source.deleteSucceeds = true
+        val retried = importer.run(source, PICONS)
+
+        assertTrue(retried.complete)
+        assertEquals(0, retried.imported)
+        assertTrue(source.deleted)
+        assertEquals(listOf(5, 1), store.profiles().map { it.id })
+    }
+
+    @Test
+    fun leftoverProfilesThatShareANameBothImport() = runBlocking<Unit> {
+        val source = FakeLegacySource(
+            listOf(
+                profile(1, "10.0.0.1").apply { name = "shared" },
+                profile(2, "10.0.0.2").apply { name = "shared" }
+            )
+        )
+        val store = ImportStore()
+
+        val result = LegacyProfileImport(store).run(source, PICONS)
+
+        assertTrue(result.complete)
+        assertEquals(2, result.imported)
+        assertTrue(source.deleted)
+        assertEquals(listOf(1, 2), store.profiles().map { it.id })
     }
 }
 
@@ -145,13 +202,19 @@ private fun profile(id: Int?, host: String): Profile = Profile().apply {
     name = host
 }
 
-private class FakeLegacySource(private val rows: List<Profile>?) : LegacyProfileSource {
+private class FakeLegacySource(
+    private val rows: List<Profile>?,
+    var deleteSucceeds: Boolean = true
+) : LegacyProfileSource {
     var deleted = false
         private set
 
     override suspend fun read(): List<Profile>? = rows
 
     override suspend fun delete(): Boolean {
+        if (!deleteSucceeds) {
+            return false
+        }
         deleted = true
         return true
     }
@@ -159,19 +222,23 @@ private class FakeLegacySource(private val rows: List<Profile>?) : LegacyProfile
 
 /**
  * Profiles in memory. [transaction] rolls the rows back when its block throws, as Room
- * does; [failAddAt] fails that many adds into the store's lifetime.
+ * does; [failAddAt] fails that many adds into the store's lifetime. The 1.x settings are
+ * [MemorySharedPreferences] holding a receiver password, consumed like the real store's.
  */
 private class ImportStore(
     rows: List<Profile> = emptyList(),
     private val prefsProfile: Profile = Profile.getDefault()
 ) : ProfileStore {
     private val rows = rows.toMutableList()
+    private val preferences = MemorySharedPreferences().apply {
+        edit().putString("pass", "legacy-secret").apply()
+    }
     private var adds = 0
     private var remembered = -1
 
     var failAddAt: Int? = null
-    var legacySettingsConsumed = false
-        private set
+    val legacySettingsConsumed: Boolean
+        get() = !preferences.contains("pass")
 
     override suspend fun profiles(): List<Profile> = rows.toList()
 
@@ -224,6 +291,6 @@ private class ImportStore(
     override fun legacyProfile(): Profile = prefsProfile
 
     override fun consumeLegacyProfileSettings() {
-        legacySettingsConsumed = true
+        LegacyProfileSettings.consume(preferences)
     }
 }
