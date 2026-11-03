@@ -3,7 +3,6 @@ package net.reichholf.dreamdroid.tv.ui
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
-import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -218,7 +217,7 @@ internal fun TvMultiEpgEventDetail(
         modifier = Modifier
             .fillMaxSize()
             .background(PhoneMaterialTheme.colorScheme.background)
-            .focusGroup()
+            .tvFocusTrap(firstActionFocus)
             .testTag("tv_multi_epg_detail")
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
@@ -293,7 +292,10 @@ internal fun TvMultiEpgEventDetail(
         }
         if (showNeedsReceiver) {
             TvNeedsReceiverOverlay(
-                onDismiss = { showNeedsReceiver = false },
+                onDismiss = {
+                    showNeedsReceiver = false
+                    firstActionFocus.requestFocus()
+                },
                 testTag = "tv_multi_epg_needs_receiver"
             )
         }

@@ -2,7 +2,6 @@ package net.reichholf.dreamdroid.tv.ui
 
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.LocalActivity
-import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.text.input.TextFieldState
@@ -16,6 +15,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.platform.testTag
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import net.reichholf.dreamdroid.enigma.Service
@@ -108,7 +108,12 @@ fun TvTimerEditorContent(
         }
     }
 
-    Box(modifier = modifier.fillMaxSize().focusGroup()) {
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .tvFocusTrap(initialFocus)
+            .testTag("tv_timer_editor")
+    ) {
         if (pickingService) {
             TvTimerServicePick(
                 viewModelKey = servicePickKey,
@@ -144,7 +149,12 @@ fun TvTimerEditorContent(
         }
 
         if (showNeedsReceiver) {
-            TvNeedsReceiverOverlay(onDismiss = { showNeedsReceiver = false })
+            TvNeedsReceiverOverlay(
+                onDismiss = {
+                    showNeedsReceiver = false
+                    initialFocus.requestFocus()
+                }
+            )
         }
     }
 }

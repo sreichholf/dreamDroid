@@ -10,7 +10,6 @@ import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
@@ -278,6 +277,8 @@ fun ComposeTvHubApp(
     }
 
     val streamingEnabled = uiState.streamingEnabled
+    val serviceGridFocus = remember { FocusRequester() }
+    var restoreHubFocus by remember { mutableStateOf(false) }
     Box(modifier = Modifier.fillMaxSize()) {
         ComposeTvHubChrome(
             section = uiState.section,
@@ -313,6 +314,7 @@ fun ComposeTvHubApp(
                 null
             },
             onServiceInfo = viewModel::showServiceTimer,
+            serviceGridFocus = serviceGridFocus,
             guideContent = { bouquetRef, bouquetName ->
                 TvMultiEpgHost(
                     activity = activity,
@@ -330,12 +332,19 @@ fun ComposeTvHubApp(
             DreamDroidTvTheme {
                 TvServiceTimerOverlay(
                     service = overlayTarget.service,
-                    onDismiss = viewModel::dismissServiceTimer,
+                    onDismiss = {
+                        viewModel.dismissServiceTimer()
+                        restoreHubFocus = true
+                    },
                     onStream = {
                         viewModel.streamService(overlayTarget.service, overlayTarget.bouquetRef)
                         viewModel.dismissServiceTimer()
+                        restoreHubFocus = true
                     },
-                    onSetTimer = viewModel::setTimer,
+                    onSetTimer = { event ->
+                        viewModel.setTimer(event)
+                        restoreHubFocus = true
+                    },
                     onEditTimer = viewModel::showEditTimer,
                     streamingEnabled = streamingEnabled,
                     mutationsBlocked = status.blocksMutations
@@ -347,9 +356,22 @@ fun ComposeTvHubApp(
                 TvTimerEditorHost(
                     timer = Timer.createByEvent(editorEvent),
                     isCreate = true,
-                    onDismiss = viewModel::dismissEditTimer,
-                    onSaved = viewModel::onTimerSaved
+                    onDismiss = {
+                        viewModel.dismissEditTimer()
+                        restoreHubFocus = true
+                    },
+                    onSaved = {
+                        viewModel.onTimerSaved()
+                        restoreHubFocus = true
+                    }
                 )
+            }
+        }
+        LaunchedEffect(overlayTarget, editorEvent, restoreHubFocus) {
+            if (restoreHubFocus && overlayTarget == null && editorEvent == null) {
+                withFrameNanos {}
+                serviceGridFocus.tryRequestFocus()
+                restoreHubFocus = false
             }
         }
     }
@@ -388,6 +410,7 @@ fun ComposeTvHubChrome(
     onSessionRecheck: (() -> Unit)? = null,
     sessionRecheckLabel: String? = null,
     onServiceInfo: ((ServiceNowNext, String?) -> Unit)? = null,
+    serviceGridFocus: FocusRequester? = null,
     timerContent: @Composable () -> Unit = {
         TvTimerHost(modifier = Modifier.fillMaxSize())
     },
@@ -419,13 +442,23 @@ fun ComposeTvHubChrome(
     // service) so the remote acts on content instead of an unclear cursor. One-shot per hub
     // entry, and never once the user has moved through the drawer, so late-loading rows do
     // not pull focus out of it.
-    val serviceGridFocus = remember { FocusRequester() }
+    val gridFocusRequester = serviceGridFocus ?: remember { FocusRequester() }
     val continueWatchingFocus = remember { FocusRequester() }
-    val gridFocus = serviceGridFocus.takeIf {
+    val gridFocus = gridFocusRequester.takeIf {
         selectedBouquet?.services?.isNotEmpty() == true || continueWatching != null
     }
     val liveContentFocus = if (continueWatching != null) continueWatchingFocus else gridFocus
     val liveTabFocus = remember { FocusRequester() }
+    var restoreFocusAfterOverlay by remember { mutableStateOf(false) }
+    LaunchedEffect(showStreamUnavailable, restoreFocusAfterOverlay) {
+        if (restoreFocusAfterOverlay && !showStreamUnavailable) {
+            withFrameNanos {}
+            if (gridFocus?.tryRequestFocus() != true) {
+                liveTabFocus.tryRequestFocus()
+            }
+            restoreFocusAfterOverlay = false
+        }
+    }
     var initialGridFocusDone by remember { mutableStateOf(false) }
     LaunchedEffect(selectedBouquet?.bouquet?.reference, liveContentFocus) {
         if (!initialGridFocusDone && liveContentFocus != null && !tabNavigation) {
@@ -444,7 +477,7 @@ fun ComposeTvHubChrome(
     LaunchedEffect(focusLiveAfterBack, section) {
         if (focusLiveAfterBack && section is HubSection.Live) {
             withFrameNanos {}
-            if (!serviceGridFocus.tryRequestFocus()) {
+            if (!gridFocusRequester.tryRequestFocus()) {
                 liveTabFocus.tryRequestFocus()
             }
             // Cleared only now: the flag is this effect's key, so clearing it before the
@@ -464,6 +497,7 @@ fun ComposeTvHubChrome(
             TvHubServiceRowKind.CHANNEL,
             TvHubServiceRowKind.SPACER -> {
                 if (!streamingEnabled) {
+                    gridFocus?.saveFocusedChild()
                     showStreamUnavailable = true
                 } else {
                     onServiceClick(service, bouquetRef)
@@ -473,6 +507,7 @@ fun ComposeTvHubChrome(
     }
     val gatedMovieClick: (Movie) -> Unit = { movie ->
         if (!streamingEnabled) {
+            gridFocus?.saveFocusedChild()
             showStreamUnavailable = true
         } else {
             onMovieClick(movie)
@@ -525,8 +560,13 @@ fun ComposeTvHubChrome(
                                             bouquetRef = selectedBouquet.bouquet.reference,
                                             services = selectedBouquet.services,
                                             onServiceClick = gatedServiceClick,
-                                            focusRequester = serviceGridFocus,
-                                            onServiceInfo = onServiceInfo,
+                                            focusRequester = gridFocusRequester,
+                                            onServiceInfo = onServiceInfo?.let { callback ->
+                                                { service, bouquetRef ->
+                                                    gridFocusRequester.saveFocusedChild()
+                                                    callback(service, bouquetRef)
+                                                }
+                                            },
                                             headerFocus = continueWatchingFocus.takeIf {
                                                 continueWatching != null
                                             },
@@ -617,7 +657,12 @@ fun ComposeTvHubChrome(
                 }
             }
             if (showStreamUnavailable) {
-                TvNeedsReceiverOverlay(onDismiss = { showStreamUnavailable = false })
+                TvNeedsReceiverOverlay(
+                    onDismiss = {
+                        showStreamUnavailable = false
+                        restoreFocusAfterOverlay = true
+                    }
+                )
             }
         }
     }
@@ -816,7 +861,7 @@ fun TvNeedsReceiverOverlay(
         modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            .focusGroup()
+            .tvFocusTrap(okFocus)
             .testTag(testTag),
         contentAlignment = Alignment.Center
     ) {
