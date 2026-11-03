@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -42,6 +43,7 @@ data class SetupAssistantUiState(
     val checkResult: ProfileCheckResult? = null,
     val saveError: UiText? = null,
     val restoring: Boolean = false,
+    val saving: Boolean = false,
     val restoreError: UiText? = null,
     val finished: Boolean = false
 )
@@ -75,9 +77,11 @@ class SetupAssistantViewModel @Inject constructor(
         if (_uiState.value.draft.step == SetupStep.Find) {
             updateDraft { it.copy(suggestedName = "") }
         }
+        clearCertificateTrust()
         clearCheckResult()
     }
     val port = textField(SetupAssistantSavedKeys.PORT_TEXT, SetupDefaults.PORT_TEXT) {
+        clearCertificateTrust()
         clearCheckResult()
     }
     val user = textField(SetupAssistantSavedKeys.USER, SetupDefaults.USER) { clearCheckResult() }
@@ -115,7 +119,14 @@ class SetupAssistantViewModel @Inject constructor(
         }
         _uiState.update { it.copy(searching = true) }
         searchJob = viewModelScope.launch {
-            val found = discovery.find().map { it.toSetupReceiver() }
+            val found = try {
+                discovery.find().map { it.toSetupReceiver() }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (_: Exception) {
+                // Discovery is best effort; the address field still works.
+                emptyList()
+            }
             _uiState.update { it.copy(devices = found, searching = false, searched = true) }
         }
     }
@@ -132,9 +143,11 @@ class SetupAssistantViewModel @Inject constructor(
 
     /** Moves one step back. Returns false on Welcome, where Back leaves the wizard. */
     fun back(): Boolean {
-        val current = _uiState.value.draft.step
-        // A running restore cannot be abandoned: its profile write is not cancellable.
-        if (current == SetupStep.Import && _uiState.value.restoring) {
+        val state = _uiState.value
+        val current = state.draft.step
+        // Neither write can be abandoned: the profile write is not cancellable, and a save
+        // that finishes after Back would start the shell anyway.
+        if (state.saving || (current == SetupStep.Import && state.restoring)) {
             return true
         }
         val previous = when (current) {
@@ -157,6 +170,10 @@ class SetupAssistantViewModel @Inject constructor(
         val state = _uiState.value
         when (state.draft.step) {
             SetupStep.Welcome -> {
+                if (state.restoring) {
+                    // The picked backup is still being read; Start waits for it.
+                    return
+                }
                 _uiState.update { it.copy(restoreError = null) }
                 updateDraft { it.copy(step = SetupStep.Find) }
             }
@@ -195,6 +212,7 @@ class SetupAssistantViewModel @Inject constructor(
         updateDraft {
             it.copy(
                 useHttps = receiver.port == 443,
+                trustAllCerts = false,
                 suggestedName = receiver.name,
                 nameEdited = false
             )
@@ -203,12 +221,15 @@ class SetupAssistantViewModel @Inject constructor(
     }
 
     fun onHttpsChange(https: Boolean) {
+        if (_uiState.value.draft.useHttps == https) {
+            return
+        }
         val current = port.text.toIntOrNull()
         val wasDefault = current == null || current == 80 || current == 443
         if (wasDefault) {
             port.set(if (https) "443" else "80")
         }
-        updateDraft { it.copy(useHttps = https) }
+        updateDraft { it.copy(useHttps = https, trustAllCerts = false) }
         clearCheckResult()
     }
 
@@ -223,11 +244,14 @@ class SetupAssistantViewModel @Inject constructor(
     }
 
     /**
-     * Reads the backup the user picked. An unreadable file, or one without profiles, stays
-     * on Welcome with [SetupAssistantUiState.restoreError]; a usable one opens its review.
+     * Reads the backup the user picked. [SetupAssistantUiState.restoring] owns Welcome for the
+     * whole read: Start waits, the picker is disabled, and a pick that arrives meanwhile is
+     * ignored. An unreadable file, or one without profiles, stays on Welcome with
+     * [SetupAssistantUiState.restoreError].
      */
     fun restoreFrom(uri: String) {
-        if (_uiState.value.restoring) {
+        val state = _uiState.value
+        if (state.draft.step != SetupStep.Welcome || state.restoring) {
             return
         }
         _uiState.update { it.copy(restoring = true, restoreError = null) }
@@ -305,7 +329,7 @@ class SetupAssistantViewModel @Inject constructor(
     }
 
     private fun save() {
-        if (saveJob?.isActive == true) {
+        if (_uiState.value.saving || saveJob?.isActive == true) {
             return
         }
         val profile = toProfile(profileName.text.ifBlank { host.text.trim() })
@@ -316,14 +340,19 @@ class SetupAssistantViewModel @Inject constructor(
             return
         }
         saveJob = viewModelScope.launch {
-            withContext(Dispatchers.IO) {
-                profiles.save(profile)
-                profiles.setCurrent(profile.id!!, forceEvent = true)
+            _uiState.update { it.copy(saving = true) }
+            try {
+                withContext(Dispatchers.IO) {
+                    profiles.save(profile)
+                    profiles.setCurrent(profile.id!!, forceEvent = true)
+                }
+                // The host activity keeps this ViewModel after it swaps to the shell; a
+                // later return to setup must start a fresh wizard.
+                reset()
+                _uiState.update { it.copy(finished = true) }
+            } finally {
+                _uiState.update { it.copy(saving = false) }
             }
-            // The host activity keeps this ViewModel after it swaps to the shell; a
-            // later return to setup must start a fresh wizard.
-            reset()
-            _uiState.update { it.copy(finished = true) }
         }
     }
 
@@ -341,6 +370,12 @@ class SetupAssistantViewModel @Inject constructor(
         )
         profiles.applyDefaultPiconSettings(profile)
         return profile
+    }
+
+    private fun clearCertificateTrust() {
+        if (_uiState.value.draft.trustAllCerts) {
+            updateDraft { it.copy(trustAllCerts = false) }
+        }
     }
 
     private fun clearCheckResult() {

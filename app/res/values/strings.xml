@@ -473,7 +473,8 @@
     <string name="setup_searching">Looking for receivers…</string>
     <string name="setup_none_found">No receiver found on this network.</string>
     <string name="setup_address">Address</string>
-    <string name="setup_lan_denied">Local network access is off. Type the receiver address to continue.</string>
+    <string name="setup_lan_denied">Local network access is off. dreamDroid cannot reach a receiver until you allow it. If no prompt appears, allow it for dreamDroid in Android Settings.</string>
+    <string name="setup_lan_grant">Allow local network access</string>
     <string name="setup_connection_title">Connection</string>
     <string name="setup_connection_body">Use HTTP on port 80 unless the WebInterface is HTTPS.</string>
     <string name="setup_http">HTTP</string>

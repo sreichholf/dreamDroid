@@ -17,6 +17,10 @@
 * FIX: MultiEPG speicherte nach einem Profilwechsel Programme eines anderen Profils
 * FIX: TV - Guide behielt nach einem Profilwechsel die Programme des vorherigen Profils
 * FIX: EPG verlor Zeit und Bouquet bei der Rückkehr in die App
+* FIX: Wiederherstellung im Einrichtungsassistenten konnte vom nächsten Schritt überlagert werden
+* FIX: "Alle Zertifikate" wurde im Einrichtungsassistenten auf einen anderen Receiver übernommen
+* FIX: Aufnahmen mit HTTPS- oder eigenen Port-Profilen aus dem Einrichtungsassistenten spielten nicht ab
+* UPD: Einrichtungsassistent erklärt den Zugriff auf das lokale Netzwerk
 
 ## 2.0.470
 * NEU: Bouquets pro Profil ausblenden

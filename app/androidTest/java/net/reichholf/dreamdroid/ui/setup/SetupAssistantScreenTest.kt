@@ -873,6 +873,134 @@ class SetupAssistantScreenTest {
     }
 
     @Test
+    fun aFailedBackupReadPutsTheRemoteBackOnRestore() {
+        val gate = CompletableDeferred<Unit>()
+        val viewModel = model(documents = GatedDocuments(MemoryDocuments(), gate))
+        lateinit var inputModeManager: InputModeManager
+        composeRule.setContent {
+            inputModeManager = LocalInputModeManager.current
+            DreamDroidTheme {
+                SetupAssistantScreen(
+                    viewModel = viewModel,
+                    localNetworkGranted = true,
+                    onRequestLocalNetwork = {},
+                    onFinished = {},
+                    onLeave = {}
+                )
+            }
+        }
+        // A remote drives the TV setup; buttons take focus only outside touch mode.
+        composeRule.runOnIdle { inputModeManager.requestInputMode(InputMode.Keyboard) }
+        composeRule.runOnIdle { assertEquals(InputMode.Keyboard, inputModeManager.inputMode) }
+        composeRule.mainClock.advanceTimeBy(2_000)
+        composeRule.waitForIdle()
+
+        val restore = composeRule.onNodeWithTag("setup_restore")
+        restore.performSemanticsAction(SemanticsActions.RequestFocus)
+        restore.assertIsFocused()
+
+        composeRule.runOnIdle { viewModel.restoreFrom(RESTORE_URI) }
+        assertTrue(viewModel.uiState.value.restoring)
+        composeRule.waitForIdle()
+        // Both Welcome actions are disabled while the read runs, so the button loses focus.
+        restore.assertIsNotEnabled().assertIsNotFocused()
+
+        gate.complete(Unit)
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            viewModel.uiState.value.restoreError != null
+        }
+        composeRule.waitForIdle()
+
+        // The read failed and Welcome stays: the remote must land on Restore again.
+        restore.assertIsEnabled().assertIsFocused()
+    }
+
+    @Test
+    fun findWithoutLocalNetworkOffersTheGrantAction() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val viewModel = model()
+        var requests = 0
+        composeRule.setContent {
+            DreamDroidTheme {
+                SetupAssistantScreen(
+                    viewModel = viewModel,
+                    localNetworkGranted = false,
+                    onRequestLocalNetwork = { requests++ },
+                    onFinished = {},
+                    onLeave = {}
+                )
+            }
+        }
+        composeRule.mainClock.advanceTimeBy(2_000)
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("Start").assertIsEnabled().performClick()
+        composeRule.waitUntil(timeoutMillis = 5_000) { requests == 1 }
+        composeRule.waitForIdle()
+
+        composeRule.onNodeWithText(context.getString(R.string.setup_lan_denied))
+            .performScrollTo()
+            .assertIsDisplayed()
+        composeRule.onNodeWithTag("setup_lan_grant")
+            .performScrollTo()
+            .assertIsDisplayed()
+            .performClick()
+
+        assertEquals(2, requests)
+    }
+
+    @Test
+    fun backIsDisabledWhileTheProfileSaves() = runBlocking<Unit> {
+        val gate = CompletableDeferred<Unit>()
+        val store = ProfileRepository(
+            GatedAddProfileStore(MemoryProfileStore(), gate),
+            WebIfCapabilitiesRepository()
+        )
+        val viewModel = model(
+            profiles = store,
+            backupRepository = BackupRepository(store, SettingsRepository(preferences))
+        )
+        var finished = false
+        composeRule.setContent {
+            DreamDroidTheme {
+                SetupAssistantScreen(
+                    viewModel = viewModel,
+                    localNetworkGranted = true,
+                    onRequestLocalNetwork = {},
+                    onFinished = { finished = true },
+                    onLeave = {}
+                )
+            }
+        }
+        composeRule.mainClock.advanceTimeBy(2_000)
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("Start").assertIsEnabled().performClick()
+        composeRule.waitForIdle()
+        composeRule.onNodeWithTag("setup_address").performTextInput("10.0.0.7")
+        composeRule.onNodeWithText("Next").performClick()
+        composeRule.onNodeWithText("Next").performClick()
+        composeRule.onNodeWithText("Check connection").performClick()
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            viewModel.uiState.value.checkResult != null
+        }
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("Next").performClick()
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("Save").performClick()
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            viewModel.uiState.value.saving
+        }
+
+        assertEquals(SetupStep.Name, viewModel.uiState.value.draft.step)
+        composeRule.onNodeWithText("Back").assertIsNotEnabled()
+        composeRule.runOnIdle { assertTrue(viewModel.back()) }
+        assertEquals(SetupStep.Name, viewModel.uiState.value.draft.step)
+
+        gate.complete(Unit)
+        composeRule.waitUntil(timeoutMillis = 5_000) { finished }
+        assertEquals("10.0.0.7", store.profiles().single().host)
+    }
+
+    @Test
     fun anUnreadableRestoreStaysOnWelcomeWithTheReason() {
         val viewModel = model()
         composeRule.setContent {
@@ -953,7 +1081,8 @@ class SetupAssistantScreenTest {
         onSearch: suspend () -> List<Profile> = { emptyList() },
         onCheck: suspend (Profile) -> ProfileCheckResult = { ProfileCheckResult() },
         profiles: ProfileRepository = this.profiles,
-        backupRepository: BackupRepository = backups
+        backupRepository: BackupRepository = backups,
+        documents: BackupDocuments = this.documents
     ): SetupAssistantViewModel = SetupAssistantViewModel(
         SavedStateHandle(),
         profiles,
@@ -979,6 +1108,17 @@ class SetupAssistantScreenTest {
         }
     }
 
+    /** Holds the profile insert until [gate] completes, so a test can read the save busy state. */
+    private class GatedAddProfileStore(
+        private val delegate: ProfileStore,
+        private val gate: CompletableDeferred<Unit>
+    ) : ProfileStore by delegate {
+        override suspend fun add(profile: Profile): Long {
+            gate.await()
+            return delegate.add(profile)
+        }
+    }
+
     private class MemoryDocuments : BackupDocuments {
         val files = HashMap<String, String>()
 
@@ -988,6 +1128,17 @@ class SetupAssistantScreenTest {
         override suspend fun write(uri: String, text: String): Boolean {
             files[uri] = text
             return true
+        }
+    }
+
+    /** Holds a document read until [gate] completes, so a test can read the busy state. */
+    private class GatedDocuments(
+        private val delegate: BackupDocuments,
+        private val gate: CompletableDeferred<Unit>
+    ) : BackupDocuments by delegate {
+        override suspend fun read(uri: String, maxChars: Int): String? {
+            gate.await()
+            return delegate.read(uri, maxChars)
         }
     }
 

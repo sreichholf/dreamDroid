@@ -52,6 +52,11 @@ fun wizardProfile(
     pass: String,
     trustAllCerts: Boolean
 ): Profile {
+    // A self-signed receiver is trusted only by this app and Media3. VLC, the default
+    // player, and external players reject it, so their recordings stay on the plain HTTP
+    // endpoint the wizard used before it followed the web interface.
+    val selfSigned = useHttps && trustAllCerts
+    val filePort = if (selfSigned) 80 else port
     val profile = Profile(
         null,
         name.ifBlank { host.trim() },
@@ -59,22 +64,22 @@ fun wizardProfile(
         "",
         port,
         8001,
-        80,
+        filePort,
         login,
         user,
         pass,
         useHttps,
         false,
         false,
-        false,
+        useHttps && !selfSigned,
         false,
         "",
         "",
         "",
         ""
     )
-    // The file port is the web interface, so it takes the web login.
+    // The file endpoint is the web interface when its certificate can be verified.
     profile.fileLogin = login
-    profile.allCertsTrusted = useHttps && trustAllCerts
+    profile.allCertsTrusted = selfSigned
     return profile
 }

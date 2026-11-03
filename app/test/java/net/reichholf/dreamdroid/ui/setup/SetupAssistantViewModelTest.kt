@@ -18,6 +18,7 @@ import kotlinx.coroutines.test.setMain
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.BackupDocuments
 import net.reichholf.dreamdroid.data.BackupRepository
 import net.reichholf.dreamdroid.data.ProfileCheckRepository
 import net.reichholf.dreamdroid.data.ReceiverDiscovery
@@ -401,6 +402,86 @@ class SetupAssistantViewModelTest {
         assertFalse(review.includePasswords)
     }
 
+    @Test
+    fun aPickWhileAReadRunsIsIgnored() = runTest {
+        documents.files[FIRST_RESTORE_URI] = backupJson(
+            Profile.getDefault().apply {
+                name = "First"
+                host = "10.0.0.5"
+            }
+        )
+        documents.files[RESTORE_URI] = backupJson(
+            Profile.getDefault().apply {
+                name = "Second"
+                host = "10.0.0.6"
+            }
+        )
+        val firstRead = CompletableDeferred<Unit>()
+        val gated = GatedDocuments(documents, mapOf(FIRST_RESTORE_URI to firstRead))
+        val viewModel = viewModel(SavedStateHandle(), documents = gated)
+
+        viewModel.restoreFrom(FIRST_RESTORE_URI)
+        assertTrue(viewModel.uiState.value.restoring)
+
+        // The read owns Welcome: the picker is disabled and a pick that still arrives does
+        // not start a second read or replace the first review.
+        viewModel.restoreFrom(RESTORE_URI)
+        assertFalse(gated.returned.contains(RESTORE_URI))
+
+        firstRead.complete(Unit)
+        val step = viewModel.uiState.first { it.draft.step == SetupStep.Import }
+
+        assertFalse(step.restoring)
+        assertEquals(listOf("First"), viewModel.importReview.value!!.profiles.map { it.name })
+        assertEquals(listOf(FIRST_RESTORE_URI), gated.returned)
+    }
+
+    @Test
+    fun startWaitsForThePickedBackup() = runTest {
+        documents.files[RESTORE_URI] = backupJson(
+            Profile.getDefault().apply {
+                name = "Living room"
+                host = "10.0.0.5"
+            }
+        )
+        val read = CompletableDeferred<Unit>()
+        val viewModel = viewModel(
+            SavedStateHandle(),
+            documents = GatedDocuments(documents, mapOf(RESTORE_URI to read))
+        )
+
+        viewModel.restoreFrom(RESTORE_URI)
+        viewModel.advance()
+
+        assertEquals(SetupStep.Welcome, viewModel.uiState.value.draft.step)
+        assertTrue(viewModel.uiState.value.restoring)
+
+        read.complete(Unit)
+        viewModel.uiState.first { it.draft.step == SetupStep.Import }
+    }
+
+    @Test
+    fun changingTheReceiverDropsTheCertificateTrust() {
+        val viewModel = viewModel(SavedStateHandle(), checks = noChecks)
+
+        viewModel.onHttpsChange(true)
+        viewModel.onTrustAllChange(true)
+        assertTrue(viewModel.uiState.value.draft.trustAllCerts)
+
+        viewModel.onPick(SetupReceiver("dm920", "10.0.0.9", 443))
+        assertFalse(viewModel.uiState.value.draft.trustAllCerts)
+
+        viewModel.onTrustAllChange(true)
+        type(viewModel.port, "8443")
+        Snapshot.sendApplyNotifications()
+        assertFalse(viewModel.uiState.value.draft.trustAllCerts)
+
+        viewModel.onTrustAllChange(true)
+        type(viewModel.host, "10.0.0.8")
+        Snapshot.sendApplyNotifications()
+        assertFalse(viewModel.uiState.value.draft.trustAllCerts)
+    }
+
     /** Types into [field] the way the text field does, then lets observers see it. */
     private fun type(field: SavedTextField, text: String) {
         field.state.setTextAndPlaceCursorAtEnd(text)
@@ -416,7 +497,8 @@ class SetupAssistantViewModelTest {
             profiles,
             receiverApis(profiles, testProfiles.context, testProfiles.capabilities),
             testProfiles.capabilities
-        )
+        ),
+        documents: BackupDocuments = this.documents
     ) = SetupAssistantViewModel(
         handle,
         profiles,
@@ -437,5 +519,24 @@ class SetupAssistantViewModelTest {
 
     private companion object {
         const val RESTORE_URI = "content://documents/backup.json"
+        const val FIRST_RESTORE_URI = "content://documents/first.json"
+
+        val noChecks = object : ProfileCheckRepository {
+            override suspend fun check(profile: Profile) = ProfileCheckResult()
+
+            override suspend fun checkReusingDeviceInfo(profile: Profile) = ProfileCheckResult()
+        }
+    }
+
+    /** Holds a document read until its gate completes, so a test can inspect the busy state. */
+    private class GatedDocuments(
+        private val delegate: BackupDocuments,
+        private val gates: Map<String, CompletableDeferred<Unit>>,
+        val returned: MutableList<String> = mutableListOf()
+    ) : BackupDocuments by delegate {
+        override suspend fun read(uri: String, maxChars: Int): String? {
+            gates[uri]?.await()
+            return delegate.read(uri, maxChars).also { returned += uri }
+        }
     }
 }

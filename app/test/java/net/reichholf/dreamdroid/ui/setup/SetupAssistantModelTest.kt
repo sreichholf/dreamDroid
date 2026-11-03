@@ -4,6 +4,7 @@ import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.enigma.ProfileCheckResult
 import net.reichholf.dreamdroid.enigma.VpsMode
+import net.reichholf.dreamdroid.helpers.EnigmaUrls
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
@@ -57,12 +58,73 @@ class SetupAssistantModelTest {
         assertEquals("192.168.1.2", profile.host)
         assertEquals(80, profile.port)
         assertEquals(8001, profile.streamPort)
+        assertEquals(80, profile.filePort)
         assertFalse(profile.ssl)
+        assertFalse(profile.fileSsl)
         assertTrue(profile.login)
         assertTrue(profile.fileLogin)
         assertFalse(profile.streamLogin)
         assertFalse(profile.allCertsTrusted)
         assertFalse(profile.zapAndStream)
+    }
+
+    @Test
+    fun wizardProfileFilesOverTheWebPortAndScheme() {
+        val https = wizardProfile(
+            name = "Box",
+            host = "box.local",
+            port = 443,
+            useHttps = true,
+            login = false,
+            user = "root",
+            pass = "dreambox",
+            trustAllCerts = false
+        )
+        assertEquals(443, https.filePort)
+        assertTrue(https.fileSsl)
+        assertEquals(
+            "https://box.local:443/file?file=rec.ts",
+            EnigmaUrls.fileStream(https, "1:0:1", "rec.ts")
+        )
+
+        val customPort = wizardProfile(
+            name = "Box",
+            host = "box.local",
+            port = 8080,
+            useHttps = false,
+            login = false,
+            user = "root",
+            pass = "dreambox",
+            trustAllCerts = false
+        )
+        assertEquals(8080, customPort.filePort)
+        assertFalse(customPort.fileSsl)
+        assertEquals(
+            "http://box.local:8080/file?file=rec.ts",
+            EnigmaUrls.fileStream(customPort, "1:0:1", "rec.ts")
+        )
+    }
+
+    @Test
+    fun wizardProfileKeepsSelfSignedRecordingsOnHttp() {
+        val profile = wizardProfile(
+            name = "Box",
+            host = "box.local",
+            port = 443,
+            useHttps = true,
+            login = false,
+            user = "root",
+            pass = "dreambox",
+            trustAllCerts = true
+        )
+        // VLC and external players cannot verify a self-signed certificate, so the file
+        // endpoint stays where every player can open it.
+        assertEquals(80, profile.filePort)
+        assertFalse(profile.fileSsl)
+        assertEquals(
+            "http://box.local:80/file?file=rec.ts",
+            EnigmaUrls.fileStream(profile, "1:0:1", "rec.ts")
+        )
     }
 
     @Test

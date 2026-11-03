@@ -126,6 +126,7 @@ fun SetupAssistantScreen(
     val checking = state.checking
     val checkResult = state.checkResult
     val restoring = state.restoring
+    val saving = state.saving
     val currentOnFinished by rememberUpdatedState(onFinished)
 
     LaunchedEffect(state.finished) {
@@ -183,9 +184,11 @@ fun SetupAssistantScreen(
     val signInReady = !draft.login || viewModel.user.state.text.isNotBlank()
     val signInChecked = checkResult != null && !checking
     val failed = checkResult?.hasError == true
-    // A running check or restore keeps the action enabled: a disabled button drops D-pad
-    // focus onto a text field, which opens the keyboard on TV.
-    val busy = (step == SetupStep.SignIn && checking) || (step == SetupStep.Import && restoring)
+    // A running check, save or restore keeps the action enabled: a disabled button drops
+    // D-pad focus onto a text field, which opens the keyboard on TV.
+    val busy = (step == SetupStep.SignIn && checking) ||
+        (step == SetupStep.Import && restoring) ||
+        (step == SetupStep.Name && saving)
     val actionEnabled = when (step) {
         SetupStep.Find -> hostText.isNotBlank()
 
@@ -309,6 +312,25 @@ fun SetupAssistantScreen(
                                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                             val startAction = rememberRemoteFocus()
                                             val restoreAction = rememberRemoteFocus()
+                                            val restoreFocus = remember { FocusRequester() }
+                                            // Both actions are disabled while the picked backup
+                                            // is read, which drops the remote's focus. When the
+                                            // read ends on Welcome, put it back on Restore. The
+                                            // outgoing content stays composed through the exit
+                                            // animation, so only a wizard still on Welcome counts.
+                                            var wasRestoring by remember {
+                                                mutableStateOf(restoring)
+                                            }
+                                            LaunchedEffect(restoring, step) {
+                                                if (wasRestoring && !restoring &&
+                                                    step == SetupStep.Welcome
+                                                ) {
+                                                    runCatching {
+                                                        restoreFocus.requestFocus()
+                                                    }
+                                                }
+                                                wasRestoring = restoring
+                                            }
                                             Row(
                                                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                                                 verticalAlignment = Alignment.CenterVertically,
@@ -317,7 +339,7 @@ fun SetupAssistantScreen(
                                             ) {
                                                 Button(
                                                     onClick = viewModel::advance,
-                                                    enabled = progress >= 1f,
+                                                    enabled = progress >= 1f && !restoring,
                                                     colors = startAction.buttonColors(
                                                         ButtonDefaults.buttonColors()
                                                     ),
@@ -328,11 +350,12 @@ fun SetupAssistantScreen(
                                                 }
                                                 TextButton(
                                                     onClick = { openRestorePicker() },
-                                                    enabled = progress >= 1f,
+                                                    enabled = progress >= 1f && !restoring,
                                                     colors = restoreAction.buttonColors(
                                                         ButtonDefaults.textButtonColors()
                                                     ),
                                                     modifier = restoreAction.modifier
+                                                        .focusRequester(restoreFocus)
                                                         .testTag("setup_restore")
                                                 ) {
                                                     if (restoring) {
@@ -367,6 +390,7 @@ fun SetupAssistantScreen(
                                         searching = state.searching,
                                         searched = state.searched,
                                         localNetworkGranted = localNetworkGranted,
+                                        onGrantLocalNetwork = onRequestLocalNetwork,
                                         portText = portText,
                                         remote = remote,
                                         onPick = viewModel::onPick
@@ -422,6 +446,7 @@ fun SetupAssistantScreen(
                 val backFocus = rememberRemoteFocus()
                 TextButton(
                     onClick = { viewModel.back() },
+                    enabled = !restoring && !saving,
                     colors = backFocus.buttonColors(ButtonDefaults.textButtonColors()),
                     modifier = backFocus.modifier
                 ) {
@@ -558,6 +583,7 @@ private fun FindStep(
     searching: Boolean,
     searched: Boolean,
     localNetworkGranted: Boolean,
+    onGrantLocalNetwork: () -> Unit,
     portText: String,
     remote: Boolean,
     onPick: (SetupReceiver) -> Unit
@@ -583,6 +609,15 @@ private fun FindStep(
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
+        Spacer(Modifier.height(8.dp))
+        val grantFocus = rememberRemoteFocus()
+        TextButton(
+            onClick = onGrantLocalNetwork,
+            colors = grantFocus.buttonColors(ButtonDefaults.textButtonColors()),
+            modifier = grantFocus.modifier.testTag("setup_lan_grant")
+        ) {
+            Text(stringResource(R.string.setup_lan_grant))
+        }
         Spacer(Modifier.height(12.dp))
     }
     val awaitingResults = searching || (localNetworkGranted && !searched)
