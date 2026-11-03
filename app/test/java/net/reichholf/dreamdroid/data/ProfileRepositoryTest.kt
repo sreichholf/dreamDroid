@@ -67,6 +67,22 @@ class ProfileRepositoryTest {
     }
 
     @Test
+    fun theStartupImportSplitsLegacyUserInfoOnSavedRows() = runBlocking<Unit> {
+        val store = MemoryProfileStore(upgradedRows())
+        val repo = ProfileRepository(store, WebIfCapabilitiesRepository())
+
+        repo.loadCurrent(SettledLegacySource)
+
+        assertEquals("10.11.12.13", store.profile(1)!!.host)
+        assertEquals("upuser", store.profile(1)!!.user)
+        assertEquals("10.11.12.14", store.profile(2)!!.host)
+        assertEquals("upuser", store.profile(2)!!.user)
+        assertEquals(1, repo.current.value!!.id)
+        assertEquals("10.11.12.13", repo.current.value!!.host)
+        assertEquals(listOf(1), store.updatedIds)
+    }
+
+    @Test
     fun aLegacyUserInfoHostInThe1xSettingsIsSplitOnImport() = runBlocking<Unit> {
         val store = MemoryProfileStore(emptyList())
         store.legacy = Profile.getDefault().apply {
@@ -360,6 +376,19 @@ private fun profile(id: Int, host: String): Profile = Profile().apply {
     name = host
 }
 
+/** The rows a 1.15 upgrade leaves behind: one still carries `user@host`, one is split. */
+private fun upgradedRows(): List<Profile> = listOf(
+    profile(1, "upuser@10.11.12.13").apply { user = "upuser" },
+    profile(2, "10.11.12.14").apply { user = "upuser" }
+)
+
+/** The leftover of a 1.15 install whose profiles the upgrade already moved to Room. */
+private object SettledLegacySource : LegacyProfileSource {
+    override suspend fun read(): List<Profile> = emptyList()
+
+    override suspend fun delete(): Boolean = true
+}
+
 private val TV_PICONS = PiconSeed(
     online = true,
     onlineUseName = true,
@@ -374,6 +403,7 @@ private class MemoryProfileStore(
     private val rows = rows.toMutableList()
     var remembered: Int = -1
     val deletedIds = mutableListOf<Int>()
+    val updatedIds = mutableListOf<Int?>()
 
     override suspend fun profiles(): List<Profile> = rows.toList()
 
@@ -398,6 +428,7 @@ private class MemoryProfileStore(
     }
 
     override suspend fun update(profile: Profile) {
+        updatedIds.add(profile.id)
         rows.replaceAll { if (it.id == profile.id) profile else it }
     }
 
