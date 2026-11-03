@@ -4,12 +4,14 @@ import android.content.Intent
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.io.Serializable
 import java.util.ArrayDeque
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.updateAndGet
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.enigma.Timer
 
@@ -54,6 +56,13 @@ internal class PendingNavigations {
 }
 
 /**
+ * The active profile the EPG was last mounted for, kept in saved state across process
+ * death. A null [profile] records a check without an active profile; the value being
+ * absent means no check has recorded one yet.
+ */
+private class MountedEpgProfile(val profile: Profile?) : Serializable
+
+/**
  * The phone navigation state that outlives the activity: the saved start route, the
  * request codes of open result destinations, the route schema flag, the queued
  * navigations, and an activity result held until a destination listens. The activity's
@@ -63,7 +72,9 @@ internal class PendingNavigations {
 @HiltViewModel
 class PhoneNavHostState @Inject constructor(private val savedStateHandle: SavedStateHandle) :
     ViewModel() {
-    private val _uiState = MutableStateFlow(PhoneNavUiState())
+    private val _uiState = MutableStateFlow(
+        PhoneNavUiState(epgRemount = savedStateHandle[PhoneNavSavedKeys.EPG_REMOUNT] ?: 0)
+    )
     val uiState: StateFlow<PhoneNavUiState> = _uiState.asStateFlow()
 
     internal val pending = PendingNavigations()
@@ -73,6 +84,8 @@ class PhoneNavHostState @Inject constructor(private val savedStateHandle: SavedS
     private var startRouteSaved: Boolean = false
     private var heldResult: PendingComposeActivityResult? = null
     private var heldResultData: Intent? = null
+    private var mountedEpgProfile: MountedEpgProfile? =
+        savedStateHandle[PhoneNavSavedKeys.EPG_PROFILE]
 
     init {
         val bag = readPhoneNavStateBag(savedStateHandle)
@@ -136,7 +149,32 @@ class PhoneNavHostState @Inject constructor(private val savedStateHandle: SavedS
     }
 
     fun remountEpg() {
-        _uiState.update { it.copy(epgRemount = it.epgRemount + 1) }
+        val remount = _uiState.updateAndGet { it.copy(epgRemount = it.epgRemount + 1) }.epgRemount
+        savedStateHandle[PhoneNavSavedKeys.EPG_REMOUNT] = remount
+    }
+
+    /**
+     * Remounts the EPG and MultiEPG only when [profile] differs from the one they were
+     * last mounted for, using the repository's [Profile.hasSameSettings] identity. The
+     * record is saved, so a process Android restores does not remount for the profile the
+     * EPG already shows. A profile check that finds the same receiver leaves the EPG's
+     * time, bouquet and scroll alone; a switch or edited connection settings still
+     * remount it.
+     */
+    fun remountEpgForProfile(profile: Profile?) {
+        val previous = mountedEpgProfile?.profile
+        val sameProfile = if (profile == null || previous == null) {
+            profile === previous
+        } else {
+            profile.hasSameSettings(previous)
+        }
+        val firstCheck = mountedEpgProfile == null
+        val record = MountedEpgProfile(profile)
+        mountedEpgProfile = record
+        savedStateHandle[PhoneNavSavedKeys.EPG_PROFILE] = record
+        if (firstCheck || !sameProfile) {
+            remountEpg()
+        }
     }
 
     fun remountEpgSearch() {

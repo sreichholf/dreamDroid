@@ -15,6 +15,7 @@
 * FIX: Offline-Listen wurden durch eine unlesbare Receiver-Antwort gelöscht
 * FIX: MultiEPG speicherte nach einem Profilwechsel Programme eines anderen Profils
 * FIX: TV - Guide behielt nach einem Profilwechsel die Programme des vorherigen Profils
+* FIX: EPG verlor Zeit und Bouquet bei der Rückkehr in die App
 
 ## 2.0.470
 * NEU: Bouquets pro Profil ausblenden

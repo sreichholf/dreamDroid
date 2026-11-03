@@ -47,6 +47,16 @@ class PhoneNavHostStateTest {
     }
 
     @Test
+    fun theEpgRemountEpochSurvivesProcessDeath() {
+        val handle = SavedStateHandle()
+        val first = PhoneNavHostState(handle)
+        first.remountEpg()
+        first.remountEpg()
+
+        assertEquals(2, PhoneNavHostState(handle).uiState.value.epgRemount)
+    }
+
+    @Test
     fun aHeldResultIsTakenOnce() {
         val state = PhoneNavHostState(SavedStateHandle())
         assertNull(state.takeHeldActivityResult())

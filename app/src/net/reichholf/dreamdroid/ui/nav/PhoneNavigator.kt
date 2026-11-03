@@ -47,7 +47,7 @@ class PhoneNavigator(
         get() = state.uiState
 
     override fun onActiveProfileChanged() {
-        state.remountEpg()
+        state.remountEpgForProfile(profiles.current.value)
     }
 
     fun hasSavedStartRoute(): Boolean = state.hasSavedStartRoute()
