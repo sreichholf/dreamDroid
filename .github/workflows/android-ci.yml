@@ -117,6 +117,10 @@ jobs:
           if-no-files-found: ignore
           retention-days: 14
 
+      - name: Unit test summary
+        if: always()
+        run: python3 scripts/junit-summary.py "Unit tests" app/build/test-results/testGoogleDebugUnitTest
+
       # JVM coverage only: the instrumented suite runs on the emulator job and is not
       # merged in. The report comes from prTests, so a red test task leaves no report.
       - name: Coverage summary
@@ -291,6 +295,11 @@ jobs:
           if-no-files-found: ignore
           retention-days: 14
 
+      # The Gradle log only says "There were failing tests"; name them on the run page.
+      - name: Instrumented test summary
+        if: always()
+        run: python3 scripts/junit-summary.py "Instrumented tests, shard ${{ matrix.shard }}/3" app/build/outputs/androidTest-results
+
       # Only a green shard uploads coverage; the `coverage` job needs all three.
       - name: Collect shard coverage
         run: |
@@ -390,6 +399,10 @@ jobs:
             app/build/outputs/androidTest-results/
           if-no-files-found: ignore
           retention-days: 14
+
+      - name: Instrumented test summary
+        if: always()
+        run: python3 scripts/junit-summary.py "Instrumented tests, API 37" app/build/outputs/androidTest-results
 
   # One report for the whole instrumented suite: each shard uploads the coverage.ec its run
   # pulled off the device, and JacocoReport merges them (it takes a file collection).
