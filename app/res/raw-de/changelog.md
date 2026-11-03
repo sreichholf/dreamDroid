@@ -4,6 +4,8 @@
 * UPD: Video-Player verbessert
 * UPD: Picon-Sync meldet teilweise Downloads
 * FIX: Picon-Sync meldete Erfolg, obwohl nichts heruntergeladen wurde
+* FIX: Picon-Sync hängt nicht mehr bei blockierter Verbindung
+* FIX: Picon-Sync schlägt im Hintergrund nicht mehr stillschweigend fehl
 * FIX: Aufnahmen in sehr großen Ordnern werden nicht geladen
 * FIX: Timer-Bereinigung mit aktivierter erweiterter Sicherheit fehlgeschlagen
 * FIX: Offline-Listen wurden durch eine unlesbare Receiver-Antwort gelöscht

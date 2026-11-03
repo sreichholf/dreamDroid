@@ -4,6 +4,7 @@ import android.util.Log
 import java.io.BufferedOutputStream
 import java.io.File
 import java.io.FileOutputStream
+import java.io.IOException
 
 /** Whose picons to sync: the receiver, its login, and the picon folder on it. */
 data class PiconSyncTarget(
@@ -116,29 +117,45 @@ class PiconSyncJob(
 
     /**
      * Downloads one picon through a partial file. A failed retrieve deletes that partial
-     * and leaves any existing png in place.
+     * and leaves any existing png in place. A listed name that does not resolve to a file
+     * directly inside [localDir] is skipped without a retrieve.
      */
     private fun store(fileName: String): Boolean {
-        val destination = File(localDir, fileName)
-        val partial = File(localDir, "$fileName.part")
+        val name = PiconFtpSync.localFileName(fileName)
+        val destination = name?.let(::localDestination)
+        if (name == null || destination == null) {
+            Log.e(TAG, "Refusing picon with an unsafe file name: $fileName")
+            return false
+        }
+        val partial = File(destination.parentFile, "${destination.name}.part")
         partial.delete()
         val reply = try {
             BufferedOutputStream(FileOutputStream(partial)).use { output ->
-                ftp.retrieve(fileName, output)
+                ftp.retrieve(name, output)
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to download picon with filename $fileName", e)
+            Log.e(TAG, "Failed to download picon with filename $name", e)
             FtpReply(ok = false, code = 0, text = null)
         }
         return when (PiconFtpSync.localFileAfterRetrieve(reply.ok, reply.code)) {
             PiconFtpSync.LocalFile.DISCARD -> {
                 partial.delete()
-                reply.text?.let { Log.e(TAG, "Picon retrieve failed for $fileName: $it") }
+                reply.text?.let { Log.e(TAG, "Picon retrieve failed for $name: $it") }
                 false
             }
 
             PiconFtpSync.LocalFile.KEEP -> commitPartial(partial, destination)
         }
+    }
+
+    /** [name] inside the canonical [localDir], or null when it resolves outside it. */
+    private fun localDestination(name: String): File? = try {
+        val dir = localDir.canonicalFile
+        val file = File(dir, name).canonicalFile
+        file.takeIf { it.parentFile == dir }
+    } catch (e: IOException) {
+        Log.e(TAG, "Could not resolve the local path for picon $name", e)
+        null
     }
 
     private fun commitPartial(partial: File, destination: File): Boolean {

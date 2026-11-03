@@ -19,6 +19,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
 import java.io.File
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.R
@@ -37,12 +38,19 @@ class PiconSyncWorker(appContext: Context, params: WorkerParameters) :
     private var downloadedFiles: Int = 0
 
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
-        setForeground(createForegroundInfo(applicationContext.getString(R.string.connecting)))
-        val result = try {
-            syncPicons()
-        } catch (e: Exception) {
-            Log.e(TAG, "Picon sync failed", e)
-            PiconSyncResult(0, 0, e.message)
+        val result = if (startForeground()) {
+            try {
+                syncPicons()
+            } catch (e: Exception) {
+                Log.e(TAG, "Picon sync failed", e)
+                PiconSyncResult(0, 0, e.message)
+            }
+        } else {
+            PiconSyncResult(
+                0,
+                0,
+                applicationContext.getString(R.string.picon_sync_foreground_failed)
+            )
         }
         publishFinished(result)
         if (result.error != null || result.downloadedNothing || isStopped) {
@@ -50,6 +58,21 @@ class PiconSyncWorker(appContext: Context, params: WorkerParameters) :
         } else {
             Result.success()
         }
+    }
+
+    /**
+     * Starts the dataSync foreground service. Android 12+ can reject that start when the
+     * worker runs in the background; the rejection must not escape [doWork], and the sync
+     * must not run without the foreground service that keeps it alive.
+     */
+    private suspend fun startForeground(): Boolean = try {
+        setForeground(createForegroundInfo(applicationContext.getString(R.string.connecting)))
+        true
+    } catch (e: CancellationException) {
+        throw e
+    } catch (e: Exception) {
+        Log.e(TAG, "Could not start the picon sync foreground service", e)
+        false
     }
 
     private suspend fun syncPicons(): PiconSyncResult {

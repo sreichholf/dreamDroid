@@ -3,6 +3,7 @@ package net.reichholf.dreamdroid.helpers
 import java.io.File
 import java.io.IOException
 import java.io.OutputStream
+import java.nio.file.Files
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -10,6 +11,7 @@ import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 
@@ -138,6 +140,51 @@ class PiconSyncJobTest {
 
         assertEquals(PiconSyncResult(2, 1, null), result)
         assertFalse(result.downloadedNothing, "one stored picon is not a failed sync")
+    }
+
+    @Test
+    fun aListingEntryThatEscapesTheFolderIsSkipped() {
+        val escape = File(dir.parentFile, "${dir.name}-escape.png")
+        ftp.picons = listOf(
+            "../${escape.name}",
+            "sub/ard.png",
+            File(dir, "absolute.png").absolutePath
+        )
+
+        val result = runBlocking { job().run() }
+
+        assertEquals(0, result.downloadedFiles)
+        assertTrue(
+            result.downloadedNothing,
+            "a listing outside the folder must not count as stored"
+        )
+        assertTrue(ftp.retrieved.isEmpty(), "an unsafe name must not reach RETR")
+        assertFalse(escape.exists())
+        assertFalse(File(dir, "absolute.png").exists())
+    }
+
+    @Test
+    fun aSymlinkInTheFolderIsNotFollowed() {
+        val outside = File(dir.parentFile, "${dir.name}-outside.png")
+            .apply { writeBytes(EXISTING) }
+        val linked = try {
+            Files.createSymbolicLink(File(dir, "ard.png").toPath(), outside.toPath())
+            true
+        } catch (e: IOException) {
+            false
+        } catch (e: UnsupportedOperationException) {
+            false
+        }
+        assumeTrue(linked, "symlinks are not supported here")
+        ftp.picons = listOf("ard.png")
+        ftp.contents = mapOf("ard.png" to ARD)
+
+        val result = runBlocking { job().run() }
+
+        assertNull(result.error, "skipping the symlink must not fail the whole sync")
+        assertEquals(0, result.downloadedFiles)
+        assertArrayEquals(EXISTING, outside.readBytes(), "a symlink must not be followed")
+        outside.delete()
     }
 
     @Test

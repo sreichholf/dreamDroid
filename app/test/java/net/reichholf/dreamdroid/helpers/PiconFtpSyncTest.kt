@@ -3,6 +3,7 @@ package net.reichholf.dreamdroid.helpers
 import org.apache.commons.net.ftp.FTPReply
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
@@ -151,6 +152,21 @@ class PiconFtpSyncTest {
                 replyCode = FTPReply.FILE_UNAVAILABLE
             )
         )
+    }
+
+    @Test
+    fun namesThatLeaveThePiconFolderAreRejected() {
+        assertNull(PiconFtpSync.localFileName(""))
+        assertNull(PiconFtpSync.localFileName("../ard.png"))
+        assertNull(PiconFtpSync.localFileName("picons/../ard.png"))
+        assertNull(PiconFtpSync.localFileName("sub/ard.png"))
+        assertNull(PiconFtpSync.localFileName("sub\\ard.png"))
+        assertNull(PiconFtpSync.localFileName("/data/picons/ard.png"))
+    }
+
+    @Test
+    fun aPlainPngNameIsKept() {
+        assertEquals("ard.png", PiconFtpSync.localFileName("ard.png"))
     }
 
     @Test

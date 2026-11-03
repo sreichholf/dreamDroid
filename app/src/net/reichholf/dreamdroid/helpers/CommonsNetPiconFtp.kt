@@ -1,14 +1,24 @@
 package net.reichholf.dreamdroid.helpers
 
 import java.io.OutputStream
+import java.time.Duration
 import org.apache.commons.net.ftp.FTPClient
 import org.apache.commons.net.ftp.FTPFileFilter
 
 /**
  * [PiconFtp] over the Apache commons-net client. Picons go over as binary, and the listing
  * is filtered to the `.png` files the receiver stores its picons as.
+ *
+ * The client's timeouts are set before [connect]: a receiver that stops answering must fail
+ * the sync instead of leaving the worker blocked on an open socket.
  */
 class CommonsNetPiconFtp(private val client: FTPClient = FTPClient()) : PiconFtp {
+    init {
+        client.connectTimeout = CONNECT_TIMEOUT_MS
+        client.defaultTimeout = DEFAULT_TIMEOUT_MS
+        client.setDataTimeout(Duration.ofMillis(DATA_TIMEOUT_MS.toLong()))
+    }
+
     override fun connect(host: String) {
         client.connect(host)
     }
@@ -39,6 +49,11 @@ class CommonsNetPiconFtp(private val client: FTPClient = FTPClient()) : PiconFtp
     private fun reply(ok: Boolean): FtpReply = FtpReply(ok, client.replyCode, client.replyString)
 
     private companion object {
+        /** Long enough for a busy receiver, short enough to fail before the FGS timeout. */
+        const val CONNECT_TIMEOUT_MS = 15_000
+        const val DEFAULT_TIMEOUT_MS = 30_000
+        const val DATA_TIMEOUT_MS = 30_000
+
         val PNG_FILES = FTPFileFilter { file -> file.isFile && file.name.endsWith(".png") }
     }
 }
