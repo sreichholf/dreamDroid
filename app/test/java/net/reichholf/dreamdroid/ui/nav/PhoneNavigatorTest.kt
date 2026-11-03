@@ -5,12 +5,14 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
 import androidx.lifecycle.SavedStateHandle
+import kotlinx.coroutines.runBlocking
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.data.SettingsRepository
 import net.reichholf.dreamdroid.testutil.MemorySharedPreferences
 import net.reichholf.dreamdroid.testutil.TestProfiles
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNotSame
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
@@ -111,7 +113,36 @@ class PhoneNavigatorTest {
         assertEquals(2, state.uiState.value.epgRemount)
     }
 
-    private fun profile(id: Int, host: String): Profile = Profile().apply {
+    @Test
+    fun aForcedPublishOfTheSameSettingsKeepsTheEpgMounted() = runBlocking<Unit> {
+        val stored = profile(host = "box")
+        profiles.repository.save(stored)
+        val id = checkNotNull(stored.id)
+        assertTrue(profiles.repository.setCurrent(id))
+        val navigator = navigator()
+        navigator.onActiveProfileChanged()
+
+        val before = checkNotNull(profiles.repository.current.value)
+        assertTrue(profiles.repository.setCurrent(id, forceEvent = true))
+        val after = checkNotNull(profiles.repository.current.value)
+        assertNotSame(before, after)
+        navigator.onActiveProfileChanged()
+
+        assertEquals(1, state.uiState.value.epgRemount)
+    }
+
+    @Test
+    fun aProfileAppearingAfterNoneRemountsTheEpg() {
+        val navigator = navigator()
+        navigator.onActiveProfileChanged()
+
+        profiles.repository.setCurrent(profile(id = 1, host = "box"))
+        navigator.onActiveProfileChanged()
+
+        assertEquals(2, state.uiState.value.epgRemount)
+    }
+
+    private fun profile(id: Int? = null, host: String): Profile = Profile().apply {
         this.id = id
         this.host = host
     }
