@@ -315,7 +315,9 @@ class TvFocusTrapTest {
         ok.performClick()
         composeRule.waitForIdle()
 
-        opener.assertIsFocused()
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            runCatching { opener.assertIsFocused() }.isSuccess
+        }
         first.assertIsNotFocused()
     }
 

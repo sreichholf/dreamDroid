@@ -467,11 +467,14 @@ fun ComposeTvHubChrome(
     val liveContentFocus = if (continueWatching != null) continueWatchingFocus else gridFocus
     val liveTabFocusRequester = liveTabFocus ?: remember { FocusRequester() }
     val selectedTabFocus = remember { FocusRequester() }
+    // The card the remote was on when an overlay took focus, so the overlay can give it back.
+    val lastCardFocus = remember { FocusRequester() }
     var restoreFocusAfterOverlay by remember { mutableStateOf(false) }
     LaunchedEffect(showStreamUnavailable, restoreFocusAfterOverlay) {
         if (restoreFocusAfterOverlay && !showStreamUnavailable) {
             withFrameNanos {}
             if (
+                !lastCardFocus.requestFocus() &&
                 gridFocus?.restoreFocusedChild() != true &&
                 gridFocus?.requestFocus(FocusDirection.Enter) != true
             ) {
@@ -586,6 +589,7 @@ fun ComposeTvHubChrome(
                                             services = selectedBouquet.services,
                                             onServiceClick = gatedServiceClick,
                                             focusRequester = gridFocusRequester,
+                                            lastCardFocus = lastCardFocus,
                                             onServiceInfo = onServiceInfo?.let { callback ->
                                                 { service, bouquetRef ->
                                                     gridFocusRequester.saveFocusedChild()
@@ -1329,6 +1333,7 @@ fun HubServiceGrid(
     onServiceClick: (ServiceNowNext, String?) -> Unit,
     modifier: Modifier = Modifier,
     focusRequester: FocusRequester? = null,
+    lastCardFocus: FocusRequester? = null,
     onServiceInfo: ((ServiceNowNext, String?) -> Unit)? = null,
     headerFocus: FocusRequester? = null,
     header: (@Composable (firstCardFocus: FocusRequester?) -> Unit)? = null
@@ -1337,6 +1342,8 @@ fun HubServiceGrid(
         !tvHubDrawsMarkerHeader(service.serviceReference)
     }
     val firstCardFocus = remember { FocusRequester() }
+    // The card the remote was on last: an overlay that took focus gives it back there.
+    var lastFocusedIndex by remember { mutableStateOf<Int?>(null) }
     LazyVerticalGrid(
         columns = GridCells.Adaptive(minSize = 200.dp),
         horizontalArrangement = Arrangement.spacedBy(HubGridItemSpacing),
@@ -1381,16 +1388,31 @@ fun HubServiceGrid(
                 service = service,
                 bouquetRef = bouquetRef,
                 onServiceClick = onServiceClick,
-                modifier = if (index == firstCardIndex) {
-                    Modifier
-                        .focusRequester(firstCardFocus)
-                        .focusProperties {
-                            if (headerFocus != null) {
-                                up = headerFocus
-                            }
+                modifier = Modifier
+                    .then(
+                        if (lastCardFocus != null && index == lastFocusedIndex) {
+                            Modifier.focusRequester(lastCardFocus)
+                        } else {
+                            Modifier
                         }
+                    )
+                    .then(
+                        if (index == firstCardIndex) {
+                            Modifier
+                                .focusRequester(firstCardFocus)
+                                .focusProperties {
+                                    if (headerFocus != null) {
+                                        up = headerFocus
+                                    }
+                                }
+                        } else {
+                            Modifier
+                        }
+                    ),
+                onFocused = if (lastCardFocus != null) {
+                    { lastFocusedIndex = index }
                 } else {
-                    Modifier
+                    null
                 },
                 fillWidth = true,
                 contentExpanded = true,

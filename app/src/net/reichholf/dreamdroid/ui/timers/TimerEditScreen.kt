@@ -20,8 +20,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
@@ -227,9 +231,21 @@ fun TimerEditScreen(
                         .then(
                             initialFocusRequester?.let { Modifier.focusRequester(it) } ?: Modifier
                         )
+                        // A text field consumes D-pad Up for its caret, so a focus property
+                        // alone never runs. Take Up before the field does.
                         .then(
                             upFocusRequester?.let { target ->
-                                Modifier.focusProperties { up = target }
+                                Modifier.onPreviewKeyEvent { event ->
+                                    if (
+                                        event.type == KeyEventType.KeyDown &&
+                                        event.key == Key.DirectionUp
+                                    ) {
+                                        target.requestFocus()
+                                        true
+                                    } else {
+                                        false
+                                    }
+                                }
                             } ?: Modifier
                         )
                 )
