@@ -3,29 +3,16 @@
 ## 2.0.471
 * NEU: Bouquets pro Profil ausblenden
 * UPD: Video-Player verbessert
-* FIX: Player - Sendungsinfo und Senderliste fehlten bei Streams aus dem Zap-Raster oder vom aktuellen Sender
-* FIX: Player - Aufnahmen begannen nach dem Verlassen der App von vorne
-* FIX: Player - Bedienung tot nach fehlgeschlagenem Stream-Start
-* UPD: Prüfung der Hostnamen in Profilen
-* UPD: Picon-Sync meldet teilweise Downloads
+* UPD: Picon-Sync verbessert
+* UPD: Einrichtungsassistent verbessert
 * DEL: App-Daten in Cloud-Backup und Geräteübertragung
-* FIX: Picon-Sync meldete Erfolg, obwohl nichts heruntergeladen wurde
-* FIX: Picon-Sync hing bei blockierter Verbindung
-* FIX: Picon-Sync schlug im Hintergrund stillschweigend fehl
-* FIX: TV - D-Pad-Fokus bleibt in Overlays und kehrt zum Auslöser zurück
-* FIX: Aufnahmen in sehr großen Ordnern werden nicht geladen
-* FIX: Timer-Bereinigung mit aktivierter erweiterter Sicherheit fehlgeschlagen
-* FIX: Offline-Listen wurden durch eine unlesbare Receiver-Antwort gelöscht
-* FIX: MultiEPG speicherte nach einem Profilwechsel Programme eines anderen Profils
-* FIX: TV - Guide behielt nach einem Profilwechsel die Programme des vorherigen Profils
-* FIX: EPG verlor Zeit und Bouquet bei der Rückkehr in die App
-* FIX: Wiederherstellung im Einrichtungsassistenten konnte vom nächsten Schritt überlagert werden
-* FIX: "Alle Zertifikate" wurde im Einrichtungsassistenten auf einen anderen Receiver übernommen
-* FIX: Aufnahmen mit HTTPS- oder eigenen Port-Profilen aus dem Einrichtungsassistenten spielten nicht ab
-* UPD: Einrichtungsassistent erklärt den Zugriff auf das lokale Netzwerk
-* FIX: Backup-Export ohne Passwörter enthielt alte Receiver-Passwörter
 * FIX: Profile fehlten nach dem Upgrade von 1.15
-* FIX: MultiEPG speicherte ein verschachteltes Bouquet nicht für Offline
+* FIX: Alte Receiver-Passwörter in Backups
+* FIX: Player - fehlende Sendungsinfo, Aufnahmen von vorne, tote Bedienung
+* FIX: EPG und MultiEPG zeigten Programme eines anderen Profils
+* FIX: EPG verlor Zeit und Bouquet bei der Rückkehr in die App
+* FIX: Offline-Listen verloren oder unvollständig
+* FIX: Aufnahmen und Timer bei großen Ordnern oder erweiterter Sicherheit
 
 ## 2.0.470
 * NEU: Sicherung im Einrichtungsassistenten wiederherstellen

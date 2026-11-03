@@ -3,29 +3,16 @@
 ## 2.0.471
 * NEW: Hide bouquets per profile
 * UPD: Improve video player
-* FIX: Player - programme and channel list missing for streams from the zap grid or current service
-* FIX: Player - recordings restarting at the beginning after leaving the app
-* FIX: Player - controls dead after a failed stream start
-* UPD: Profile host name check
-* UPD: Picon sync reports a partial download
+* UPD: Picon sync improvements
+* UPD: Setup assistant improvements
 * DEL: App data in cloud backup and device transfer
-* FIX: Picon sync reported success when nothing was downloaded
-* FIX: Picon sync hung on a stalled connection
-* FIX: Picon sync failed silently in the background
-* FIX: TV - D-pad focus stays in overlays and returns to the opener
-* FIX: Recordings in very large folders not loading
-* FIX: Timer cleanup failed with extended security enabled
-* FIX: Offline lists wiped by an unreadable receiver answer
-* FIX: MultiEPG cached another profile's programmes after a profile switch
-* FIX: TV - Guide kept the previous profile's programmes after a switch
-* FIX: EPG lost time and bouquet when returning to the app
-* FIX: Restore in the setup assistant could be overridden by the next step
-* FIX: "All certificates" carried to another receiver in the setup assistant
-* FIX: Recordings not playing with HTTPS or custom-port profiles from the setup assistant
-* UPD: Setup assistant explains local network access
-* FIX: Backup export without passwords included old receiver passwords
 * FIX: Profiles missing after the upgrade from 1.15
-* FIX: MultiEPG did not cache a nested bouquet for Offline
+* FIX: Old receiver passwords in backups
+* FIX: Player - missing programme info, recordings restarting, dead controls
+* FIX: EPG and MultiEPG showing another profile's programmes
+* FIX: EPG lost time and bouquet when returning to the app
+* FIX: Offline lists lost or incomplete
+* FIX: Recordings and timers with large folders or extended security
 
 ## 2.0.470
 * NEW: Restore a backup in the setup assistant
