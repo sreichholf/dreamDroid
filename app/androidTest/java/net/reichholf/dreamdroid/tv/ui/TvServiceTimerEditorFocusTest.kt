@@ -103,7 +103,8 @@ class TvServiceTimerEditorFocusTest {
                             servicePickKey = tvTimerServicePickKey(null),
                             onServicePicked = {},
                             onSave = {},
-                            onDismiss = { editingEvent = null }
+                            onDismiss = { editingEvent = null },
+                            trapFocus = true
                         )
                     }
                 }

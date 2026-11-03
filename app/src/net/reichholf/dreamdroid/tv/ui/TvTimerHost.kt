@@ -12,6 +12,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
@@ -57,6 +58,7 @@ fun TvTimerHost(modifier: Modifier = Modifier, viewModel: TvTimerHostViewModel =
                 viewModel.showList()
                 viewModel.reload(forceRefresh = true)
             },
+            trapFocus = false,
             modifier = Modifier.fillMaxSize()
         )
     }
@@ -80,6 +82,7 @@ fun TvTimerHostContent(
     editor: @Composable (timer: Timer, isCreate: Boolean) -> Unit
 ) {
     var showNeedsReceiver by remember { mutableStateOf(false) }
+    val listFocus = remember { FocusRequester() }
     fun online(action: () -> Unit) {
         if (uiState.mutationsBlocked) showNeedsReceiver = true else action()
     }
@@ -107,7 +110,8 @@ fun TvTimerHostContent(
                     onEdit = onEdit,
                     onDelete = {},
                     onDeleteConfirmed = { index -> online { onDelete(index) } },
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier.fillMaxSize(),
+                    focusRequester = listFocus
                 )
                 val message = uiState.emptyMessage
                 if (items.isEmpty() && message != null) {
@@ -125,7 +129,12 @@ fun TvTimerHostContent(
         }
 
         if (showNeedsReceiver) {
-            TvNeedsReceiverOverlay(onDismiss = { showNeedsReceiver = false })
+            TvNeedsReceiverOverlay(
+                onDismiss = {
+                    showNeedsReceiver = false
+                    listFocus.requestFocus()
+                }
+            )
         }
         IndeterminateProgressHost(
             uiState.progress?.let { IndeterminateProgressState(message = it.asString()) }

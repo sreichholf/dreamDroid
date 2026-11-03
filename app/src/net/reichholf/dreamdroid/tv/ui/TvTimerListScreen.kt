@@ -21,6 +21,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.focusRestorer
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -49,7 +52,8 @@ fun TvTimerListScreen(
     onEdit: (Int) -> Unit,
     onDelete: (Int) -> Unit,
     onDeleteConfirmed: (Int) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    focusRequester: FocusRequester? = null
 ) {
     var pendingDelete by remember { mutableStateOf<TimerListItem?>(null) }
 
@@ -58,6 +62,13 @@ fun TvTimerListScreen(
         contentPadding = PaddingValues(vertical = 8.dp),
         modifier = modifier
             .fillMaxSize()
+            .then(
+                if (focusRequester != null) {
+                    Modifier.focusRequester(focusRequester).focusRestorer()
+                } else {
+                    Modifier
+                }
+            )
             .testTag("tv_timers_list")
     ) {
         item(key = "add") {

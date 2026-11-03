@@ -1,5 +1,6 @@
 package net.reichholf.dreamdroid.tv.ui
 
+import androidx.activity.ComponentActivity
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -20,13 +21,14 @@ import androidx.compose.ui.platform.LocalInputModeManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.assertDoesNotExist
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.assertIsNotFocused
 import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.isFocused
-import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
@@ -56,7 +58,7 @@ import org.junit.Test
 @OptIn(ExperimentalTestApi::class)
 class TvFocusTrapTest {
     @get:Rule
-    val composeRule = createComposeRule()
+    val composeRule = createAndroidComposeRule<ComponentActivity>()
 
     private lateinit var inputModeManager: InputModeManager
 
@@ -172,7 +174,8 @@ class TvFocusTrapTest {
                 servicePickKey = tvTimerServicePickKey(null),
                 onServicePicked = {},
                 onSave = {},
-                onDismiss = {}
+                onDismiss = {},
+                trapFocus = true
             )
         }
         val title = composeRule.onNodeWithContentDescription("Title")
@@ -232,7 +235,8 @@ class TvFocusTrapTest {
     }
 
     @Test
-    fun multiEpgGridTakesFocusBackWhenTheOverlayCloses() {
+    fun multiEpgGridTakesFocusBackWhenTheDetailDismisses() {
+        // Mirrors TvMultiEpgHost: keysEnabled follows the detail overlay, and Back dismisses it.
         val start = 1_700_000_000L
         val channel = MultiEpgChannel(
             serviceRef = "1:0:1:1:0:0:0:0:0:0:",
@@ -251,7 +255,8 @@ class TvFocusTrapTest {
             ),
             occurrence = 0
         )
-        var keysEnabled by mutableStateOf(false)
+        val event = demoEvent()
+        var detail by mutableStateOf<Event?>(null)
         setTvContent {
             TvMultiEpgScreen(
                 bouquetName = "Favourites",
@@ -269,15 +274,29 @@ class TvFocusTrapTest {
                 onPrevDay = {},
                 onNextDay = {},
                 onVisibleWindow = { _, _ -> },
-                onEventClick = {},
+                onEventClick = { detail = it },
                 onBouquetClick = {},
-                keysEnabled = keysEnabled
+                keysEnabled = detail == null
             )
+            detail?.let {
+                TvMultiEpgEventDetail(
+                    event = it,
+                    progress = null,
+                    onDismiss = { detail = null }
+                )
+            }
         }
 
-        composeRule.runOnIdle { keysEnabled = true }
+        composeRule.onNodeWithTag("tv_multi_epg_grid").requestFocus()
+        composeRule.waitForIdle()
+        composeRule.runOnIdle { detail = event }
+        composeRule.waitForIdle()
+        composeRule.onNodeWithTag("tv_multi_epg_detail").assertIsDisplayed()
+
+        composeRule.runOnIdle { composeRule.activity.onBackPressedDispatcher.onBackPressed() }
         composeRule.waitForIdle()
 
+        composeRule.onNodeWithTag("tv_multi_epg_detail").assertDoesNotExist()
         composeRule.onNodeWithTag("tv_multi_epg_grid").assertIsFocused()
     }
 

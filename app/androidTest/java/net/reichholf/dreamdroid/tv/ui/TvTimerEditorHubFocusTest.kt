@@ -10,9 +10,13 @@ import androidx.compose.ui.input.InputModeManager
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.platform.LocalInputModeManager
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.assertIsNotFocused
+import androidx.compose.ui.test.hasAnyAncestor
+import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.isFocused
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
@@ -97,6 +101,22 @@ class TvTimerEditorHubFocusTest {
             .performKeyInput { pressKey(Key.DirectionDown) }
         composeRule.waitForIdle()
         composeRule.onNodeWithContentDescription("Title").assertIsFocused()
+    }
+
+    @Test
+    fun upFromTheSectionEditorReachesTheTopBar() {
+        showHub(TvTimerPage.Edit(0))
+
+        val title = composeRule.onNodeWithContentDescription("Title")
+        title.assertIsFocused()
+        title.performKeyInput { pressKey(Key.DirectionUp) }
+        composeRule.waitForIdle()
+
+        composeRule.onAllNodes(
+            isFocused() and hasAnyAncestor(hasTestTag("hub_top_bar")),
+            useUnmergedTree = true
+        ).assertCountEquals(1)
+        title.assertIsNotFocused()
     }
 
     private fun showHub(initialPage: TvTimerPage): HubState {

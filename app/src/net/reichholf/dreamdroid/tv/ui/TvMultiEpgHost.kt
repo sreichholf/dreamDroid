@@ -177,6 +177,7 @@ fun TvMultiEpgHost(
                     isCreate = true,
                     onDismiss = viewModel::dismissTimerEditor,
                     onSaved = viewModel::onTimerSaved,
+                    trapFocus = true,
                     modifier = Modifier
                         .fillMaxSize()
                         .background(dreamDroidTvBackgroundBrush())

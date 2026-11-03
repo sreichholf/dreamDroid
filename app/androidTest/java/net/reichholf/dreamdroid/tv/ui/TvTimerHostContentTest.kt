@@ -10,6 +10,7 @@ import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -114,6 +115,40 @@ class TvTimerHostContentTest {
 
         assertEquals(0, adds)
         composeRule.onNodeWithTag("hub_stream_unavailable").assertIsDisplayed()
+
+        val ok = composeRule.onNodeWithTag("hub_stream_unavailable_ok")
+        ok.requestFocus()
+        ok.performKeyInput { pressKey(Key.DirectionCenter) }
+        composeRule.waitForIdle()
+
+        composeRule.onNodeWithTag("tv_timers_add").assertIsFocused()
+    }
+
+    @Test
+    fun blockedToggleRestoresTheTimerRow() {
+        val timer = Timer(name = "Existing", serviceName = "ARD")
+        composeRule.setContent {
+            Host(
+                TvTimerHostUiState(
+                    timers = listOf(timer),
+                    emptyMessage = null,
+                    mutationsBlocked = true
+                )
+            )
+        }
+
+        val row = composeRule.onNodeWithTag("tv_timers_row_0")
+        row.requestFocus()
+        row.performKeyInput { pressKey(Key.DirectionCenter) }
+        composeRule.waitForIdle()
+        composeRule.onNodeWithTag("hub_stream_unavailable").assertIsDisplayed()
+
+        val ok = composeRule.onNodeWithTag("hub_stream_unavailable_ok")
+        ok.requestFocus()
+        ok.performKeyInput { pressKey(Key.DirectionCenter) }
+        composeRule.waitForIdle()
+
+        row.assertIsFocused()
     }
 
     @Composable

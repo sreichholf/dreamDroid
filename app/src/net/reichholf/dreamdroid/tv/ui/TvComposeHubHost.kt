@@ -278,6 +278,7 @@ fun ComposeTvHubApp(
 
     val streamingEnabled = uiState.streamingEnabled
     val serviceGridFocus = remember { FocusRequester() }
+    val liveTabFocus = remember { FocusRequester() }
     var restoreHubFocus by remember { mutableStateOf(false) }
     Box(modifier = Modifier.fillMaxSize()) {
         ComposeTvHubChrome(
@@ -315,6 +316,7 @@ fun ComposeTvHubApp(
             },
             onServiceInfo = viewModel::showServiceTimer,
             serviceGridFocus = serviceGridFocus,
+            liveTabFocus = liveTabFocus,
             guideContent = { bouquetRef, bouquetName ->
                 TvMultiEpgHost(
                     activity = activity,
@@ -363,14 +365,17 @@ fun ComposeTvHubApp(
                     onSaved = {
                         viewModel.onTimerSaved()
                         restoreHubFocus = true
-                    }
+                    },
+                    trapFocus = true
                 )
             }
         }
         LaunchedEffect(overlayTarget, editorEvent, restoreHubFocus) {
             if (restoreHubFocus && overlayTarget == null && editorEvent == null) {
                 withFrameNanos {}
-                serviceGridFocus.tryRequestFocus()
+                if (!serviceGridFocus.tryRequestFocus()) {
+                    liveTabFocus.tryRequestFocus()
+                }
                 restoreHubFocus = false
             }
         }
@@ -411,6 +416,7 @@ fun ComposeTvHubChrome(
     sessionRecheckLabel: String? = null,
     onServiceInfo: ((ServiceNowNext, String?) -> Unit)? = null,
     serviceGridFocus: FocusRequester? = null,
+    liveTabFocus: FocusRequester? = null,
     timerContent: @Composable () -> Unit = {
         TvTimerHost(modifier = Modifier.fillMaxSize())
     },
@@ -448,13 +454,13 @@ fun ComposeTvHubChrome(
         selectedBouquet?.services?.isNotEmpty() == true || continueWatching != null
     }
     val liveContentFocus = if (continueWatching != null) continueWatchingFocus else gridFocus
-    val liveTabFocus = remember { FocusRequester() }
+    val liveTabFocusRequester = liveTabFocus ?: remember { FocusRequester() }
     var restoreFocusAfterOverlay by remember { mutableStateOf(false) }
     LaunchedEffect(showStreamUnavailable, restoreFocusAfterOverlay) {
         if (restoreFocusAfterOverlay && !showStreamUnavailable) {
             withFrameNanos {}
             if (gridFocus?.tryRequestFocus() != true) {
-                liveTabFocus.tryRequestFocus()
+                liveTabFocusRequester.tryRequestFocus()
             }
             restoreFocusAfterOverlay = false
         }
@@ -478,7 +484,7 @@ fun ComposeTvHubChrome(
         if (focusLiveAfterBack && section is HubSection.Live) {
             withFrameNanos {}
             if (!gridFocusRequester.tryRequestFocus()) {
-                liveTabFocus.tryRequestFocus()
+                liveTabFocusRequester.tryRequestFocus()
             }
             // Cleared only now: the flag is this effect's key, so clearing it before the
             // frame restarted the effect and cancelled the request.
@@ -530,7 +536,7 @@ fun ComposeTvHubChrome(
                     },
                     onTabRowFocusChanged = { focused -> if (!focused) tabNavigation = false },
                     onOpenSettings = onOpenSettings,
-                    liveTabFocus = liveTabFocus,
+                    liveTabFocus = liveTabFocusRequester,
                     profileName = profileName,
                     sessionChipLabel = sessionChipLabel,
                     onOpenProfiles = onOpenProfiles,
