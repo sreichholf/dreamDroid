@@ -4,6 +4,7 @@ import android.content.Intent
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.io.Serializable
 import java.util.ArrayDeque
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -54,6 +55,13 @@ internal class PendingNavigations {
 }
 
 /**
+ * The active profile the EPG was last mounted for, kept in saved state across process
+ * death. A null [profile] records a check without an active profile; the value being
+ * absent means no check has recorded one yet.
+ */
+private class MountedEpgProfile(val profile: Profile?) : Serializable
+
+/**
  * The phone navigation state that outlives the activity: the saved start route, the
  * request codes of open result destinations, the route schema flag, the queued
  * navigations, and an activity result held until a destination listens. The activity's
@@ -73,8 +81,8 @@ class PhoneNavHostState @Inject constructor(private val savedStateHandle: SavedS
     private var startRouteSaved: Boolean = false
     private var heldResult: PendingComposeActivityResult? = null
     private var heldResultData: Intent? = null
-    private var remountedProfile: Profile? = null
-    private var hasRemountedProfile: Boolean = false
+    private var mountedEpgProfile: MountedEpgProfile? =
+        savedStateHandle[PhoneNavSavedKeys.EPG_PROFILE]
 
     init {
         val bag = readPhoneNavStateBag(savedStateHandle)
@@ -143,21 +151,24 @@ class PhoneNavHostState @Inject constructor(private val savedStateHandle: SavedS
 
     /**
      * Remounts the EPG and MultiEPG only when [profile] differs from the one they were
-     * last mounted for, using the repository's [Profile.hasSameSettings] identity. A
-     * profile check that finds the same receiver leaves the EPG's time, bouquet and
-     * scroll alone; a switch or edited connection settings still remount it.
+     * last mounted for, using the repository's [Profile.hasSameSettings] identity. The
+     * record is saved, so a process Android restores does not remount for the profile the
+     * EPG already shows. A profile check that finds the same receiver leaves the EPG's
+     * time, bouquet and scroll alone; a switch or edited connection settings still
+     * remount it.
      */
     fun remountEpgForProfile(profile: Profile?) {
-        val previous = remountedProfile
+        val previous = mountedEpgProfile?.profile
         val sameProfile = if (profile == null || previous == null) {
             profile === previous
         } else {
             profile.hasSameSettings(previous)
         }
-        val changed = !hasRemountedProfile || !sameProfile
-        hasRemountedProfile = true
-        remountedProfile = profile
-        if (changed) {
+        val firstCheck = mountedEpgProfile == null
+        val record = MountedEpgProfile(profile)
+        mountedEpgProfile = record
+        savedStateHandle[PhoneNavSavedKeys.EPG_PROFILE] = record
+        if (firstCheck || !sameProfile) {
             remountEpg()
         }
     }

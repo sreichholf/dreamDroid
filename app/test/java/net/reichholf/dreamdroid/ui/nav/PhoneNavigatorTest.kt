@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Assertions.assertNotSame
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
-/** [PhoneNavigator] across an activity recreation: a new navigator over the same state. */
+/** [PhoneNavigator] across an activity recreation and a process restore. */
 class PhoneNavigatorTest {
     private val profiles = TestProfiles()
     private val state = PhoneNavHostState(SavedStateHandle())
@@ -142,12 +142,63 @@ class PhoneNavigatorTest {
         assertEquals(2, state.uiState.value.epgRemount)
     }
 
+    @Test
+    fun aRestoredProcessDoesNotRemountForTheSameProfile() {
+        profiles.repository.setCurrent(profile(id = 1, host = "box"))
+        val handle = SavedStateHandle()
+        navigator(PhoneNavHostState(handle)).onActiveProfileChanged()
+
+        profiles.repository.setCurrent(profile(id = 1, host = "box"))
+        val restored = PhoneNavHostState(handle)
+        navigator(restored).onActiveProfileChanged()
+
+        assertEquals(0, restored.uiState.value.epgRemount)
+    }
+
+    @Test
+    fun aRestoredProcessRemountsForAnotherProfile() {
+        profiles.repository.setCurrent(profile(id = 1, host = "box"))
+        val handle = SavedStateHandle()
+        navigator(PhoneNavHostState(handle)).onActiveProfileChanged()
+
+        profiles.repository.setCurrent(profile(id = 2, host = "box"))
+        val restored = PhoneNavHostState(handle)
+        navigator(restored).onActiveProfileChanged()
+
+        assertEquals(1, restored.uiState.value.epgRemount)
+    }
+
+    @Test
+    fun aRestoredProcessRemountsForEditedConnectionSettings() {
+        profiles.repository.setCurrent(profile(id = 1, host = "box"))
+        val handle = SavedStateHandle()
+        navigator(PhoneNavHostState(handle)).onActiveProfileChanged()
+
+        profiles.repository.setCurrent(profile(id = 1, host = "other-box"))
+        val restored = PhoneNavHostState(handle)
+        navigator(restored).onActiveProfileChanged()
+
+        assertEquals(1, restored.uiState.value.epgRemount)
+    }
+
+    @Test
+    fun aRestoredProcessWithoutAProfileDoesNotRemount() {
+        profiles.repository.clearCurrent()
+        val handle = SavedStateHandle()
+        navigator(PhoneNavHostState(handle)).onActiveProfileChanged()
+
+        val restored = PhoneNavHostState(handle)
+        navigator(restored).onActiveProfileChanged()
+
+        assertEquals(0, restored.uiState.value.epgRemount)
+    }
+
     private fun profile(id: Int? = null, host: String): Profile = Profile().apply {
         this.id = id
         this.host = host
     }
 
-    private fun navigator() = PhoneNavigator(
+    private fun navigator(state: PhoneNavHostState = this.state) = PhoneNavigator(
         state = state,
         lifecycleOwner = ResumedOwner(),
         highlighter = null,
