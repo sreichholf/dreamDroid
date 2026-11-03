@@ -269,12 +269,13 @@ class VideoPlayer(
     /**
      * Plays [request] on [target] from now on. While paused nothing gets audible: a live stream
      * waits for [play], a recording starts paused. The new engine opens a fresh source, so a
-     * recording continues where the old one was.
+     * recording continues where the old one was. An engine that failed before it played a frame
+     * reports no time yet; the requested position then still applies.
      */
     private fun switchTo(target: PlayerEngine, request: PlayRequest) {
-        val resumed = request.copy(
-            startPositionMs = resumePositionMs(request.live, engine.state.value.timeMs)
-        )
+        val playedMs = engine.state.value.timeMs
+        val positionMs = if (playedMs > 0) playedMs else request.startPositionMs
+        val resumed = request.copy(startPositionMs = resumePositionMs(request.live, positionMs))
         this.request = resumed
         use(target)
         if (!paused) {

@@ -91,6 +91,15 @@ class VideoPlayerTest {
     }
 
     @Test
+    fun aRecordingThatHandsOverBeforePlayingKeepsTheRequestedPosition() = scope.runTest {
+        player.playUri(request(Engine.Media3, live = false).copy(startPositionMs = POSITION_MS))
+
+        media3.emit(PlayerEvent.Failed(unsupported = true))
+
+        assertEquals(POSITION_MS, vlc.started.single().startPositionMs)
+    }
+
+    @Test
     fun aRecordingThatSwitchesToSoftwareKeepsItsPosition() = scope.runTest {
         player.playUri(request(Engine.Vlc, live = false))
         runCurrent()
