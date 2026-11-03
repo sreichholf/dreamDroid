@@ -319,11 +319,11 @@ class ProfileRepository @Inject constructor(
      * single-receiver settings of dreamDroid 1.x when there are no profiles yet.
      */
     suspend fun loadCurrent(): Unit = writes.withLock {
-        splitLegacyUserInfoOnSavedRows()
         loadCurrentLocked(allowLegacyProfile = true)
     }
 
     private suspend fun loadCurrentLocked(allowLegacyProfile: Boolean) {
+        splitLegacyUserInfoOnSavedRows()
         val profileId = store.activeId()
         val active = current.value
         if (active != null && profileId > 0 && active.id == profileId) {
@@ -352,7 +352,8 @@ class ProfileRepository @Inject constructor(
     /**
      * Splits a 1.x `user@host` on every saved row once, before anything connects with it. A
      * 1.15 upgrade migrates its Room rows in place, so no import path sees them; this pass
-     * runs before [current] is published. It only writes rows that still carry the prefix.
+     * runs on every startup load, before [current] is published. It only writes rows that
+     * still carry the prefix.
      */
     private suspend fun splitLegacyUserInfoOnSavedRows() {
         for (profile in store.profiles()) {
