@@ -386,7 +386,8 @@
     <string name="setup_searching">Receiver werden gesucht…</string>
     <string name="setup_none_found">Kein Receiver in diesem Netzwerk gefunden.</string>
     <string name="setup_address">Adresse</string>
-    <string name="setup_lan_denied">Zugriff auf das lokale Netzwerk ist aus. Die Adresse kann trotzdem eingegeben werden.</string>
+    <string name="setup_lan_denied">Zugriff auf das lokale Netzwerk ist aus. dreamDroid kann keinen Receiver erreichen, bis du ihn erlaubst. Erscheint keine Abfrage, erlaube ihn für dreamDroid in den Android-Einstellungen.</string>
+    <string name="setup_lan_grant">Lokalen Netzwerkzugriff erlauben</string>
     <string name="setup_connection_title">Verbindung</string>
     <string name="setup_connection_body">HTTP auf Port 80 verwenden, außer das WebInterface läuft über HTTPS.</string>
     <string name="setup_http">HTTP</string>

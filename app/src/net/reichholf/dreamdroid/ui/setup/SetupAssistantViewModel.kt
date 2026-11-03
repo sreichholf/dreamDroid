@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -40,6 +41,7 @@ data class SetupAssistantUiState(
     val checking: Boolean = false,
     val checkResult: ProfileCheckResult? = null,
     val restoring: Boolean = false,
+    val saving: Boolean = false,
     val restoreError: UiText? = null,
     val finished: Boolean = false
 )
@@ -73,9 +75,11 @@ class SetupAssistantViewModel @Inject constructor(
         if (_uiState.value.draft.step == SetupStep.Find) {
             updateDraft { it.copy(suggestedName = "") }
         }
+        clearCertificateTrust()
         clearCheckResult()
     }
     val port = textField(SetupAssistantSavedKeys.PORT_TEXT, SetupDefaults.PORT_TEXT) {
+        clearCertificateTrust()
         clearCheckResult()
     }
     val user = textField(SetupAssistantSavedKeys.USER, SetupDefaults.USER) { clearCheckResult() }
@@ -87,6 +91,10 @@ class SetupAssistantViewModel @Inject constructor(
     private var searchJob: Job? = null
     private var checkJob: Job? = null
     private var saveJob: Job? = null
+    private var restoreJob: Job? = null
+
+    /** Bumped per picked backup, so a read the user replaced cannot change the wizard. */
+    private var restoreRead = 0
 
     init {
         viewModelScope.launch {
@@ -113,7 +121,14 @@ class SetupAssistantViewModel @Inject constructor(
         }
         _uiState.update { it.copy(searching = true) }
         searchJob = viewModelScope.launch {
-            val found = discovery.find().map { it.toSetupReceiver() }
+            val found = try {
+                discovery.find().map { it.toSetupReceiver() }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (_: Exception) {
+                // Discovery is best effort; the address field still works.
+                emptyList()
+            }
             _uiState.update { it.copy(devices = found, searching = false, searched = true) }
         }
     }
@@ -130,9 +145,11 @@ class SetupAssistantViewModel @Inject constructor(
 
     /** Moves one step back. Returns false on Welcome, where Back leaves the wizard. */
     fun back(): Boolean {
-        val current = _uiState.value.draft.step
-        // A running restore cannot be abandoned: its profile write is not cancellable.
-        if (current == SetupStep.Import && _uiState.value.restoring) {
+        val state = _uiState.value
+        val current = state.draft.step
+        // Neither write can be abandoned: the profile write is not cancellable, and a save
+        // that finishes after Back would start the shell anyway.
+        if (state.saving || (current == SetupStep.Import && state.restoring)) {
             return true
         }
         val previous = when (current) {
@@ -155,6 +172,10 @@ class SetupAssistantViewModel @Inject constructor(
         val state = _uiState.value
         when (state.draft.step) {
             SetupStep.Welcome -> {
+                if (state.restoring) {
+                    // The picked backup is still being read; Start waits for it.
+                    return
+                }
                 _uiState.update { it.copy(restoreError = null) }
                 updateDraft { it.copy(step = SetupStep.Find) }
             }
@@ -193,6 +214,7 @@ class SetupAssistantViewModel @Inject constructor(
         updateDraft {
             it.copy(
                 useHttps = receiver.port == 443,
+                trustAllCerts = false,
                 suggestedName = receiver.name,
                 nameEdited = false
             )
@@ -201,12 +223,15 @@ class SetupAssistantViewModel @Inject constructor(
     }
 
     fun onHttpsChange(https: Boolean) {
+        if (_uiState.value.draft.useHttps == https) {
+            return
+        }
         val current = port.text.toIntOrNull()
         val wasDefault = current == null || current == 80 || current == 443
         if (wasDefault) {
             port.set(if (https) "443" else "80")
         }
-        updateDraft { it.copy(useHttps = https) }
+        updateDraft { it.copy(useHttps = https, trustAllCerts = false) }
         clearCheckResult()
     }
 
@@ -221,16 +246,31 @@ class SetupAssistantViewModel @Inject constructor(
     }
 
     /**
-     * Reads the backup the user picked. An unreadable file, or one without profiles, stays
-     * on Welcome with [SetupAssistantUiState.restoreError]; a usable one opens its review.
+     * Reads the backup the user picked. A second pick replaces a read still in flight, and a
+     * result that arrives after the wizard left Welcome is dropped. An unreadable file, or
+     * one without profiles, stays on Welcome with [SetupAssistantUiState.restoreError].
      */
     fun restoreFrom(uri: String) {
-        if (_uiState.value.restoring) {
+        if (_uiState.value.draft.step != SetupStep.Welcome) {
+            // The picker was opened before a read finished and the wizard moved on.
             return
         }
+        restoreJob?.cancel()
+        val read = ++restoreRead
         _uiState.update { it.copy(restoring = true, restoreError = null) }
-        viewModelScope.launch {
-            val opened = imports.open(uri)
+        restoreJob = viewModelScope.launch {
+            val content = imports.read(uri)
+            if (read != restoreRead) {
+                // A newer pick owns the state, including the restoring flag.
+                return@launch
+            }
+            val opened = content != null && imports.openContent(content)
+            if (_uiState.value.draft.step != SetupStep.Welcome) {
+                // The user moved on while the file was read: do not pull them back.
+                imports.clear()
+                _uiState.update { it.copy(restoring = false) }
+                return@launch
+            }
             val hasProfiles = imports.review.value?.profiles?.isNotEmpty() == true
             if (!opened || !hasProfiles) {
                 imports.clear()
@@ -303,19 +343,24 @@ class SetupAssistantViewModel @Inject constructor(
     }
 
     private fun save() {
-        if (saveJob?.isActive == true) {
+        if (_uiState.value.saving || saveJob?.isActive == true) {
             return
         }
         val profile = toProfile(profileName.text.ifBlank { host.text.trim() })
+        _uiState.update { it.copy(saving = true) }
         saveJob = viewModelScope.launch {
-            withContext(Dispatchers.IO) {
-                profiles.save(profile)
-                profiles.setCurrent(profile.id!!, forceEvent = true)
+            try {
+                withContext(Dispatchers.IO) {
+                    profiles.save(profile)
+                    profiles.setCurrent(profile.id!!, forceEvent = true)
+                }
+                // The host activity keeps this ViewModel after it swaps to the shell; a
+                // later return to setup must start a fresh wizard.
+                reset()
+                _uiState.update { it.copy(finished = true) }
+            } finally {
+                _uiState.update { it.copy(saving = false) }
             }
-            // The host activity keeps this ViewModel after it swaps to the shell; a
-            // later return to setup must start a fresh wizard.
-            reset()
-            _uiState.update { it.copy(finished = true) }
         }
     }
 
@@ -335,6 +380,12 @@ class SetupAssistantViewModel @Inject constructor(
         return profile
     }
 
+    private fun clearCertificateTrust() {
+        if (_uiState.value.draft.trustAllCerts) {
+            updateDraft { it.copy(trustAllCerts = false) }
+        }
+    }
+
     private fun clearCheckResult() {
         checkJob?.cancel()
         checkJob = null
@@ -346,6 +397,9 @@ class SetupAssistantViewModel @Inject constructor(
         searchJob = null
         checkJob?.cancel()
         checkJob = null
+        restoreJob?.cancel()
+        restoreJob = null
+        restoreRead++
         imports.clear()
         host.set("")
         port.set(SetupDefaults.PORT_TEXT)

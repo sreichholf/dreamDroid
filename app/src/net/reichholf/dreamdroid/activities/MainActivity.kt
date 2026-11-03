@@ -380,7 +380,12 @@ class MainActivity :
 
     override fun onResume() {
         super.onResume()
-        if (showingSetup || !phoneShellReady) {
+        if (showingSetup) {
+            // A grant made in system Settings is not pushed back to this activity.
+            lanGranted = LocalNetworkPermission.isGranted(this)
+            return
+        }
+        if (!phoneShellReady) {
             return
         }
         if (navigationHelper == null) {

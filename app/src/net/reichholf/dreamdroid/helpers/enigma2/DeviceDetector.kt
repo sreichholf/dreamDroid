@@ -38,22 +38,23 @@ object DeviceDetector {
         }
 
         try {
-            val jmdns = JmDNS.create()
-            val si = jmdns.list("_http._tcp.local.")
-            for (s in si) {
-                Log.i(LOG_TAG, Arrays.toString(s.hostAddresses))
-                if (s.name.lowercase(Locale.US).matches(Regex("dm[0-9]{1,4}.*"))) {
-                    val address = s.hostAddresses[0] ?: continue
-                    val port = s.port
-                    val simpleRemote = false
-                    val p = Profile.getDefault()
-                    p.name = s.name
-                    p.host = address
-                    p.streamHost = address
-                    p.port = port
-                    p.user = "root"
-                    p.simpleRemote = simpleRemote
-                    addToList(profiles, p)
+            JmDNS.create().use { jmdns ->
+                val si = jmdns.list("_http._tcp.local.")
+                for (s in si) {
+                    Log.i(LOG_TAG, Arrays.toString(s.hostAddresses))
+                    if (s.name.lowercase(Locale.US).matches(Regex("dm[0-9]{1,4}.*"))) {
+                        val address = s.hostAddresses?.firstOrNull() ?: continue
+                        val port = s.port
+                        val simpleRemote = false
+                        val p = Profile.getDefault()
+                        p.name = s.name
+                        p.host = address
+                        p.streamHost = address
+                        p.port = port
+                        p.user = "root"
+                        p.simpleRemote = simpleRemote
+                        addToList(profiles, p)
+                    }
                 }
             }
         } catch (e: IOException) {

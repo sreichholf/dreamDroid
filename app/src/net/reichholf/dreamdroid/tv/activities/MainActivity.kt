@@ -139,6 +139,14 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        if (showingSetup) {
+            // A grant made in system Settings is not pushed back to this activity.
+            lanGranted = LocalNetworkPermission.isGranted(this)
+        }
+    }
+
     private fun startHub() {
         showingSetup = false
         hubStarted = true

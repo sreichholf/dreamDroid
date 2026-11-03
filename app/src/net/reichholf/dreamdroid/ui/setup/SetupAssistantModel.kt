@@ -59,21 +59,21 @@ fun wizardProfile(
         "",
         port,
         8001,
-        80,
+        port,
         login,
         user,
         pass,
         useHttps,
         false,
         false,
-        false,
+        useHttps,
         false,
         "",
         "",
         "",
         ""
     )
-    // The file port is the web interface, so it takes the web login.
+    // The file endpoint is the web interface: same port, scheme and login.
     profile.fileLogin = login
     profile.allCertsTrusted = useHttps && trustAllCerts
     return profile

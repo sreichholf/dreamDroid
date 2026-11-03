@@ -873,6 +873,91 @@ class SetupAssistantScreenTest {
     }
 
     @Test
+    fun findWithoutLocalNetworkOffersTheGrantAction() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val viewModel = model()
+        var requests = 0
+        composeRule.setContent {
+            DreamDroidTheme {
+                SetupAssistantScreen(
+                    viewModel = viewModel,
+                    localNetworkGranted = false,
+                    onRequestLocalNetwork = { requests++ },
+                    onFinished = {},
+                    onLeave = {}
+                )
+            }
+        }
+        composeRule.mainClock.advanceTimeBy(2_000)
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("Start").assertIsEnabled().performClick()
+        composeRule.waitUntil(timeoutMillis = 5_000) { requests == 1 }
+        composeRule.waitForIdle()
+
+        composeRule.onNodeWithText(context.getString(R.string.setup_lan_denied))
+            .performScrollTo()
+            .assertIsDisplayed()
+        composeRule.onNodeWithTag("setup_lan_grant")
+            .performScrollTo()
+            .assertIsDisplayed()
+            .performClick()
+
+        assertEquals(2, requests)
+    }
+
+    @Test
+    fun backIsDisabledWhileTheProfileSaves() = runBlocking<Unit> {
+        val gate = CompletableDeferred<Unit>()
+        val store = ProfileRepository(
+            GatedAddProfileStore(MemoryProfileStore(), gate),
+            WebIfCapabilitiesRepository()
+        )
+        val viewModel = model(
+            profiles = store,
+            backupRepository = BackupRepository(store, SettingsRepository(preferences))
+        )
+        var finished = false
+        composeRule.setContent {
+            DreamDroidTheme {
+                SetupAssistantScreen(
+                    viewModel = viewModel,
+                    localNetworkGranted = true,
+                    onRequestLocalNetwork = {},
+                    onFinished = { finished = true },
+                    onLeave = {}
+                )
+            }
+        }
+        composeRule.mainClock.advanceTimeBy(2_000)
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("Start").assertIsEnabled().performClick()
+        composeRule.waitForIdle()
+        composeRule.onNodeWithTag("setup_address").performTextInput("10.0.0.7")
+        composeRule.onNodeWithText("Next").performClick()
+        composeRule.onNodeWithText("Next").performClick()
+        composeRule.onNodeWithText("Check connection").performClick()
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            viewModel.uiState.value.checkResult != null
+        }
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("Next").performClick()
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("Save").performClick()
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            viewModel.uiState.value.saving
+        }
+
+        assertEquals(SetupStep.Name, viewModel.uiState.value.draft.step)
+        composeRule.onNodeWithText("Back").assertIsNotEnabled()
+        composeRule.runOnIdle { assertTrue(viewModel.back()) }
+        assertEquals(SetupStep.Name, viewModel.uiState.value.draft.step)
+
+        gate.complete(Unit)
+        composeRule.waitUntil(timeoutMillis = 5_000) { finished }
+        assertEquals("10.0.0.7", store.profiles().single().host)
+    }
+
+    @Test
     fun anUnreadableRestoreStaysOnWelcomeWithTheReason() {
         val viewModel = model()
         composeRule.setContent {
@@ -976,6 +1061,17 @@ class SetupAssistantScreenTest {
         override suspend fun <R> transaction(block: suspend () -> R): R {
             gate.await()
             return delegate.transaction(block)
+        }
+    }
+
+    /** Holds the profile insert until [gate] completes, so a test can read the save busy state. */
+    private class GatedAddProfileStore(
+        private val delegate: ProfileStore,
+        private val gate: CompletableDeferred<Unit>
+    ) : ProfileStore by delegate {
+        override suspend fun add(profile: Profile): Long {
+            gate.await()
+            return delegate.add(profile)
         }
     }
 

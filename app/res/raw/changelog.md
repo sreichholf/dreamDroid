@@ -16,6 +16,10 @@
 * FIX: MultiEPG cached another profile's programmes after a profile switch
 * FIX: TV - Guide kept the previous profile's programmes after a switch
 * FIX: EPG lost time and bouquet when returning to the app
+* FIX: Restore in the setup assistant could be overridden by the next step
+* FIX: "All certificates" carried to another receiver in the setup assistant
+* FIX: Recordings not playing with HTTPS or custom-port profiles from the setup assistant
+* UPD: Setup assistant explains local network access
 
 ## 2.0.470
 * NEW: Hide bouquets per profile
