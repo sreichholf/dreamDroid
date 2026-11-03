@@ -6,30 +6,26 @@ import org.junit.jupiter.api.Test
 
 class TvMultiEpgHostTest {
     @Test
-    fun launchExtrasWinOverDefaultAndFirstBouquet() {
+    fun theHubsBouquetWins() {
         val first = Service("1:7:1:first", "First")
         assertEquals(
             "1:7:1:extra" to "Favourites",
             resolveTvMultiEpgLaunchBouquet(
                 extraRef = " 1:7:1:extra ",
                 extraName = " Favourites ",
-                defaultRef = "1:7:1:default",
-                defaultName = "Default",
                 firstBouquet = first
             )
         )
     }
 
     @Test
-    fun blankExtrasFallBackToDefaultThenFirst() {
+    fun aBlankRefFallsBackToTheFirstBouquetOnly() {
         val first = Service("1:7:1:first", "First")
         assertEquals(
-            "1:7:1:default" to "Default",
+            "1:7:1:first" to "First",
             resolveTvMultiEpgLaunchBouquet(
                 extraRef = "  ",
                 extraName = "Favourites",
-                defaultRef = "1:7:1:default",
-                defaultName = "Default",
                 firstBouquet = first
             )
         )
@@ -38,8 +34,6 @@ class TvMultiEpgHostTest {
             resolveTvMultiEpgLaunchBouquet(
                 extraRef = null,
                 extraName = null,
-                defaultRef = "",
-                defaultName = "Default",
                 firstBouquet = first
             )
         )
@@ -48,8 +42,6 @@ class TvMultiEpgHostTest {
             resolveTvMultiEpgLaunchBouquet(
                 extraRef = "1:7:1:extra",
                 extraName = "  ",
-                defaultRef = "1:7:1:default",
-                defaultName = "Default",
                 firstBouquet = first
             )
         )

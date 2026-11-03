@@ -104,17 +104,26 @@ class MultiEpgGrid(
     }
 
     /**
+     * Drop the painted grid and cancel its loads without starting another, so a profile
+     * switch leaves nothing of the previous profile on screen. The cancelled loads still
+     * end their sync, so their counters stay.
+     */
+    fun reset() {
+        dropPainted()
+        _state.update {
+            MultiEpgGridState(
+                syncingCount = it.syncingCount,
+                pullRefreshing = it.pullRefreshing
+            )
+        }
+    }
+
+    /**
      * Drop the painted grid immediately and load [bouquetRef] at [anchorSec].
      * [anchorSec] becomes the left clamp ("now") for this grid.
      */
     fun replaceAndLoad(bouquetRef: String, anchorSec: Long) {
-        queuedWarm = null
-        loadJob?.cancel()
-        prefetchJob?.cancel()
-        windowJob?.cancel()
-        eventsByWindow.clear()
-        bouquetRoster = emptyList()
-        timers = emptyList()
+        dropPainted()
         _state.update {
             it.copy(
                 bouquetRef = bouquetRef,
@@ -127,9 +136,19 @@ class MultiEpgGrid(
                 originFloorSec = anchorSec
             )
         }
+        load(anchorSec, forceRefresh = false, isPull = false)
+    }
+
+    private fun dropPainted() {
+        queuedWarm = null
+        loadJob?.cancel()
+        prefetchJob?.cancel()
+        windowJob?.cancel()
+        eventsByWindow.clear()
+        bouquetRoster = emptyList()
+        timers = emptyList()
         visibleStartSec = 0L
         visibleEndSec = 0L
-        load(anchorSec, forceRefresh = false, isPull = false)
     }
 
     fun load(anchorSec: Long, forceRefresh: Boolean = false, isPull: Boolean = false) {

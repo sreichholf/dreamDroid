@@ -27,6 +27,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.LifecycleStartEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.tv.material3.ClickableSurfaceDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
@@ -69,6 +70,12 @@ fun TvMultiEpgHost(
     val currentOnBouquetChange by rememberUpdatedState(onBouquetChange)
     val grid = uiState.grid
     var nowSec by remember { mutableLongStateOf(MultiEpgNowClock.sec()) }
+
+    // Only a Guide on screen reloads on a profile switch; off screen it waits for onShown.
+    LifecycleStartEffect(viewModel) {
+        viewModel.onShown()
+        onStopOrDispose { viewModel.onHidden() }
+    }
 
     ShowShellUserMessage(uiState.userMessage, viewModel::onMessageShown)
     val stream = uiState.stream
@@ -332,24 +339,18 @@ private fun TvMultiEpgAction(
 }
 
 /**
- * Hub launch extras win when the bouquet ref is non-blank, then the profile
- * default TV bouquet, then the first loaded bouquet.
+ * The bouquet to open: the hub's selection when it has one, else the first loaded bouquet.
+ * The hub owns the fallback, so the Guide resolves none of its own.
  */
 fun resolveTvMultiEpgLaunchBouquet(
     extraRef: String?,
     extraName: String?,
-    defaultRef: String,
-    defaultName: String,
     firstBouquet: Service?
 ): Pair<String, String> {
     val launchRef = extraRef?.trim().orEmpty()
     if (launchRef.isNotEmpty()) {
         val launchName = extraName?.trim().orEmpty()
         return launchRef to launchName.ifBlank { launchRef }
-    }
-    val trimmedDefault = defaultRef.trim()
-    if (trimmedDefault.isNotEmpty()) {
-        return trimmedDefault to defaultName.ifBlank { trimmedDefault }
     }
     return firstBouquet?.reference.orEmpty() to firstBouquet?.name.orEmpty()
 }
