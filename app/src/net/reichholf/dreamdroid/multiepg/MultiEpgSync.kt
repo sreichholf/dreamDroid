@@ -14,13 +14,19 @@ import net.reichholf.dreamdroid.room.EpgDao
 
 /**
  * Windowed `/web/epgmulti` fetch with Room TTL cache and single-flight coalescing.
- * Never omits `endTime` — unbounded bouquet EPG is not allowed. [fetch] gets the window
- * as unix seconds; [net.reichholf.dreamdroid.data.EpgRepository] owns the one instance
- * per process and its receiver fetch.
+ * Never omits `endTime` — unbounded bouquet EPG is not allowed. [fetch] gets the profile
+ * the caller bound the chunk to and the window as unix seconds;
+ * [net.reichholf.dreamdroid.data.EpgRepository] owns the one instance per process and its
+ * receiver fetch.
  */
 class MultiEpgSync(
     private val dao: EpgDao,
-    private val fetch: suspend (bouquetRef: String, timeSec: Long, endTimeSec: Long) -> List<Event>,
+    private val fetch: suspend (
+        profileId: Int,
+        bouquetRef: String,
+        timeSec: Long,
+        endTimeSec: Long
+    ) -> List<Event>,
     private val clockMs: () -> Long = { System.currentTimeMillis() },
     private val ttlMs: Long = MultiEpgWindows.DEFAULT_TTL_MS,
     private val farTtlMs: Long = MultiEpgWindows.FAR_TTL_MS,
@@ -192,7 +198,7 @@ class MultiEpgSync(
         }
 
         try {
-            val events = fetch(bouquetRef, chunk.startSec, chunk.endSec)
+            val events = fetch(profileId, bouquetRef, chunk.startSec, chunk.endSec)
             val entities = events.toEpgEventEntities(profileId, bouquetRef)
             val meta = EpgChunkMetaEntity(
                 profileId = profileId,
@@ -256,7 +262,7 @@ class MultiEpgSync(
         }
 
         try {
-            val result = fetch(bouquetRef, chunk.startSec, chunk.endSec)
+            val result = fetch(profileId, bouquetRef, chunk.startSec, chunk.endSec)
                 .toEpgEventEntities(profileId, bouquetRef)
                 .map { it.toEvent() }
             deferred.complete(result)

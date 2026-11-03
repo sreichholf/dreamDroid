@@ -66,8 +66,9 @@ class MultiEpgGrid(
     private val sync: MultiEpgSync,
     private val scope: CoroutineScope,
     private val profileId: () -> Int,
-    private val fetchTimers: suspend () -> List<Timer> = { emptyList() },
-    private val loadBouquetServices: suspend (String) -> List<Service> = { emptyList() },
+    private val fetchTimers: suspend (profileId: Int) -> List<Timer> = { _ -> emptyList() },
+    private val loadBouquetServices: suspend (profileId: Int, bouquetRef: String) -> List<Service> =
+        { _, _ -> emptyList() },
     private val persistBouquet: (String) -> Boolean = { true },
     private val shouldSkipReceiverHttp: (Boolean) -> Boolean = { false },
     private val isSessionOffline: () -> Boolean = { false },
@@ -231,7 +232,7 @@ class MultiEpgGrid(
                 }
                 timersDeferred = async(Dispatchers.IO) {
                     try {
-                        fetchTimers()
+                        fetchTimers(id)
                     } catch (t: Throwable) {
                         if (t is CancellationException) {
                             throw t
@@ -241,7 +242,7 @@ class MultiEpgGrid(
                 }
                 val rosterDeferred = async(Dispatchers.IO) {
                     try {
-                        MultiEpgRosterFetch(loadBouquetServices(ref))
+                        MultiEpgRosterFetch(loadBouquetServices(id, ref))
                     } catch (t: Throwable) {
                         if (t is CancellationException) {
                             throw t

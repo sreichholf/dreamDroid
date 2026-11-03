@@ -39,7 +39,7 @@ class MultiEpgSyncSingleFlightTest {
         val t0 = MultiEpgWindows.CHUNK_SECONDS + 10L
         val sync = MultiEpgSync(
             dao = db.epgDao(),
-            fetch = { _, time, _ ->
+            fetch = { _, _, time, _ ->
                 if (fetches.incrementAndGet() == 1) {
                     firstFetchStarted.complete(Unit)
                     awaitCancellation()
@@ -71,7 +71,7 @@ class MultiEpgSyncSingleFlightTest {
         val t0 = MultiEpgWindows.CHUNK_SECONDS + 10L
         val sync = MultiEpgSync(
             dao = db.epgDao(),
-            fetch = { _, time, _ ->
+            fetch = { _, _, time, _ ->
                 fetches.incrementAndGet()
                 fetchStarted.complete(Unit)
                 release.await()
@@ -101,7 +101,7 @@ class MultiEpgSyncSingleFlightTest {
         val t0 = MultiEpgWindows.CHUNK_SECONDS + 10L
         val sync = MultiEpgSync(
             dao = db.epgDao(),
-            fetch = { _, _, _ ->
+            fetch = { _, _, _, _ ->
                 fetches.incrementAndGet()
                 fetchStarted.complete(Unit)
                 release.await()
@@ -132,7 +132,7 @@ class MultiEpgSyncSingleFlightTest {
         val chunkStart = MultiEpgWindows.chunkContaining(t0).startSec
         val sync = MultiEpgSync(
             dao = db.epgDao(),
-            fetch = { _, time, _ ->
+            fetch = { _, _, time, _ ->
                 fetches.incrementAndGet()
                 fetchStarted.complete(Unit)
                 release.await()

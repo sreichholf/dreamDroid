@@ -57,7 +57,7 @@ class MultiEpgCachePruneTest {
         putChunk(windowStart = 0L, windowEnd = day)
         val sync = MultiEpgSync(
             dao = db.epgDao(),
-            fetch = { _, _, _ ->
+            fetch = { _, _, _, _ ->
                 listOf(
                     Event(
                         eventId = "fresh",

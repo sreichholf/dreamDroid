@@ -281,11 +281,12 @@ class ServiceRepository @Inject constructor(
         profiles.current.value?.id?.let { tabStrip(it, KIND_TV) }.orEmpty()
 
     /**
-     * Members of [bouquetRef] from the receiver, the MultiEPG rows. Failures throw; empty
-     * without an active profile.
+     * Members of [bouquetRef] for [profileId] from the receiver, the MultiEPG rows. Failures
+     * throw. The client is resolved by the captured id, so a profile switch mid-load does not
+     * fetch another receiver's roster. Empty when that profile is gone.
      */
-    suspend fun bouquetServices(bouquetRef: String): List<Service> {
-        val profile = profiles.current.value ?: return emptyList()
+    suspend fun bouquetServices(profileId: Int, bouquetRef: String): List<Service> {
+        val profile = profiles.byId(profileId) ?: return emptyList()
         return clients.forProfile(profile).services(bouquetRef).valueOrThrow()
     }
 

@@ -8,6 +8,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
+import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.enigma.DeviceInfo
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.enigma.EnigmaFailureException
@@ -22,6 +23,7 @@ import net.reichholf.dreamdroid.testutil.TV_ROOTS
 import net.reichholf.dreamdroid.testutil.loadOwifFixture
 import net.reichholf.dreamdroid.testutil.loadWebFixture
 import okhttp3.mockwebserver.MockResponse
+import okhttp3.mockwebserver.MockWebServer
 import okhttp3.mockwebserver.RecordedRequest
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -238,6 +240,78 @@ class EpgRepositoryMultiEpgTest {
 
         assertEquals(true, gate.persist(BOUQUET))
         assertEquals(false, gate.persist(OTHER_BOUQUET))
+    }
+
+    @Test
+    fun aWindowKeepsFetchingTheProfileItStartedUnder() = runBlocking {
+        val profiles = receiver.profiles.repository
+        val profileA = profiles.current.value!!.apply { id = null }
+        profiles.save(profileA)
+        val idA = profileA.id!!
+
+        val serverB = MockWebServer()
+        serverB.enqueue(
+            MockResponse().setBody(loadWebFixture("epgmulti.xml").replace("Tagesschau", "Other"))
+        )
+        serverB.start()
+        try {
+            val profileB = Profile().apply {
+                name = "b"
+                host = serverB.hostName
+                port = serverB.port
+            }
+            profiles.save(profileB)
+            val idB = profileB.id!!
+
+            val load = async(start = CoroutineStart.LAZY) {
+                sync.ensureChunk(idA, BOUQUET, NOW)
+            }
+            profiles.setCurrent(idB)
+            load.start()
+            val events = load.await()
+
+            assertEquals(listOf("Tagesschau", "heute"), events.map { it.title })
+            assertEquals(1, receiver.requestsTo("/web/epgmulti").size)
+            assertEquals(0, serverB.requestCount)
+            val dao = receiver.profiles.database.epgDao()
+            assertNotNull(dao.getChunk(idA, BOUQUET, chunk.startSec))
+            assertNull(dao.getChunk(idB, BOUQUET, chunk.startSec))
+        } finally {
+            serverB.shutdown()
+        }
+    }
+
+    @Test
+    fun aWindowWhoseProfileIsGoneNeverAsksTheNewProfile() = runBlocking {
+        val profiles = receiver.profiles.repository
+        val profileA = profiles.current.value!!.apply { id = null }
+        profiles.save(profileA)
+        val idA = profileA.id!!
+
+        val serverB = MockWebServer()
+        serverB.enqueue(MockResponse().setBody(loadWebFixture("epgmulti.xml")))
+        serverB.start()
+        try {
+            val profileB = Profile().apply {
+                name = "b"
+                host = serverB.hostName
+                port = serverB.port
+            }
+            profiles.save(profileB)
+            val idB = profileB.id!!
+
+            val load = async(start = CoroutineStart.LAZY) {
+                sync.ensureChunk(idA, BOUQUET, NOW)
+            }
+            profiles.delete(profileA)
+            load.start()
+
+            assertTrue(load.await().isEmpty())
+            assertEquals(0, serverB.requestCount)
+            assertNull(receiver.profiles.database.epgDao().getChunk(idB, BOUQUET, chunk.startSec))
+        } finally {
+            serverB.shutdown()
+        }
     }
 
     @Test

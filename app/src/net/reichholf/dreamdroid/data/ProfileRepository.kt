@@ -203,6 +203,12 @@ class ProfileRepository @Inject constructor(
     suspend fun profile(id: Int): Profile? = store.profile(id)
 
     /**
+     * The profile with [id]: [current] when it is that one, else its stored row. For work
+     * that captured an id and must finish against the profile it started under.
+     */
+    suspend fun byId(id: Int): Profile? = current.value?.takeIf { it.id == id } ?: profile(id)
+
+    /**
      * A new, unsaved profile seeded with the device's default online picon settings, so a
      * fresh install keeps the behavior the global setting had before it moved onto the
      * profile (TV defaults to online picons).

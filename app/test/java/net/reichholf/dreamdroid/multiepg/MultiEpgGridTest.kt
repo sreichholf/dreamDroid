@@ -47,7 +47,7 @@ class MultiEpgGridTest {
         val focusedStart = MultiEpgWindows.chunkContaining(t0).startSec
         val sync = MultiEpgSync(
             dao = db.epgDao(),
-            fetch = { _, time, _ ->
+            fetch = { _, _, time, _ ->
                 if (time == focusedStart) {
                     val n = focusedFetches.incrementAndGet()
                     if (n > 1) {
@@ -86,7 +86,7 @@ class MultiEpgGridTest {
         val t0 = MultiEpgWindows.CHUNK_SECONDS + 10L
         val sync = MultiEpgSync(
             dao = db.epgDao(),
-            fetch = { _, time, _ ->
+            fetch = { _, _, time, _ ->
                 if (fetches.incrementAndGet() > 1) {
                     error("box down")
                 }
@@ -116,7 +116,7 @@ class MultiEpgGridTest {
         val chunk = MultiEpgWindows.chunkContaining(t0)
         val sync = MultiEpgSync(
             dao = db.epgDao(),
-            fetch = { _, time, _ ->
+            fetch = { _, _, time, _ ->
                 if (time == chunk.startSec) {
                     visibleFetches.incrementAndGet()
                 }
@@ -150,7 +150,7 @@ class MultiEpgGridTest {
         val fetches = ArrayList<Long>()
         val sync = MultiEpgSync(
             dao = db.epgDao(),
-            fetch = { _, time, _ ->
+            fetch = { _, _, time, _ ->
                 fetches.add(time)
                 listOf(programme(id = time.toString(), title = "T", start = time))
             },
@@ -192,7 +192,7 @@ class MultiEpgGridTest {
         val fetches = ArrayList<Long>()
         val sync = MultiEpgSync(
             dao = db.epgDao(),
-            fetch = { _, time, _ ->
+            fetch = { _, _, time, _ ->
                 fetches.add(time)
                 listOf(programme(id = time.toString(), title = "T", start = time))
             },
@@ -226,7 +226,7 @@ class MultiEpgGridTest {
         val fetches = ArrayList<Long>()
         val sync = MultiEpgSync(
             dao = db.epgDao(),
-            fetch = { _, time, _ ->
+            fetch = { _, _, time, _ ->
                 fetches.add(time)
                 listOf(programme(id = time.toString(), title = "T", start = time))
             },
@@ -256,7 +256,7 @@ class MultiEpgGridTest {
         val fetches = ArrayList<Long>()
         val sync = MultiEpgSync(
             dao = db.epgDao(),
-            fetch = { _, time, _ ->
+            fetch = { _, _, time, _ ->
                 fetches.add(time)
                 listOf(programme(id = time.toString(), title = "T", start = time))
             },
@@ -295,7 +295,7 @@ class MultiEpgGridTest {
         val visibleStart = MultiEpgWindows.chunkContaining(t0).startSec
         val sync = MultiEpgSync(
             dao = db.epgDao(),
-            fetch = { _, time, _ ->
+            fetch = { _, _, time, _ ->
                 if (time != visibleStart) {
                     gate.await()
                 }
@@ -326,7 +326,7 @@ class MultiEpgGridTest {
         val t0 = MultiEpgWindows.CHUNK_SECONDS + 10L
         val sync = MultiEpgSync(
             dao = db.epgDao(),
-            fetch = { bouquet, time, _ ->
+            fetch = { _, bouquet, time, _ ->
                 val title = if (bouquet == "bouquet-a") "A" else "B"
                 listOf(programme(id = "$bouquet-$time", title = title, start = time))
             },
@@ -354,7 +354,7 @@ class MultiEpgGridTest {
         val tomorrowStart = chunk.startSec + MultiEpgWindows.CHUNK_SECONDS
         val sync = MultiEpgSync(
             dao = db.epgDao(),
-            fetch = { _, time, _ ->
+            fetch = { _, _, time, _ ->
                 listOf(programme(id = time.toString(), title = "T", start = time))
             },
             clockMs = { 1_000_000L },
@@ -392,7 +392,7 @@ class MultiEpgGridTest {
         val fetches = ArrayList<Long>()
         val sync = MultiEpgSync(
             dao = db.epgDao(),
-            fetch = { _, time, _ ->
+            fetch = { _, _, time, _ ->
                 fetches.add(time)
                 listOf(programme(id = time.toString(), title = "T", start = time))
             },
@@ -439,7 +439,7 @@ class MultiEpgGridTest {
         val day3 = chunk.startSec + 2L * MultiEpgWindows.CHUNK_SECONDS
         val sync = MultiEpgSync(
             dao = db.epgDao(),
-            fetch = { _, time, _ ->
+            fetch = { _, _, time, _ ->
                 listOf(programme(id = time.toString(), title = "T", start = time))
             },
             clockMs = { 1_000_000L },
@@ -477,7 +477,7 @@ class MultiEpgGridTest {
         val fetches = ArrayList<Long>()
         val sync = MultiEpgSync(
             dao = db.epgDao(),
-            fetch = { _, time, _ ->
+            fetch = { _, _, time, _ ->
                 fetches.add(time)
                 listOf(programme(id = time.toString(), title = "T", start = time))
             },
@@ -525,7 +525,7 @@ class MultiEpgGridTest {
         val afterPanFetches = AtomicInteger(0)
         val sync = MultiEpgSync(
             dao = db.epgDao(),
-            fetch = { _, time, _ ->
+            fetch = { _, _, time, _ ->
                 if (time == warmed) {
                     warmStarted.complete(Unit)
                     warmGate.await()
@@ -574,7 +574,7 @@ class MultiEpgGridTest {
         val staleFetches = AtomicInteger(0)
         val sync = MultiEpgSync(
             dao = db.epgDao(),
-            fetch = { bouquet, time, _ ->
+            fetch = { _, bouquet, time, _ ->
                 if (bouquet == "bouquet-a" && time == nextChunk) {
                     warmStarted.complete(Unit)
                     // A fetch already inside its blocking call runs on after the cancel,
@@ -632,7 +632,7 @@ class MultiEpgGridTest {
         val queuedFetches = AtomicInteger(0)
         val sync = MultiEpgSync(
             dao = db.epgDao(),
-            fetch = { bouquet, time, _ ->
+            fetch = { _, bouquet, time, _ ->
                 if (time == nextChunk) {
                     if (bouquet == "bouquet-a") {
                         warmAStarted.complete(Unit)
@@ -690,7 +690,7 @@ class MultiEpgGridTest {
         val fetches = ArrayList<Long>()
         val sync = MultiEpgSync(
             dao = db.epgDao(),
-            fetch = { _, time, _ ->
+            fetch = { _, _, time, _ ->
                 fetches.add(time)
                 listOf(programme(id = time.toString(), title = "T", start = time))
             },
@@ -721,7 +721,7 @@ class MultiEpgGridTest {
         val fetches = AtomicInteger(0)
         val sync = MultiEpgSync(
             dao = db.epgDao(),
-            fetch = { _, time, _ ->
+            fetch = { _, _, time, _ ->
                 fetches.incrementAndGet()
                 listOf(programme(id = time.toString(), title = "T", start = time))
             },
@@ -756,7 +756,7 @@ class MultiEpgGridTest {
         val fetches = ArrayList<Long>()
         val sync = MultiEpgSync(
             dao = db.epgDao(),
-            fetch = { _, time, _ ->
+            fetch = { _, _, time, _ ->
                 fetches.add(time)
                 listOf(programme(id = time.toString(), title = "T", start = time))
             },
@@ -790,7 +790,7 @@ class MultiEpgGridTest {
         val fetches = ArrayList<Long>()
         val sync = MultiEpgSync(
             dao = db.epgDao(),
-            fetch = { _, time, _ ->
+            fetch = { _, _, time, _ ->
                 fetches.add(time)
                 if (time == chunk.startSec) {
                     listOf(
@@ -835,7 +835,7 @@ class MultiEpgGridTest {
         val day2 = chunk.startSec + 2L * MultiEpgWindows.CHUNK_SECONDS
         val sync = MultiEpgSync(
             dao = db.epgDao(),
-            fetch = { _, time, _ ->
+            fetch = { _, _, time, _ ->
                 if (time == day2) {
                     gate.await()
                 }
@@ -869,7 +869,7 @@ class MultiEpgGridTest {
         val t0 = MultiEpgWindows.CHUNK_SECONDS + 10L
         val sync = MultiEpgSync(
             dao = db.epgDao(),
-            fetch = { _, time, _ ->
+            fetch = { _, _, time, _ ->
                 listOf(programme(id = "e-$time", title = "News", start = time))
             },
             clockMs = { 1_000_000L },
@@ -879,7 +879,7 @@ class MultiEpgGridTest {
             sync = sync,
             scope = this,
             profileId = { 1 },
-            fetchTimers = {
+            fetchTimers = { _ ->
                 gate.await()
                 error("timerlist down")
             }
@@ -899,7 +899,7 @@ class MultiEpgGridTest {
         val t0 = MultiEpgWindows.CHUNK_SECONDS + 10L
         val sync = MultiEpgSync(
             dao = db.epgDao(),
-            fetch = { _, time, _ ->
+            fetch = { _, _, time, _ ->
                 listOf(programme(id = "e-$time", title = "News", start = time))
             },
             clockMs = { 1_000_000L },
@@ -909,7 +909,7 @@ class MultiEpgGridTest {
             sync = sync,
             scope = this,
             profileId = { 1 },
-            fetchTimers = {
+            fetchTimers = { _ ->
                 listOf(
                     Timer(
                         reference = "1:0:1:1:1:1:0:0:0:0:",
@@ -939,7 +939,7 @@ class MultiEpgGridTest {
         val withoutEpg = "1:0:1:2:1:1:0:0:0:0:"
         val sync = MultiEpgSync(
             dao = db.epgDao(),
-            fetch = { _, time, _ ->
+            fetch = { _, _, time, _ ->
                 val events = ArrayList<Event>(2)
                 events.add(
                     programme(
@@ -970,7 +970,7 @@ class MultiEpgGridTest {
             sync = sync,
             scope = this,
             profileId = { 1 },
-            loadBouquetServices = {
+            loadBouquetServices = { _, _ ->
                 listOf(
                     Service(withEpg, "Das Erste"),
                     Service(withoutEpg, "ZDF")
@@ -1007,7 +1007,7 @@ class MultiEpgGridTest {
         )
         val sync = MultiEpgSync(
             dao = db.epgDao(),
-            fetch = { _, time, _ ->
+            fetch = { _, _, time, _ ->
                 if (time == chunk0.startSec) {
                     listOf(
                         spanning,
@@ -1047,7 +1047,7 @@ class MultiEpgGridTest {
         val bouquetCalls = AtomicInteger(0)
         val sync = MultiEpgSync(
             dao = db.epgDao(),
-            fetch = { _, time, _ ->
+            fetch = { _, _, time, _ ->
                 listOf(
                     programme(
                         id = "$time-a",
@@ -1065,7 +1065,7 @@ class MultiEpgGridTest {
             sync = sync,
             scope = this,
             profileId = { 1 },
-            loadBouquetServices = {
+            loadBouquetServices = { _, _ ->
                 if (bouquetCalls.incrementAndGet() > 1) {
                     error("getservices down")
                 }
@@ -1096,7 +1096,7 @@ class MultiEpgGridTest {
         val t0 = MultiEpgWindows.CHUNK_SECONDS + 10L
         val sync = MultiEpgSync(
             dao = db.epgDao(),
-            fetch = { _, time, _ ->
+            fetch = { _, _, time, _ ->
                 val n = fetches.incrementAndGet()
                 if (n > 1) {
                     hang.await()
@@ -1116,7 +1116,7 @@ class MultiEpgGridTest {
             profileId = { 1 },
             persistBouquet = { false },
             shouldSkipReceiverHttp = { hasCache -> hasCache },
-            loadBouquetServices = {
+            loadBouquetServices = { _, _ ->
                 bouquetCalls.incrementAndGet()
                 hang.await()
                 error("getservices down")
@@ -1149,7 +1149,7 @@ class MultiEpgGridTest {
         )
         val sync = MultiEpgSync(
             dao = db.epgDao(),
-            fetch = { _, _, _ ->
+            fetch = { _, _, _, _ ->
                 fetches.incrementAndGet()
                 hang.await()
                 throw EnigmaFailureException(
@@ -1165,7 +1165,7 @@ class MultiEpgGridTest {
             profileId = { 1 },
             persistBouquet = { false },
             isSessionOffline = { true },
-            loadBouquetServices = {
+            loadBouquetServices = { _, _ ->
                 bouquetCalls.incrementAndGet()
                 hang.await()
                 throw EnigmaFailureException(
@@ -1191,7 +1191,7 @@ class MultiEpgGridTest {
         val t0 = MultiEpgWindows.CHUNK_SECONDS + 10L
         val sync = MultiEpgSync(
             dao = db.epgDao(),
-            fetch = { _, _, _ ->
+            fetch = { _, _, _, _ ->
                 fetches.incrementAndGet()
                 hang.await()
                 throw EnigmaFailureException(
@@ -1207,7 +1207,7 @@ class MultiEpgGridTest {
             profileId = { 1 },
             persistBouquet = { false },
             isSessionOffline = { true },
-            loadBouquetServices = {
+            loadBouquetServices = { _, _ ->
                 bouquetCalls.incrementAndGet()
                 hang.await()
                 throw EnigmaFailureException(
@@ -1236,7 +1236,7 @@ class MultiEpgGridTest {
         val fetches = AtomicInteger(0)
         val sync = MultiEpgSync(
             dao = db.epgDao(),
-            fetch = { _, time, _ ->
+            fetch = { _, _, time, _ ->
                 fetches.incrementAndGet()
                 listOf(programme(id = "e-$time", title = "Live", start = time))
             },
@@ -1261,7 +1261,7 @@ class MultiEpgGridTest {
         val t0 = MultiEpgWindows.CHUNK_SECONDS + 10L
         val sync = MultiEpgSync(
             dao = db.epgDao(),
-            fetch = { _, time, _ ->
+            fetch = { _, _, time, _ ->
                 if (fetches.incrementAndGet() > 1) {
                     throw EnigmaFailureException(
                         EnigmaFailure.Unreachable(EnigmaFailure.UnreachableReason.Dns)
@@ -1279,7 +1279,7 @@ class MultiEpgGridTest {
             profileId = { 1 },
             persistBouquet = { false },
             isSessionOffline = { true },
-            loadBouquetServices = {
+            loadBouquetServices = { _, _ ->
                 throw EnigmaFailureException(
                     EnigmaFailure.Unreachable(EnigmaFailure.UnreachableReason.Dns)
                 )
@@ -1311,7 +1311,7 @@ class MultiEpgGridTest {
         )
         val sync = MultiEpgSync(
             dao = db.epgDao(),
-            fetch = { _, _, _ ->
+            fetch = { _, _, _, _ ->
                 fetches.incrementAndGet()
                 hang.await()
                 throw EnigmaFailureException(
@@ -1327,7 +1327,7 @@ class MultiEpgGridTest {
             profileId = { 1 },
             persistBouquet = { false },
             isSessionOffline = { true },
-            loadBouquetServices = {
+            loadBouquetServices = { _, _ ->
                 bouquetCalls.incrementAndGet()
                 hang.await()
                 throw EnigmaFailureException(
@@ -1357,7 +1357,7 @@ class MultiEpgGridTest {
         val prefetchAttempts = AtomicInteger(0)
         val sync = MultiEpgSync(
             dao = db.epgDao(),
-            fetch = { _, time, _ ->
+            fetch = { _, _, time, _ ->
                 if (time != visibleStart) {
                     prefetchAttempts.incrementAndGet()
                     error("prefetch down")
@@ -1379,6 +1379,59 @@ class MultiEpgGridTest {
         assertNull(grid.state.value.errorMessage)
         assertEquals(setOf(visibleStart), grid.loadedWindowStarts)
         assertTrue(prefetchAttempts.get() >= 1)
+    }
+
+    @Test
+    fun theLoadKeepsTheProfileItStartedUnder() = runBlocking {
+        var current = 1
+        val t0 = MultiEpgWindows.CHUNK_SECONDS + 10L
+        val chunkStart = MultiEpgWindows.chunkContaining(t0).startSec
+        val rosterGate = CompletableDeferred<Unit>()
+        val rosterStarted = CompletableDeferred<Unit>()
+        val fetchProfiles = mutableListOf<Int>()
+        val timerProfiles = mutableListOf<Int>()
+        val rosterProfiles = mutableListOf<Int>()
+        val sync = MultiEpgSync(
+            dao = db.epgDao(),
+            fetch = { profileId, _, time, _ ->
+                fetchProfiles.add(profileId)
+                listOf(programme(id = "e-$time", title = "T", start = time))
+            },
+            clockMs = { 1_000_000L },
+            ttlMs = 25L * 60L * 1000L
+        )
+        val grid = MultiEpgGrid(
+            sync = sync,
+            scope = this,
+            profileId = { current },
+            fetchTimers = { profileId ->
+                timerProfiles.add(profileId)
+                emptyList()
+            },
+            loadBouquetServices = { profileId, _ ->
+                rosterProfiles.add(profileId)
+                emptyList()
+            },
+            loadCachedRoster = { _, _ ->
+                rosterStarted.complete(Unit)
+                rosterGate.await()
+                null
+            }
+        )
+        grid.replaceAndLoad("bouquet-a", t0)
+        withTimeout(5_000) { rosterStarted.await() }
+
+        // The load captured profile 1; the switch must not reach its fetch or its cache key.
+        current = 2
+        rosterGate.complete(Unit)
+        grid.awaitIdle()
+
+        assertEquals(listOf(1), timerProfiles)
+        assertEquals(listOf(1), rosterProfiles)
+        assertTrue(fetchProfiles.isNotEmpty())
+        assertTrue(fetchProfiles.all { it == 1 })
+        assertNotNull(db.epgDao().getChunk(1, "bouquet-a", chunkStart))
+        assertNull(db.epgDao().getChunk(2, "bouquet-a", chunkStart))
     }
 
     private fun titleOnFocusedChunk(grid: MultiEpgGrid, unixSec: Long): String =

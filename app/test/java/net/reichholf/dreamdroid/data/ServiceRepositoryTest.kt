@@ -25,6 +25,7 @@ import net.reichholf.dreamdroid.testutil.loadWebFixture
 import net.reichholf.dreamdroid.ui.session.ConnectionStatus
 import net.reichholf.dreamdroid.ui.session.hasUseDrivenCache
 import okhttp3.mockwebserver.MockResponse
+import okhttp3.mockwebserver.MockWebServer
 import okhttp3.mockwebserver.RecordedRequest
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -233,7 +234,7 @@ class ServiceRepositoryTest {
         val bouquets = services.bouquets().last()
         val roster = services.services(FAVOURITES).last()
         val epg = services.bouquetNowNext(FAVOURITES)
-        val members = services.bouquetServices(FAVOURITES)
+        val members = services.bouquetServices(PROFILE_ID, FAVOURITES)
 
         assertTrue(services.hubTabStripRefs().isEmpty())
         assertTrue(cached.tv.isEmpty() && cached.radio.isEmpty())
@@ -409,14 +410,44 @@ class ServiceRepositoryTest {
 
     @Test
     fun bouquetServicesComeFromGetservicesAndFailuresThrow() = runBlocking<Unit> {
-        val bouquet = services.bouquetServices(FAVOURITES)
+        val bouquet = services.bouquetServices(PROFILE_ID, FAVOURITES)
 
         assertTrue(bouquet.any { it.name == "Das Erste HD" })
         assertEquals(FAVOURITES, receiver.requestsTo(GET_SERVICES).single().sRef())
 
         receiver.answer = { MockResponse().setResponseCode(500) }
         assertThrows(EnigmaFailureException::class.java) {
-            runBlocking { services.bouquetServices(FAVOURITES) }
+            runBlocking { services.bouquetServices(PROFILE_ID, FAVOURITES) }
+        }
+    }
+
+    @Test
+    fun bouquetServicesResolveTheProfileTheyWereAskedFor() = runBlocking {
+        val profiles = receiver.profiles.repository
+        val profileA = profiles.current.value!!.apply { id = null }
+        profiles.save(profileA)
+        val idA = profileA.id!!
+
+        val serverB = MockWebServer()
+        serverB.enqueue(MockResponse().setBody(loadWebFixture("getservices.xml")))
+        serverB.start()
+        try {
+            val profileB = Profile().apply {
+                name = "b"
+                host = serverB.hostName
+                port = serverB.port
+            }
+            profiles.save(profileB)
+            val idB = profileB.id!!
+
+            profiles.setCurrent(idB)
+            val members = services.bouquetServices(idA, FAVOURITES)
+
+            assertTrue(members.any { it.name == "Das Erste HD" })
+            assertEquals(1, receiver.requestsTo(GET_SERVICES).size)
+            assertEquals(0, serverB.requestCount)
+        } finally {
+            serverB.shutdown()
         }
     }
 

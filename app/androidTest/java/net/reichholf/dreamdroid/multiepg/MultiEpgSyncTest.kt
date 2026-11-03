@@ -56,7 +56,7 @@ class MultiEpgSyncTest {
         val fixture = requireNotNull(EventParser.parse(loadWebFixture("epgmulti.xml")))
         val sync = MultiEpgSync(
             dao = db.epgDao(),
-            fetch = { _, _, _ ->
+            fetch = { _, _, _, _ ->
                 fetches.incrementAndGet()
                 fixture
             },
@@ -76,7 +76,7 @@ class MultiEpgSyncTest {
         val fixture = requireNotNull(EventParser.parse(loadWebFixture("epgmulti.xml")))
         val sync = MultiEpgSync(
             dao = db.epgDao(),
-            fetch = { _, _, _ -> fixture },
+            fetch = { _, _, _, _ -> fixture },
             clockMs = { 1_000_000L },
             ttlMs = 25L * 60L * 1000L
         )
@@ -96,7 +96,7 @@ class MultiEpgSyncTest {
         val fixture = requireNotNull(EventParser.parse(loadWebFixture("epgmulti.xml")))
         val sync = MultiEpgSync(
             dao = db.epgDao(),
-            fetch = { _, _, _ ->
+            fetch = { _, _, _, _ ->
                 fetches.incrementAndGet()
                 release.await()
                 fixture
@@ -125,7 +125,7 @@ class MultiEpgSyncTest {
         var now = 1_000_000L
         val sync = MultiEpgSync(
             dao = db.epgDao(),
-            fetch = { _, time, _ ->
+            fetch = { _, _, time, _ ->
                 fetches.incrementAndGet()
                 listOf(
                     Event(
@@ -160,7 +160,7 @@ class MultiEpgSyncTest {
         val fixture = requireNotNull(EventParser.parse(loadWebFixture("epgmulti.xml")))
         val sync = MultiEpgSync(
             dao = db.epgDao(),
-            fetch = { _, _, _ ->
+            fetch = { _, _, _, _ ->
                 fetches.incrementAndGet()
                 fixture
             },
@@ -180,7 +180,7 @@ class MultiEpgSyncTest {
         val fixture = requireNotNull(EventParser.parse(loadWebFixture("epgmulti.xml")))
         val sync = MultiEpgSync(
             dao = db.epgDao(),
-            fetch = { _, _, _ ->
+            fetch = { _, _, _, _ ->
                 if (fetches.incrementAndGet() > 1) {
                     error("box down")
                 }
@@ -226,7 +226,7 @@ class MultiEpgSyncTest {
         )
         val sync = MultiEpgSync(
             dao = db.epgDao(),
-            fetch = { _, _, _ -> listOf(firstInBouquet, secondInBouquet) },
+            fetch = { _, _, _, _ -> listOf(firstInBouquet, secondInBouquet) },
             clockMs = { 1_000_000L },
             ttlMs = 25L * 60L * 1000L
         )
@@ -275,7 +275,7 @@ class MultiEpgSyncTest {
         )
         val sync = MultiEpgSync(
             dao = db.epgDao(),
-            fetch = { _, time, _ ->
+            fetch = { _, _, time, _ ->
                 if (time == chunk0.startSec) {
                     listOf(day0, spanning)
                 } else {

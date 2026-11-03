@@ -237,15 +237,19 @@ class EpgRepository @Inject constructor(
     }
 
     /**
-     * One MultiEPG window of [bouquetRef]. Requests run one at a time, so the box never serves
-     * two bouquet dumps at once. Empty without an active profile, which sends no request.
+     * One MultiEPG window of [bouquetRef] for [profileId]. Requests run one at a time, so the
+     * box never serves two bouquet dumps at once. The client is resolved by the captured id,
+     * not by whichever profile is current when the request reaches the lock, so a switch
+     * mid-load cannot store another profile's programmes under this profile's key. Empty
+     * when that profile is gone.
      */
     private suspend fun fetchEpgMulti(
+        profileId: Int,
         bouquetRef: String,
         timeSec: Long,
         endTimeSec: Long
     ): List<Event> = epgMultiRequest.withLock {
-        val profile = profiles.current.value ?: return@withLock emptyList()
+        val profile = profiles.byId(profileId) ?: return@withLock emptyList()
         clients.forProfile(profile).epgMulti(bouquetRef, timeSec, endTimeSec).valueOrThrow()
     }
 
