@@ -198,7 +198,11 @@ class MultiEpgSync(
         }
 
         try {
-            val events = fetch(profileId, bouquetRef, chunk.startSec, chunk.endSec)
+            val events = fetchOrNull(profileId, bouquetRef, chunk)
+            if (events == null) {
+                deferred.complete(Unit)
+                return
+            }
             val entities = events.toEpgEventEntities(profileId, bouquetRef)
             val meta = EpgChunkMetaEntity(
                 profileId = profileId,
@@ -262,9 +266,10 @@ class MultiEpgSync(
         }
 
         try {
-            val result = fetch(profileId, bouquetRef, chunk.startSec, chunk.endSec)
-                .toEpgEventEntities(profileId, bouquetRef)
-                .map { it.toEvent() }
+            val result = fetchOrNull(profileId, bouquetRef, chunk)
+                ?.toEpgEventEntities(profileId, bouquetRef)
+                ?.map { it.toEvent() }
+                .orEmpty()
             deferred.complete(result)
             return result
         } catch (t: Throwable) {
@@ -279,6 +284,22 @@ class MultiEpgSync(
         }
     }
 
+    /**
+     * [fetch] of [chunk], or null when the profile the chunk was bound to no longer exists.
+     * A deleted profile must not be stored as an empty chunk: an empty list is a real,
+     * cacheable "no programmes", and an empty chunk under the deleted id would also keep the
+     * next read from reaching the receiver.
+     */
+    private suspend fun fetchOrNull(
+        profileId: Int,
+        bouquetRef: String,
+        chunk: MultiEpgWindows.Chunk
+    ): List<Event>? = try {
+        fetch(profileId, bouquetRef, chunk.startSec, chunk.endSec)
+    } catch (_: MultiEpgProfileGoneException) {
+        null
+    }
+
     private fun ttlFor(chunk: MultiEpgWindows.Chunk, nowMs: Long): Long = MultiEpgWindows.ttlMs(
         chunkStartSec = chunk.startSec,
         nowSec = nowMs / 1000L,
@@ -287,3 +308,13 @@ class MultiEpgSync(
         chunkSeconds = chunkSeconds
     )
 }
+
+/**
+ * The profile a MultiEPG chunk was bound to was deleted before the chunk could be stored.
+ * [MultiEpgSync] drops the chunk instead of writing the fetch's empty result under the
+ * deleted profile's id.
+ */
+class MultiEpgProfileGoneException(val profileId: Int) :
+    IllegalStateException(
+        "Profile $profileId no longer exists"
+    )

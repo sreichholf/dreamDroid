@@ -13,6 +13,7 @@ import net.reichholf.dreamdroid.enigma.ReceiverApiFactory
 import net.reichholf.dreamdroid.enigma.valueOrThrow
 import net.reichholf.dreamdroid.helpers.EnigmaHttpError
 import net.reichholf.dreamdroid.multiepg.MultiEpgPersistGate
+import net.reichholf.dreamdroid.multiepg.MultiEpgProfileGoneException
 import net.reichholf.dreamdroid.multiepg.MultiEpgSync
 import net.reichholf.dreamdroid.multiepg.MultiEpgWindows
 import net.reichholf.dreamdroid.multiepg.nowNextForService
@@ -240,8 +241,9 @@ class EpgRepository @Inject constructor(
      * One MultiEPG window of [bouquetRef] for [profileId]. Requests run one at a time, so the
      * box never serves two bouquet dumps at once. The client is resolved by the captured id,
      * not by whichever profile is current when the request reaches the lock, so a switch
-     * mid-load cannot store another profile's programmes under this profile's key. Empty
-     * when that profile is gone.
+     * mid-load cannot store another profile's programmes under this profile's key. Throws
+     * [MultiEpgProfileGoneException] when that profile was deleted, so no chunk is written
+     * under its id.
      */
     private suspend fun fetchEpgMulti(
         profileId: Int,
@@ -249,7 +251,7 @@ class EpgRepository @Inject constructor(
         timeSec: Long,
         endTimeSec: Long
     ): List<Event> = epgMultiRequest.withLock {
-        val profile = profiles.byId(profileId) ?: return@withLock emptyList()
+        val profile = profiles.byId(profileId) ?: throw MultiEpgProfileGoneException(profileId)
         clients.forProfile(profile).epgMulti(bouquetRef, timeSec, endTimeSec).valueOrThrow()
     }
 
