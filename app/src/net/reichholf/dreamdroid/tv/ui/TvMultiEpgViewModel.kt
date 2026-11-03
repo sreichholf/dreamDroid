@@ -213,7 +213,7 @@ class TvMultiEpgViewModel @Inject constructor(
         startJob?.cancel()
         startJob = null
         grid.reset()
-        persistGate.knownTabRefs = emptyList()
+        persistGate.forget()
         _uiState.update {
             it.copy(
                 bouquets = emptyList(),
@@ -233,13 +233,14 @@ class TvMultiEpgViewModel @Inject constructor(
     private fun start(extraRef: String?, extraName: String?, followHub: Boolean = false) {
         // No profile: start nothing. startJob stays null, so an open() that comes later can
         // load; the host does not re-open on its own when a profile appears.
-        if (profiles.current.value == null) {
-            return
-        }
+        val profileId = profiles.current.value?.id ?: return
         startRef = extraRef
         startJob = viewModelScope.launch {
             val tvBouquets = services.tvBouquets()
-            persistGate.knownTabRefs = services.userBouquetTabs(tvBouquets).map { it.reference }
+            persistGate.knowTabs(
+                profileId,
+                services.userBouquetTabs(tvBouquets).map { it.reference }
+            )
             val bouquets = tvBouquets.filter { it.reference.isNotBlank() }
             if (followHub) {
                 val listed = bouquets.firstOrNull { it.reference == extraRef }

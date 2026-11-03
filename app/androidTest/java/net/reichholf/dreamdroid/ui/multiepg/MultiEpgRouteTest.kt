@@ -87,18 +87,19 @@ class MultiEpgRouteTest {
     @Before
     fun setUp() {
         hiltRule.inject()
-        profiles.setCurrent(
-            Profile().apply {
-                id = PROFILE_ID
-                name = "MultiEPG route"
-                host = server.hostName
-                port = server.port
-                defaultBouquetTv = FOLDER
-                defaultBouquetTvName = "Satellites"
-                defaultParentBouquetTv = TAB
-                defaultParentBouquetTvName = "Favourites"
-            }
-        )
+        val profile = Profile().apply {
+            id = PROFILE_ID
+            name = "MultiEPG route"
+            host = server.hostName
+            port = server.port
+            defaultBouquetTv = FOLDER
+            defaultBouquetTvName = "Satellites"
+            defaultParentBouquetTv = TAB
+            defaultParentBouquetTvName = "Favourites"
+        }
+        // MultiEPG writes a chunk only for a stored profile.
+        runBlocking { database.profileDao().addProfile(profile) }
+        profiles.setCurrent(profile)
         sessions.onSuccess()
         runBlocking {
             database.epgDao().deleteAllForProfile(PROFILE_ID)
@@ -118,6 +119,9 @@ class MultiEpgRouteTest {
         runBlocking {
             database.epgDao().deleteAllForProfile(PROFILE_ID)
             database.rosterDao().deleteAllForProfile(PROFILE_ID)
+            database.profileDao().getProfile(PROFILE_ID)?.let {
+                database.profileDao().deleteProfile(it)
+            }
         }
     }
 

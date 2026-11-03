@@ -4,6 +4,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.runBlocking
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.data.EpgRepository
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
@@ -72,19 +73,26 @@ class EpgTestReceiver {
             }
         }
         server.start()
-        profiles.repository.setCurrent(
-            Profile().apply {
-                id = PROFILE_ID
-                name = "test"
-                host = server.hostName
-                port = server.port
-            }
-        )
+        val profile = Profile().apply {
+            id = PROFILE_ID
+            name = "test"
+            host = server.hostName
+            port = server.port
+        }
+        // MultiEPG writes chunks only for a stored profile.
+        runBlocking { profiles.database.profileDao().addProfile(profile) }
+        profiles.repository.setCurrent(profile)
         sessions.onSuccess()
     }
 
     fun stop() {
         server.shutdown()
+        profiles.repository.clearCurrent()
+    }
+
+    /** No profile at all: the active one is neither current nor stored. Its cache stays. */
+    suspend fun dropProfile() {
+        profiles.repository.current.value?.let { profiles.database.profileDao().deleteProfile(it) }
         profiles.repository.clearCurrent()
     }
 

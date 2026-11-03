@@ -147,9 +147,12 @@ class ServiceRepository @Inject constructor(
         visible.radio.addAll(visibleBouquets(bouquets.radio))
     }
 
-    /** The Room tab strip refs, TV and radio, the bouquets MultiEPG and the hub persist. */
-    suspend fun hubTabStripRefs(): List<String> {
-        val profileId = profiles.current.value?.id ?: return emptyList()
+    /**
+     * The Room tab strip refs of [profileId], TV and radio, the bouquets MultiEPG and the hub
+     * persist. Empty without a profile.
+     */
+    suspend fun hubTabStripRefs(profileId: Int? = profiles.current.value?.id): List<String> {
+        profileId ?: return emptyList()
         return database.rosterDao().getTabStripRefs(profileId)
     }
 
