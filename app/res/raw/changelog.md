@@ -6,6 +6,7 @@
 * FIX: Picon sync reported success when nothing was downloaded
 * FIX: Recordings in very large folders not loading
 * FIX: Timer cleanup failed with extended security enabled
+* FIX: Offline lists wiped by an unreadable receiver answer
 
 ## 2.0.470
 * NEW: Hide bouquets per profile

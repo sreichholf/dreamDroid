@@ -3,8 +3,12 @@ package net.reichholf.dreamdroid.enigma
 import org.xmlpull.v1.XmlPullParser
 
 object ServiceParser {
-    fun parse(xml: String): List<Service> =
-        parseEnigmaXml(xml, emptyResult = emptyList(), onFail = emptyList()) { parser ->
+    /**
+     * @return parsed services, or null when XML cannot be parsed (distinct from a valid empty
+     * list).
+     */
+    fun parse(xml: String): List<Service>? =
+        parseEnigmaXml(xml, emptyResult = null, onFail = null) { parser ->
             parseServiceList(parser)
         }
 }

@@ -5,8 +5,12 @@ import net.reichholf.dreamdroid.helpers.Python
 import org.xmlpull.v1.XmlPullParser
 
 object EventParser {
-    fun parse(xml: String): List<Event> =
-        parseEnigmaXml(xml, emptyResult = emptyList(), onFail = emptyList()) { parser ->
+    /**
+     * @return parsed events, or null when XML cannot be parsed (distinct from a valid empty
+     * list).
+     */
+    fun parse(xml: String): List<Event>? =
+        parseEnigmaXml(xml, emptyResult = null, onFail = null) { parser ->
             parseEventList(parser)
         }
 }

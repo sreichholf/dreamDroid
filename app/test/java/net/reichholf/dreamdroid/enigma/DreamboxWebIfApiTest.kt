@@ -362,6 +362,46 @@ class DreamboxWebIfApiTest {
     }
 
     @Test
+    fun malformedServiceListIsAParseFailureNotAnEmptyList() = runBlocking {
+        server.enqueue(MockResponse().setBody("<e2servicelist><e2service>"))
+
+        val response = api.services(BOUQUET)
+
+        assertNull(response.value)
+        assertEquals(EnigmaFailure.Parse, response.error?.failure)
+    }
+
+    @Test
+    fun emptyServiceListIsAnEmptySuccess() = runBlocking {
+        server.enqueue(MockResponse().setBody("<e2servicelist></e2servicelist>"))
+
+        val response = api.services(BOUQUET)
+
+        assertEquals(emptyList<Service>(), response.value)
+        assertNull(response.error)
+    }
+
+    @Test
+    fun malformedEpgNowNextIsAParseFailureNotAnEmptyList() = runBlocking {
+        server.enqueue(MockResponse().setBody("<e2eventlist><e2event>"))
+
+        val response = api.epgNowNext(BOUQUET)
+
+        assertNull(response.value)
+        assertEquals(EnigmaFailure.Parse, response.error?.failure)
+    }
+
+    @Test
+    fun malformedServiceEpgIsAParseFailureNotAnEmptyList() = runBlocking {
+        server.enqueue(MockResponse().setBody("<e2eventlist><e2event>"))
+
+        val response = api.serviceEpg(SERVICE)
+
+        assertNull(response.value)
+        assertEquals(EnigmaFailure.Parse, response.error?.failure)
+    }
+
+    @Test
     fun downloadRecordingCopiesFileIntoTheDestination() = runBlocking {
         server.enqueue(MockResponse().setBody("recording"))
         server.enqueue(MockResponse().setResponseCode(500))

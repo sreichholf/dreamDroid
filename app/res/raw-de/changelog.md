@@ -6,6 +6,7 @@
 * FIX: Picon-Sync meldete Erfolg, obwohl nichts heruntergeladen wurde
 * FIX: Aufnahmen in sehr großen Ordnern werden nicht geladen
 * FIX: Timer-Bereinigung mit aktivierter erweiterter Sicherheit fehlgeschlagen
+* FIX: Offline-Listen wurden durch eine unlesbare Receiver-Antwort gelöscht
 
 ## 2.0.470
 * NEU: Bouquets pro Profil ausblenden

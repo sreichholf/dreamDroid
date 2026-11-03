@@ -3,6 +3,7 @@ package net.reichholf.dreamdroid.enigma
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import net.reichholf.dreamdroid.testutil.loadWebFixture
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -12,7 +13,7 @@ class ServiceParserTest {
     fun parsesGetServicesFixtureIntoServiceValues() {
         val xml = loadWebFixture("getservices.xml")
         val started = System.nanoTime()
-        val services = ServiceParser.parse(xml)
+        val services = requireNotNull(ServiceParser.parse(xml))
         println("ServiceParser.parse nanos=${System.nanoTime() - started}")
 
         assertEquals(3, services.size)
@@ -28,12 +29,12 @@ class ServiceParserTest {
     }
 
     @Test
-    fun emptyXmlYieldsNoServices() {
-        assertEquals(0, ServiceParser.parse("").size)
+    fun emptyXmlIsNullNotEmptyList() {
+        assertNull(ServiceParser.parse(""))
     }
 
     @Test
-    fun malformedXmlYieldsNoServices() {
-        assertEquals(0, ServiceParser.parse("<e2servicelist><e2service>").size)
+    fun malformedXmlIsNullNotEmptyList() {
+        assertNull(ServiceParser.parse("<e2servicelist><e2service>"))
     }
 }

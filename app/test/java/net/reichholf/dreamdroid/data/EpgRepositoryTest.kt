@@ -112,6 +112,24 @@ class EpgRepositoryTest {
     }
 
     @Test
+    fun malformedEpgIsAParseFailureNotAnEmptySuccess() = runBlocking {
+        receiver.answer = { MockResponse().setBody("<e2eventlist><e2event>") }
+
+        val load = repository.bouquetEvents(BOUQUET, NOW).toList().single()
+
+        assertEquals(EnigmaFailure.Parse, (load as EventListLoad.Failed).error?.failure)
+    }
+
+    @Test
+    fun emptyEpgIsAnEmptySuccess() = runBlocking {
+        receiver.answer = { MockResponse().setBody("<e2eventlist></e2eventlist>") }
+
+        val load = repository.bouquetEvents(BOUQUET, NOW).toList().single()
+
+        assertEquals(EventListLoad.Events(emptyList(), cached = false), load)
+    }
+
+    @Test
     fun withoutAProfileEpgAnswersNothingAndAsksNothing() = runBlocking {
         receiver.writeChunk(BOUQUET, NOW, listOf(event("News", NOW)))
         receiver.profiles.repository.clearCurrent()

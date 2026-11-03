@@ -2,6 +2,7 @@ package net.reichholf.dreamdroid.enigma
 
 import net.reichholf.dreamdroid.testutil.loadWebFixture
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 
 class ServiceParserTest {
@@ -9,7 +10,7 @@ class ServiceParserTest {
     fun parsesGetServicesFixtureIntoServiceValues() {
         val xml = loadWebFixture("getservices.xml")
         val started = System.nanoTime()
-        val services = ServiceParser.parse(xml)
+        val services = requireNotNull(ServiceParser.parse(xml))
         println("ServiceParser.parse nanos=${System.nanoTime() - started}")
 
         assertEquals(3, services.size)
@@ -25,13 +26,18 @@ class ServiceParserTest {
     }
 
     @Test
-    fun emptyXmlYieldsNoServices() {
-        assertEquals(0, ServiceParser.parse("").size)
+    fun emptyXmlIsNullNotEmptyList() {
+        assertNull(ServiceParser.parse(""))
     }
 
     @Test
-    fun malformedXmlYieldsNoServices() {
-        assertEquals(0, ServiceParser.parse("<e2servicelist><e2service>").size)
+    fun malformedXmlIsNullNotEmptyList() {
+        assertNull(ServiceParser.parse("<e2servicelist><e2service>"))
+    }
+
+    @Test
+    fun emptyServiceListIsAnEmptySuccess() {
+        assertEquals(0, requireNotNull(ServiceParser.parse("<e2servicelist></e2servicelist>")).size)
     }
 
     @Test
@@ -45,7 +51,7 @@ class ServiceParserTest {
             </e2service>
             </e2servicelist>
         """.trimIndent().replace("\\u0001", "\u0001")
-        val services = ServiceParser.parse(xml)
+        val services = requireNotNull(ServiceParser.parse(xml))
         assertEquals(1, services.size)
         assertEquals("ZDFHD", services[0].name)
     }

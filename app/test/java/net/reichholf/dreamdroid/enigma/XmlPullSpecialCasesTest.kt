@@ -150,13 +150,13 @@ class XmlPullSpecialCasesTest {
     }
 
     @Test
-    fun emptyEventXmlIsEmptyList() {
-        assertEquals(0, EventParser.parse("").size)
+    fun emptyEventXmlIsNullNotEmptyList() {
+        assertNull(EventParser.parse(""))
     }
 
     @Test
-    fun serviceParseFailureIsEmptyList() {
-        assertEquals(0, ServiceParser.parse("<e2servicelist><e2service>").size)
+    fun serviceParseFailureIsNullNotEmptyList() {
+        assertNull(ServiceParser.parse("<e2servicelist><e2service>"))
     }
 
     @Test

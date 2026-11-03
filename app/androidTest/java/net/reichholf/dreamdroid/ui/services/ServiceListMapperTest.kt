@@ -15,7 +15,7 @@ import org.junit.runner.RunWith
 class ServiceListMapperTest {
     @Test
     fun mapsTypedNowNextRowsToComposeItems() {
-        val rows = EpgNowNextParser.parse(loadWebFixture("epgnownext.xml"))
+        val rows = requireNotNull(EpgNowNextParser.parse(loadWebFixture("epgnownext.xml")))
         val items = serviceListItemsFromNowNext(rows)
 
         assertEquals(3, items.size)

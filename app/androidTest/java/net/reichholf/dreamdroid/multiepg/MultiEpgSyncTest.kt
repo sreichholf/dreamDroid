@@ -37,7 +37,7 @@ class MultiEpgSyncTest {
 
     @Test
     fun parsesEpgmultiFixtureLikeEpgserviceShape() {
-        val events = EventParser.parse(loadWebFixture("epgmulti.xml"))
+        val events = requireNotNull(EventParser.parse(loadWebFixture("epgmulti.xml")))
         assertEquals(2, events.size)
         assertEquals("Das Erste HD", events[0].serviceName)
         assertEquals("ZDF HD", events[1].serviceName)
@@ -53,7 +53,7 @@ class MultiEpgSyncTest {
     @Test
     fun ensureChunkFetchesOnceAndHitsTtl() = runBlocking {
         val fetches = AtomicInteger(0)
-        val fixture = EventParser.parse(loadWebFixture("epgmulti.xml"))
+        val fixture = requireNotNull(EventParser.parse(loadWebFixture("epgmulti.xml")))
         val sync = MultiEpgSync(
             dao = db.epgDao(),
             fetch = { _, _, _ ->
@@ -73,7 +73,7 @@ class MultiEpgSyncTest {
 
     @Test
     fun roomPeekFillsReadableTimesForDetailSheet() = runBlocking {
-        val fixture = EventParser.parse(loadWebFixture("epgmulti.xml"))
+        val fixture = requireNotNull(EventParser.parse(loadWebFixture("epgmulti.xml")))
         val sync = MultiEpgSync(
             dao = db.epgDao(),
             fetch = { _, _, _ -> fixture },
@@ -93,7 +93,7 @@ class MultiEpgSyncTest {
     fun singleFlightCoalescesConcurrentMisses() = runBlocking {
         val fetches = AtomicInteger(0)
         val release = CompletableDeferred<Unit>()
-        val fixture = EventParser.parse(loadWebFixture("epgmulti.xml"))
+        val fixture = requireNotNull(EventParser.parse(loadWebFixture("epgmulti.xml")))
         val sync = MultiEpgSync(
             dao = db.epgDao(),
             fetch = { _, _, _ ->
@@ -157,7 +157,7 @@ class MultiEpgSyncTest {
     @Test
     fun forceRefreshBypassesFreshTtl() = runBlocking {
         val fetches = AtomicInteger(0)
-        val fixture = EventParser.parse(loadWebFixture("epgmulti.xml"))
+        val fixture = requireNotNull(EventParser.parse(loadWebFixture("epgmulti.xml")))
         val sync = MultiEpgSync(
             dao = db.epgDao(),
             fetch = { _, _, _ ->
@@ -177,7 +177,7 @@ class MultiEpgSyncTest {
     @Test
     fun forceRefreshFailureKeepsRoomRows() = runBlocking {
         val fetches = AtomicInteger(0)
-        val fixture = EventParser.parse(loadWebFixture("epgmulti.xml"))
+        val fixture = requireNotNull(EventParser.parse(loadWebFixture("epgmulti.xml")))
         val sync = MultiEpgSync(
             dao = db.epgDao(),
             fetch = { _, _, _ ->

@@ -9,6 +9,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
 import net.reichholf.dreamdroid.enigma.DeviceInfo
+import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.enigma.EnigmaFailureException
 import net.reichholf.dreamdroid.enigma.ReceiverFlavor
 import net.reichholf.dreamdroid.enigma.Service
@@ -147,6 +148,33 @@ class EpgRepositoryMultiEpgTest {
         assertThrows(EnigmaFailureException::class.java) {
             runBlocking { sync.ensureChunk(PROFILE_ID, BOUQUET, NOW) }
         }
+    }
+
+    @Test
+    fun malformedChunkIsAParseFailureThatKeepsTheStoredChunk() = runBlocking {
+        receiver.writeChunk(BOUQUET, NOW, listOf(event("News", NOW)))
+        receiver.answer = { MockResponse().setBody("<e2eventlist><e2event>") }
+
+        val thrown = assertThrows(EnigmaFailureException::class.java) {
+            runBlocking { sync.ensureChunk(PROFILE_ID, BOUQUET, NOW, forceRefresh = true) }
+        }
+
+        assertEquals(EnigmaFailure.Parse, thrown.failure)
+        assertEquals(
+            listOf("News"),
+            sync.peekChunk(PROFILE_ID, BOUQUET, NOW)!!.events.map { it.title }
+        )
+    }
+
+    @Test
+    fun emptyChunkIsAnEmptySuccessThatReplacesTheStoredChunk() = runBlocking {
+        receiver.writeChunk(BOUQUET, NOW, listOf(event("News", NOW)))
+        receiver.answer = { MockResponse().setBody("<e2eventlist></e2eventlist>") }
+
+        val events = sync.ensureChunk(PROFILE_ID, BOUQUET, NOW, forceRefresh = true)
+
+        assertTrue(events.isEmpty())
+        assertTrue(sync.peekChunk(PROFILE_ID, BOUQUET, NOW)!!.events.isEmpty())
     }
 
     @Test
