@@ -89,6 +89,7 @@ fun ZapDestination(
                         context,
                         effect.stream,
                         effect.service.name,
+                        effect.bouquetRef,
                         serviceInfo = ServiceNowNext(
                             serviceReference = effect.service.reference,
                             serviceName = effect.service.name

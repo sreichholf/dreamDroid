@@ -162,6 +162,10 @@ class VlcEngine @Inject constructor(
                         // DVB streams start anywhere in a long GOP; a bigger buffer rides out
                         // the wait for a keyframe and the receiver's slow start after a zap.
                         media.addOption(":network-caching=${request.bufferMs}")
+                        if (request.startPositionMs > 0) {
+                            // Seconds, as libVLC takes them; a recording resumes where it was.
+                            media.addOption(":start-time=${request.startPositionMs / 1000.0}")
+                        }
                         // The old stream's teardown events must not reach the overlay.
                         mp.setEventListener(null)
                         mp.media = media
@@ -171,6 +175,14 @@ class VlcEngine @Inject constructor(
                 }
             } catch (e: Exception) {
                 Log.w(LOG_TAG, "Starting ${HttpUserInfo.redact(request.url)} failed", e)
+                // No media was set, so no libVLC event will ever report this start: clear the
+                // switching state and pass the failure on like any other failed stream.
+                if (gen == generation) {
+                    startedGeneration = gen
+                    playWhenReady = false
+                    stateFlow.value = PlayerState()
+                    listener?.invoke(PlayerEvent.Failed())
+                }
                 return@launch
             }
             // A zap, detach, or release since then owns the player now.

@@ -2,6 +2,9 @@
 
 ## 2.0.471
 * UPD: Improve video player
+* FIX: Player - programme and channel list missing for streams from the zap grid or current service
+* FIX: Player - recordings restarting at the beginning after leaving the app
+* FIX: Player - a stream that fails to start reports it instead of leaving the controls dead
 * UPD: Picon sync reports a partial download
 * FIX: Picon sync reported success when nothing was downloaded
 * FIX: Picon sync no longer hangs on a stalled connection

@@ -118,7 +118,8 @@ class Media3Engine @Inject constructor(
         views?.let { exo.setVideoSurfaceView(it.media3Surface) }
         // Before prepare: the listener drops what a player other than [player] reports.
         player = exo
-        exo.setMediaSource(source)
+        // A recording starts where it was; a live stream always starts at the live edge.
+        exo.setMediaSource(source, request.startPositionMs)
         exo.playWhenReady = true
         exo.prepare()
     }

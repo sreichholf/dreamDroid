@@ -452,6 +452,26 @@ class ServiceRepositoryTest {
     }
 
     @Test
+    fun bouquetContainsAsksTheReceiverAndIsFalseWhenItFails() = runBlocking {
+        assertTrue(services.bouquetContains(FAVOURITES, CHANNEL))
+        assertFalse(services.bouquetContains(FAVOURITES, FOLDER))
+
+        receiver.answer = { MockResponse().setResponseCode(500) }
+        assertFalse(services.bouquetContains(FAVOURITES, CHANNEL))
+    }
+
+    @Test
+    fun bouquetContainsUsesTheWrittenRosterWithoutTheReceiver() = runBlocking {
+        writeStrip("TV", FAVOURITES to "Favourites")
+        services.persistRoster(FAVOURITES, FAVOURITES, listOf(channel))
+        receiver.goOffline()
+
+        assertTrue(services.bouquetContains(FAVOURITES, CHANNEL))
+        assertFalse(services.bouquetContains(FAVOURITES, FOLDER))
+        assertEquals(0, receiver.server.requestCount)
+    }
+
+    @Test
     fun servicesFallBackToTheWrittenRoster() = runBlocking {
         val live = services.services(FAVOURITES).last() as ServiceListLoad.Services
         assertFalse(live.cached)

@@ -71,9 +71,11 @@ import net.reichholf.dreamdroid.video.VideoSessionPlayer
 import net.reichholf.dreamdroid.video.VlcEngine
 import net.reichholf.dreamdroid.video.pictureInPictureAspectRatio
 import net.reichholf.dreamdroid.video.pictureInPictureSourceRectHint
+import net.reichholf.dreamdroid.video.resumePositionMs
 
 private const val TAG = "VideoActivity"
 private const val STATE_PLAYBACK_STARTED = "playbackStarted"
+private const val STATE_POSITION_MS = "positionMs"
 
 /**
  * Created by reichi on 16/02/16.
@@ -99,6 +101,9 @@ class VideoActivity :
 
     /** Views and event listener are on [player] between onStart and onStop. */
     private var playerAttached: Boolean = false
+
+    /** Where a recording starts again after [onStop] released the player; 0 for live. */
+    private var savedPositionMs: Long = 0L
 
     /** The picture's display size, for the PiP aspect ratio; 0 until the engine reports it. */
     private var videoWidth: Int = 0
@@ -146,6 +151,7 @@ class VideoActivity :
         pip = PlaybackPipState(
             playbackStarted = savedInstanceState?.getBoolean(STATE_PLAYBACK_STARTED) ?: false
         )
+        savedPositionMs = savedInstanceState?.getLong(STATE_POSITION_MS) ?: 0L
         val isTelevision = isTelevision()
         if (!shouldKeepTvStreamingActivity(
                 isTelevision,
@@ -205,7 +211,9 @@ class VideoActivity :
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
+        capturePosition()
         outState.putBoolean(STATE_PLAYBACK_STARTED, pip.playbackStarted)
+        outState.putLong(STATE_POSITION_MS, savedPositionMs)
     }
 
     override fun onStart() {
@@ -231,6 +239,8 @@ class VideoActivity :
 
     override fun onPause() {
         if (!tvStreamingRejected) {
+            // The screen can go off before the stream reports a time; keep the position now.
+            capturePosition()
             overlay?.hideOverlays()
             overlay?.onPause()
         }
@@ -239,6 +249,7 @@ class VideoActivity :
 
     override fun onStop() {
         if (!tvStreamingRejected) {
+            capturePosition()
             cleanup()
             releasePlaybackSession()
             player.release()
@@ -268,6 +279,12 @@ class VideoActivity :
 
     fun handleIntent(intent: Intent) {
         setIntent(intent)
+        // A new stream starts at its own beginning, not where the old one was.
+        savedPositionMs = 0L
+        playIntent(intent, startPositionMs = 0L)
+    }
+
+    private fun playIntent(intent: Intent, startPositionMs: Long) {
         if (Intent.ACTION_VIEW != intent.action) return
         overlay?.applyPlaybackExtras(intent.extras)
         if (!playerAttached) return
@@ -282,9 +299,17 @@ class VideoActivity :
                 bufferMs = values.streamBuffer,
                 // Live services carry their reference; recordings do not.
                 live = intent.hasExtra(VideoOverlayController.SERVICE_REFERENCE),
-                preferredAudioLanguage = values.preferredAudioLanguage
+                preferredAudioLanguage = values.preferredAudioLanguage,
+                startPositionMs = startPositionMs
             )
         )
+    }
+
+    /** Keeps where a recording is, so [onStart] starts it there again; live starts afresh. */
+    private fun capturePosition() {
+        if (!playerAttached) return
+        val live = intent.hasExtra(VideoOverlayController.SERVICE_REFERENCE)
+        savedPositionMs = resumePositionMs(live, player.currentPositionMs())
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
@@ -313,7 +338,7 @@ class VideoActivity :
         playerAttached = true
         startPlaybackSession()
 
-        handleIntent(intent)
+        playIntent(intent, savedPositionMs)
         setFullScreen()
     }
 

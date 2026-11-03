@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
@@ -289,6 +290,17 @@ class ServiceRepository @Inject constructor(
         val profile = profiles.byId(profileId) ?: return emptyList()
         return clients.forProfile(profile).services(bouquetRef).valueOrThrow()
     }
+
+    /**
+     * Whether [serviceRef] is a channel of [bouquetRef], read [cacheFirstLoad] like [services].
+     * False while the list is unknown or the receiver fails: a guessed bouquet must not become
+     * the player's channel list.
+     */
+    suspend fun bouquetContains(bouquetRef: String, serviceRef: String): Boolean =
+        when (val load = services(bouquetRef).first()) {
+            is ServiceListLoad.Services -> load.services.any { it.reference == serviceRef }
+            is ServiceListLoad.Failed -> false
+        }
 
     /** The roster of [bouquetRef] in Room, or null when it was never written. */
     suspend fun cachedBouquetServices(profileId: Int, bouquetRef: String): List<Service>? =

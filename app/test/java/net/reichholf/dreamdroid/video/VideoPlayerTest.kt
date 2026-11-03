@@ -76,6 +76,106 @@ class VideoPlayerTest {
     }
 
     @Test
+    fun aRecordingThatHandsOverToVlcKeepsItsPosition() = scope.runTest {
+        player.playUri(request(Engine.Media3, live = false))
+        runCurrent()
+        media3.stateFlow.value = PlayerState(timeMs = POSITION_MS)
+        runCurrent()
+
+        media3.emit(PlayerEvent.Failed(unsupported = true))
+
+        assertEquals(
+            listOf(request(Engine.Vlc, live = false).copy(startPositionMs = POSITION_MS)),
+            vlc.started
+        )
+    }
+
+    @Test
+    fun aRecordingThatHandsOverBeforePlayingKeepsTheRequestedPosition() = scope.runTest {
+        player.playUri(request(Engine.Media3, live = false).copy(startPositionMs = POSITION_MS))
+
+        media3.emit(PlayerEvent.Failed(unsupported = true))
+
+        assertEquals(POSITION_MS, vlc.started.single().startPositionMs)
+    }
+
+    @Test
+    fun aResumeThatHasNotPlayedKeepsItsRequestedPosition() {
+        player.playUri(request(Engine.Vlc, live = false).copy(startPositionMs = POSITION_MS))
+
+        assertEquals(POSITION_MS, player.currentPositionMs())
+    }
+
+    @Test
+    fun thePositionFollowsTheEngineOnceItReportedOne() = scope.runTest {
+        player.playUri(request(Engine.Vlc, live = false))
+        runCurrent()
+        vlc.stateFlow.value = PlayerState(timeMs = POSITION_MS)
+        runCurrent()
+
+        assertEquals(POSITION_MS, player.currentPositionMs())
+    }
+
+    @Test
+    fun aResumeAppliesToTheFirstPlayOnly() = scope.runTest {
+        player.playUri(request(Engine.Vlc, live = false).copy(startPositionMs = POSITION_MS))
+        vlc.stateFlow.value = PlayerState(timeMs = POSITION_MS)
+        vlc.emit(PlayerEvent.Progress)
+        runCurrent()
+
+        vlc.emit(PlayerEvent.Ended)
+        player.play()
+
+        assertEquals(2, vlc.started.size)
+        assertEquals(listOf(POSITION_MS, 0L), vlc.started.map { it.startPositionMs })
+    }
+
+    @Test
+    fun aProgressWithoutATimeKeepsTheRequestedPosition() = scope.runTest {
+        player.playUri(request(Engine.Vlc, live = false).copy(startPositionMs = POSITION_MS))
+        // A position change before the first time report says nothing about the resume.
+        vlc.emit(PlayerEvent.Progress)
+
+        vlc.emit(PlayerEvent.NoVideo)
+
+        assertEquals(2, vlc.started.size)
+        assertEquals(POSITION_MS, vlc.started.last().startPositionMs)
+    }
+
+    @Test
+    fun aRecordingThatSwitchesToSoftwareKeepsItsPosition() = scope.runTest {
+        player.playUri(request(Engine.Vlc, live = false))
+        runCurrent()
+        vlc.stateFlow.value = PlayerState(timeMs = POSITION_MS)
+        runCurrent()
+
+        vlc.emit(PlayerEvent.NoVideo)
+
+        assertEquals(
+            listOf(
+                request(Engine.Vlc, live = false),
+                request(Engine.Vlc, live = false).copy(
+                    hwAccelFlags = 0,
+                    startPositionMs = POSITION_MS
+                )
+            ),
+            vlc.started
+        )
+    }
+
+    @Test
+    fun aLiveStreamThatHandsOverToVlcStartsAtTheLiveEdge() = scope.runTest {
+        player.playUri(request(Engine.Vlc))
+        runCurrent()
+        vlc.stateFlow.value = PlayerState(timeMs = POSITION_MS)
+        runCurrent()
+
+        vlc.emit(PlayerEvent.NoVideo)
+
+        assertEquals(listOf(request(Engine.Vlc), software()), vlc.started)
+    }
+
+    @Test
     fun media3WithoutPictureAlsoGoesToVlcInSoftware() {
         player.playUri(request(Engine.Media3))
 
@@ -463,6 +563,7 @@ class VideoPlayerTest {
 }
 
 private const val OTHER_URL = "http://box:8001/1:0:19:2B66:3F3:1:C00000:0:0:0:"
+private const val POSITION_MS = 1_200_000L
 
 private class FakeEngine : PlayerEngine {
     val stateFlow = MutableStateFlow(PlayerState())
