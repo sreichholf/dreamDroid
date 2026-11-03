@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.updateAndGet
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.enigma.Timer
 
@@ -71,7 +72,9 @@ private class MountedEpgProfile(val profile: Profile?) : Serializable
 @HiltViewModel
 class PhoneNavHostState @Inject constructor(private val savedStateHandle: SavedStateHandle) :
     ViewModel() {
-    private val _uiState = MutableStateFlow(PhoneNavUiState())
+    private val _uiState = MutableStateFlow(
+        PhoneNavUiState(epgRemount = savedStateHandle[PhoneNavSavedKeys.EPG_REMOUNT] ?: 0)
+    )
     val uiState: StateFlow<PhoneNavUiState> = _uiState.asStateFlow()
 
     internal val pending = PendingNavigations()
@@ -146,7 +149,8 @@ class PhoneNavHostState @Inject constructor(private val savedStateHandle: SavedS
     }
 
     fun remountEpg() {
-        _uiState.update { it.copy(epgRemount = it.epgRemount + 1) }
+        val remount = _uiState.updateAndGet { it.copy(epgRemount = it.epgRemount + 1) }.epgRemount
+        savedStateHandle[PhoneNavSavedKeys.EPG_REMOUNT] = remount
     }
 
     /**

@@ -7,6 +7,7 @@ object PhoneNavSavedKeys {
     const val START_ROUTE = "phone_nav_start_route"
     const val PICK_REQUEST_CODES = "phone_nav_pick_request_codes"
     const val EPG_PROFILE = "phone_nav_epg_profile"
+    const val EPG_REMOUNT = "phone_nav_epg_remount"
 }
 
 data class PhoneNavStateBag(
