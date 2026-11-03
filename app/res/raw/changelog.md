@@ -1,16 +1,17 @@
 ### IMPORTANT: For https using self-signed certs, you now have to enable "All certificates" in the respective profile
 
 ## 2.0.471
+* NEW: Hide bouquets per profile
 * UPD: Improve video player
 * FIX: Player - programme and channel list missing for streams from the zap grid or current service
 * FIX: Player - recordings restarting at the beginning after leaving the app
 * FIX: Player - controls dead after a failed stream start
-* UPD: Invalid profile host names are rejected
+* UPD: Profile host name check
 * UPD: Picon sync reports a partial download
-* UPD: Cloud backup and device transfer carry no app data; use Backup & Restore
+* DEL: App data in cloud backup and device transfer
 * FIX: Picon sync reported success when nothing was downloaded
-* FIX: Picon sync no longer hangs on a stalled connection
-* FIX: Picon sync no longer fails silently in the background
+* FIX: Picon sync hung on a stalled connection
+* FIX: Picon sync failed silently in the background
 * FIX: TV - D-pad focus stays in overlays and returns to the opener
 * FIX: Recordings in very large folders not loading
 * FIX: Timer cleanup failed with extended security enabled
@@ -27,7 +28,6 @@
 * FIX: MultiEPG did not cache a nested bouquet for Offline
 
 ## 2.0.470
-* NEW: Hide bouquets per profile
 * NEW: Restore a backup in the setup assistant
 * NEW: Channel EPG from the EPG detail
 * UPD: TV - profile and timer editors match the hub
