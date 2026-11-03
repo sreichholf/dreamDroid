@@ -1,5 +1,6 @@
 package net.reichholf.dreamdroid.data
 
+import java.io.IOException
 import kotlinx.coroutines.runBlocking
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
@@ -172,6 +173,33 @@ class LegacyProfileImportTest {
     }
 
     @Test
+    fun aTemporaryReadErrorKeepsTheLeftoverForTheNextStart() = runBlocking<Unit> {
+        val source = FakeLegacySource(
+            listOf(profile(1, "one")),
+            readError = LegacyProfileReadException(IOException("database is locked"))
+        )
+        val store = ImportStore()
+        val repo = ProfileRepository(store, WebIfCapabilitiesRepository())
+
+        val failed = repo.loadCurrent(source)
+
+        assertFalse(failed.complete)
+        assertTrue(failed.retryable)
+        assertFalse(source.deleted)
+        assertFalse(store.legacySettingsConsumed)
+        assertTrue(store.profiles().isEmpty())
+        assertNull(repo.current.value)
+
+        source.readError = null
+        val retried = repo.loadCurrent(source)
+
+        assertTrue(retried.complete)
+        assertEquals(1, retried.imported)
+        assertTrue(source.deleted)
+        assertEquals(listOf(1), store.profiles().map { it.id })
+    }
+
+    @Test
     fun leftoverProfilesThatShareANameBothImport() = runBlocking<Unit> {
         val source = FakeLegacySource(
             listOf(
@@ -204,12 +232,16 @@ private fun profile(id: Int?, host: String): Profile = Profile().apply {
 
 private class FakeLegacySource(
     private val rows: List<Profile>?,
-    var deleteSucceeds: Boolean = true
+    var deleteSucceeds: Boolean = true,
+    var readError: Exception? = null
 ) : LegacyProfileSource {
     var deleted = false
         private set
 
-    override suspend fun read(): List<Profile>? = rows
+    override suspend fun read(): List<Profile>? {
+        readError?.let { throw it }
+        return rows
+    }
 
     override suspend fun delete(): Boolean {
         if (!deleteSucceeds) {

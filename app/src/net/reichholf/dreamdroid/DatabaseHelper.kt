@@ -9,11 +9,13 @@ package net.reichholf.dreamdroid
 import android.content.Context
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
+import android.database.sqlite.SQLiteDatabaseCorruptException
 import android.database.sqlite.SQLiteException
 import android.util.Log
 import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import net.reichholf.dreamdroid.data.LegacyProfileReadException
 import net.reichholf.dreamdroid.data.LegacyProfileSource
 
 /**
@@ -69,14 +71,17 @@ object DatabaseHelper {
     )
 
     /**
-     * Profiles from an existing leftover file. Empty if the file is missing or
-     * unreadable. Does not create `dreamdroid`.
+     * Profiles from an existing leftover file. Empty if the file is missing or corrupt.
+     * Throws [LegacyProfileReadException] when it cannot be read right now (locked, I/O
+     * error); the caller must keep the file. Does not create `dreamdroid`.
      */
     fun readProfiles(context: Context): List<Profile> = readProfilesOrNull(context).orEmpty()
 
     /**
-     * Profiles from an existing leftover file, or null when the file exists but cannot be
-     * read. Does not create `dreamdroid`.
+     * Profiles from an existing leftover file, or null when the file exists but is corrupt.
+     * Throws [LegacyProfileReadException] when it cannot be read right now: a lock or an
+     * I/O error may clear up, and deleting the file would lose the user's profiles.
+     * Does not create `dreamdroid`.
      */
     fun readProfilesOrNull(context: Context): List<Profile>? {
         val file = databaseFile(context)
@@ -92,9 +97,22 @@ object DatabaseHelper {
                 readProfiles(db)
             }
         } catch (e: SQLiteException) {
-            Log.e(LOG_TAG, "readProfiles: cannot open leftover $DATABASE_NAME", e)
-            null
+            if (e.isCorruption()) {
+                Log.e(LOG_TAG, "readProfiles: leftover $DATABASE_NAME is corrupt", e)
+                null
+            } else {
+                throw LegacyProfileReadException(e)
+            }
         }
+    }
+
+    /** SQLite's own corruption signals; every other error may be temporary. */
+    private fun SQLiteException.isCorruption(): Boolean {
+        if (this is SQLiteDatabaseCorruptException) {
+            return true
+        }
+        val message = message?.lowercase() ?: return false
+        return "corrupt" in message || "malformed" in message || "not a database" in message
     }
 
     private class LegacyDatabaseSource(private val context: Context) : LegacyProfileSource {
