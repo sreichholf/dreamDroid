@@ -308,7 +308,9 @@ class EpgRepositoryMultiEpgTest {
 
             assertTrue(load.await().isEmpty())
             assertEquals(0, serverB.requestCount)
-            assertNull(receiver.profiles.database.epgDao().getChunk(idB, BOUQUET, chunk.startSec))
+            val dao = receiver.profiles.database.epgDao()
+            assertNull(dao.getChunk(idA, BOUQUET, chunk.startSec))
+            assertNull(dao.getChunk(idB, BOUQUET, chunk.startSec))
         } finally {
             serverB.shutdown()
         }
