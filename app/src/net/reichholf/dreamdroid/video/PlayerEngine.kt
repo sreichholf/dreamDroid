@@ -40,11 +40,26 @@ data class PlayRequest(
     val startPositionMs: Long = 0L
 )
 
+/** libVLC reports time in steps; a stop at the end lands just short of the length. */
+private const val END_TOLERANCE_MS = 1_000L
+
 /**
  * Where a stream starts again after its player was released or an engine handed it over: a
- * recording at [timeMs], a live stream at the live edge.
+ * recording at [timeMs], a live stream at the live edge. A stream that played to its end has
+ * nothing left to resume: the engine's [ended] event says so, and a position within a second
+ * of the reported [lengthMs] catches a stop at the end whose event never arrived, because
+ * libVLC's end event keeps the last time it reported, not the length.
  */
-fun resumePositionMs(live: Boolean, timeMs: Long): Long = if (live) 0L else timeMs.coerceAtLeast(0L)
+fun resumePositionMs(
+    live: Boolean,
+    timeMs: Long,
+    ended: Boolean = false,
+    lengthMs: Long = 0L
+): Long = when {
+    live || ended -> 0L
+    lengthMs > 0 && timeMs >= lengthMs - END_TOLERANCE_MS -> 0L
+    else -> timeMs.coerceAtLeast(0L)
+}
 
 /**
  * Where a stream is for the next start: the engine's [timeMs] once it reported one, else the

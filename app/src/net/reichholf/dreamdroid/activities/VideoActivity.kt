@@ -105,6 +105,9 @@ class VideoActivity :
     /** Where a recording starts again after [onStop] released the player; 0 for live. */
     private var savedPositionMs: Long = 0L
 
+    /** The stream played to its end; where it stopped is no place to resume. */
+    private var playbackEnded: Boolean = false
+
     /** The picture's display size, for the PiP aspect ratio; 0 until the engine reports it. */
     private var videoWidth: Int = 0
     private var videoHeight: Int = 0
@@ -290,6 +293,7 @@ class VideoActivity :
         if (!playerAttached) return
         val data = intent.data ?: return
         val values = settings.current()
+        playbackEnded = false
         player.playUri(
             PlayRequest(
                 url = data.toString(),
@@ -309,7 +313,12 @@ class VideoActivity :
     private fun capturePosition() {
         if (!playerAttached) return
         val live = intent.hasExtra(VideoOverlayController.SERVICE_REFERENCE)
-        savedPositionMs = resumePositionMs(live, player.currentPositionMs())
+        savedPositionMs = resumePositionMs(
+            live = live,
+            timeMs = player.currentPositionMs(),
+            ended = playbackEnded,
+            lengthMs = player.state.value.lengthMs
+        )
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
@@ -582,7 +591,12 @@ class VideoActivity :
             return
         }
         val chrome = overlay ?: return
-        if (event == PlayerEvent.Ended) finish()
+        if (event == PlayerEvent.Ended) {
+            // VLC keeps the end position; a return must not resume there and end at once.
+            playbackEnded = true
+            savedPositionMs = 0L
+            finish()
+        }
         chrome.onEvent(event)
     }
 }
