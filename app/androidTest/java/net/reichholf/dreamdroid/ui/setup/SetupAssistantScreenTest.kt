@@ -970,14 +970,15 @@ class SetupAssistantScreenTest {
         // Both Welcome actions are disabled while the read runs. Move the remote off them so
         // the restore is what has to put it back on Restore when the read ends on Welcome.
         // A disabled focus target can survive a plain clearFocus; force it, then focus a
-        // node outside the wizard so the test does not depend on that.
+        // node outside the wizard. Assert where the remote went: a force-cleared disabled
+        // action drops its Focused semantics, so assertIsNotFocused() cannot see it.
         restore.assertIsNotEnabled()
         composeRule.runOnIdle { focusManager.clearFocus(force = true) }
         composeRule.waitForIdle()
-        composeRule.onNodeWithTag("setup_focus_elsewhere")
-            .performSemanticsAction(SemanticsActions.RequestFocus)
+        val elsewhere = composeRule.onNodeWithTag("setup_focus_elsewhere")
+        elsewhere.performSemanticsAction(SemanticsActions.RequestFocus)
         composeRule.waitForIdle()
-        restore.assertIsNotFocused()
+        elsewhere.assertIsFocused()
 
         gate.complete(Unit)
         composeRule.waitUntil(timeoutMillis = 5_000) {
