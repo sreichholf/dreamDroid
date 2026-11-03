@@ -23,6 +23,7 @@
 * FIX: Recordings not playing with HTTPS or custom-port profiles from the setup assistant
 * UPD: Setup assistant explains local network access
 * FIX: Backup export without passwords included old receiver passwords
+* FIX: Profiles missing after the upgrade from 1.15
 
 ## 2.0.470
 * NEW: Hide bouquets per profile

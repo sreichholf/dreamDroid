@@ -2,9 +2,13 @@ package net.reichholf.dreamdroid
 
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
+import androidx.preference.PreferenceManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import kotlinx.coroutines.runBlocking
+import net.reichholf.dreamdroid.data.LegacyImportResult
+import net.reichholf.dreamdroid.data.LegacyProfileImport
+import net.reichholf.dreamdroid.data.RoomProfileStore
 import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.room.PiconSeed
 import org.junit.After
@@ -19,12 +23,19 @@ import org.junit.runner.RunWith
 class DatabaseHelperMigrateTest {
     private lateinit var context: Context
     private lateinit var room: AppDatabase
+    private lateinit var store: RoomProfileStore
 
     @Before
     fun setUp() {
         context = InstrumentationRegistry.getInstrumentation().targetContext
         context.deleteDatabase(DatabaseHelper.DATABASE_NAME)
         room = AppDatabase.inMemory(context)
+        store = RoomProfileStore(
+            room,
+            PreferenceManager.getDefaultSharedPreferences(context)
+        ) {
+            error("The legacy import does not delete profiles")
+        }
     }
 
     @After
@@ -37,7 +48,9 @@ class DatabaseHelperMigrateTest {
     fun missingFileDoesNotCreateDatabase() = runBlocking<Unit> {
         assertFalse(DatabaseHelper.databaseFile(context).exists())
         assertTrue(DatabaseHelper.readProfiles(context).isEmpty())
-        assertEquals(0, migrate())
+        val result = migrate()
+        assertEquals(0, result.imported)
+        assertTrue(result.complete)
         assertFalse(DatabaseHelper.databaseFile(context).exists())
     }
 
@@ -115,8 +128,11 @@ class DatabaseHelperMigrateTest {
         val copied = migrate(
             PiconSeed(online = true, onlineUseName = true, onlinePath = "/media/hdd/picon")
         )
-        assertEquals(1, copied)
+        assertEquals(1, copied.imported)
+        assertTrue(copied.complete)
+        assertFalse(copied.retryable)
         val roomRow = runBlocking { room.profileDao().getProfiles().single() }
+        assertEquals(3, roomRow.id)
         assertEquals("Box", roomRow.name)
         assertEquals("10.0.0.2", roomRow.host)
         assertEquals(443, roomRow.port)
@@ -131,7 +147,9 @@ class DatabaseHelperMigrateTest {
         writeLegacy {
             execSQL("CREATE TABLE profiles (_id INTEGER PRIMARY KEY, profile TEXT)")
         }
-        assertEquals(0, migrate())
+        val result = migrate()
+        assertEquals(0, result.imported)
+        assertTrue(result.complete)
         assertFalse(DatabaseHelper.databaseFile(context).exists())
     }
 
@@ -153,7 +171,10 @@ class DatabaseHelperMigrateTest {
             execSQL("INSERT INTO profiles (_id, profile, host) VALUES (1, 'Legacy', '1.2.3.4')")
         }
 
-        assertEquals(0, migrate())
+        val result = migrate()
+        assertEquals(0, result.imported)
+        assertFalse(result.complete)
+        assertFalse(result.retryable)
         assertTrue(DatabaseHelper.databaseFile(context).exists())
         val names = runBlocking {
             room.profileDao().getProfiles().map { it.name }
@@ -168,7 +189,10 @@ class DatabaseHelperMigrateTest {
         file.writeText("not a sqlite database")
 
         assertTrue(DatabaseHelper.readProfiles(context).isEmpty())
-        assertEquals(0, migrate())
+        val result = migrate()
+        assertEquals(0, result.imported)
+        assertFalse(result.complete)
+        assertFalse(result.retryable)
         assertTrue(file.exists())
     }
 
@@ -179,8 +203,8 @@ class DatabaseHelperMigrateTest {
                 onlineUseName = false,
                 onlinePath = Profile.DEFAULT_PICON_PATH
             )
-    ): Int = runBlocking {
-        DatabaseHelper.migrateIntoRoomIfNeeded(context, room.profileDao(), picons)
+    ): LegacyImportResult = runBlocking {
+        LegacyProfileImport(store).run(DatabaseHelper.source(context), picons)
     }
 
     private fun writeLegacy(setup: SQLiteDatabase.() -> Unit) {

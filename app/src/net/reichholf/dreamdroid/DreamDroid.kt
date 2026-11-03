@@ -37,7 +37,6 @@ import net.reichholf.dreamdroid.di.ApplicationScope
 import net.reichholf.dreamdroid.helpers.DateTime
 import net.reichholf.dreamdroid.helpers.WifiSsid
 import net.reichholf.dreamdroid.helpers.enigma2.PiconImageLoader
-import net.reichholf.dreamdroid.room.AppDatabase
 
 /**
  * @author sre
@@ -54,9 +53,6 @@ class DreamDroid : Application() {
 
     @Inject
     lateinit var epg: EpgRepository
-
-    @Inject
-    lateinit var database: AppDatabase
 
     override fun onCreate() {
         if (BuildConfig.DEBUG) {
@@ -110,12 +106,7 @@ class DreamDroid : Application() {
     private fun loadProfiles() {
         ioScope.launch {
             try {
-                DatabaseHelper.migrateIntoRoomIfNeeded(
-                    this@DreamDroid,
-                    database.profileDao(),
-                    profiles.piconDefaults()
-                )
-                profiles.loadCurrent()
+                profiles.loadCurrent(DatabaseHelper.source(this@DreamDroid))
                 handleProfileSwitch(this@DreamDroid)
             } catch (t: Throwable) {
                 Log.e(LOG_TAG, "Loading the active profile failed", t)
