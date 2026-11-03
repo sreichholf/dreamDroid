@@ -263,7 +263,7 @@ class BackupViewModelTest {
         assertFalse(viewModel.uiState.value.imported)
 
         viewModel.confirmImport()
-        val state = viewModel.uiState.first { it.profiles.isNotEmpty() }
+        val state = viewModel.uiState.first { it.imported && it.profiles.isNotEmpty() }
 
         assertTrue(state.imported)
         assertTrue(viewModel(handle).uiState.value.imported, "imported survives process death")

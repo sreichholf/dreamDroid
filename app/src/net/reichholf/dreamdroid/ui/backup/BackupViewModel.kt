@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -219,8 +220,12 @@ class BackupViewModel @Inject constructor(
         _uiState.update { it.copy(userMessage = null) }
     }
 
+    private var reloadJob: Job? = null
+
+    /** A newer reload replaces an older one, so a slow read cannot overwrite a newer list. */
     private fun reload() {
-        viewModelScope.launch {
+        reloadJob?.cancel()
+        reloadJob = viewModelScope.launch {
             val saved = withContext(Dispatchers.IO) { profiles.profiles() }
             val currentId = profiles.current.value?.id
             _uiState.update { state ->
