@@ -17,8 +17,8 @@ import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.data.LegacyProfileSource
 
 /**
- * Pre-Room `dreamdroid` SQLite. Read-only profile import for Play 1.x upgrades and
- * cloud-restore snapshots that still have this file. Never creates the database.
+ * Pre-Room `dreamdroid` SQLite. Read-only profile import for Play 1.x upgrades.
+ * Never creates the database.
  */
 object DatabaseHelper {
     const val DATABASE_NAME: String = "dreamdroid"

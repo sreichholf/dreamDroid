@@ -4,8 +4,8 @@
 * UPD: Improve video player
 * FIX: Player - programme and channel list missing for streams from the zap grid or current service
 * FIX: Player - recordings restarting at the beginning after leaving the app
-* FIX: Player - a stream that fails to start reports it instead of leaving the controls dead
-* FIX: Invalid profile host names are rejected
+* FIX: Player - controls dead after a failed stream start
+* UPD: Invalid profile host names are rejected
 * UPD: Picon sync reports a partial download
 * UPD: Cloud backup and device transfer carry no app data; use Backup & Restore
 * FIX: Picon sync reported success when nothing was downloaded
