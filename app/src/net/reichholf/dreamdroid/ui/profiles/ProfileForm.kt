@@ -55,7 +55,7 @@ data class ProfileForm(
 /**
  * The typed fields of a profile being edited, owned by its ViewModel. Numbers stay text
  * until [applyTo], so a half-typed port survives. With a [handle], the text survives
- * process death; [onHostEdit] runs when the user changes the host.
+ * process death; [onHostEdit] runs when the user changes the host or the stream host.
  */
 class ProfileTextFields(
     private val scope: CoroutineScope,
@@ -67,7 +67,7 @@ class ProfileTextFields(
 
     val name = textField("name")
     val host = textField("host") { onHostEdit() }
-    val streamHost = textField("stream_host")
+    val streamHost = textField("stream_host") { onHostEdit() }
     val port = textField("port")
     val streamPort = textField("stream_port")
     val filePort = textField("file_port")

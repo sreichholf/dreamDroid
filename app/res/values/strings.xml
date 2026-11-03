@@ -424,10 +424,12 @@
     <string name="backup_import_choose">Choose file</string>
     <string name="backup_import_title">Import backup</string>
     <string name="backup_import_no_profiles">No profiles in this file</string>
+    <string name="backup_import_no_host">No host, not imported</string>
+    <string name="backup_import_illegal_host">Invalid host, not imported: %1$s</string>
     <string name="backup_import_replaces">Replaces saved</string>
     <string name="backup_import_also">Also import</string>
-    <string name="backup_import_passwords_on">Passwords in the file replace the saved ones; a profile without one keeps its own.</string>
-    <string name="backup_import_passwords_off">Profiles already on the device keep their passwords; new ones have none.</string>
+    <string name="backup_import_passwords_on">Passwords in the file replace the saved ones; a profile without one keeps the saved password only when it still points at the same receiver.</string>
+    <string name="backup_import_passwords_off">A profile keeps its saved password only when it still points at the same receiver; new profiles have none.</string>
     <string name="backup_import_settings_summary">Takes the app preferences from the file.</string>
     <string name="backup_import_not_in_file">Not in this file.</string>
     <string name="backup_profiles">Profiles</string>
@@ -436,7 +438,7 @@
     <string name="backup_select_none">Select none</string>
     <string name="backup_also_include">Also include</string>
     <string name="backup_include_passwords">Receiver passwords</string>
-    <string name="backup_passwords_excluded">Left out. On import, profiles already on the device keep their passwords; new ones have none.</string>
+    <string name="backup_passwords_excluded">Left out. On import, a profile keeps its saved password only when it still points at the same receiver; new profiles have none.</string>
     <string name="backup_passwords_included">In the file. Anyone who has it can sign in to your receivers.</string>
     <string name="backup_export_settings">App settings</string>
     <string name="backup_export_settings_summary">Every app preference</string>

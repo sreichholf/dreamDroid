@@ -17,6 +17,7 @@ import net.reichholf.dreamdroid.enigma.ReceiverApi
 import net.reichholf.dreamdroid.enigma.ReceiverDetector
 import net.reichholf.dreamdroid.enigma.ReceiverFlavor
 import net.reichholf.dreamdroid.enigma.WebIfCapabilities
+import net.reichholf.dreamdroid.helpers.isValidHost
 import net.reichholf.dreamdroid.ui.text.UiText
 
 object CheckProfile {
@@ -47,16 +48,13 @@ object CheckProfile {
         profiles: ProfileRepository,
         capabilities: WebIfCapabilitiesRepository
     ): ProfileCheckResult {
-        val host = profile.host ?: return ProfileCheckResult()
-        if (host.contains(" ")) {
-            return ProfileCheckResult(
-                hasError = true,
-                errorTextId = R.string.illegal_host,
-                failure = EnigmaFailure.Unreachable(
-                    EnigmaFailure.UnreachableReason.IllegalHost,
-                    host
-                )
-            )
+        val host = profile.host
+        if (!isValidHost(host)) {
+            return illegalHost(host.orEmpty())
+        }
+        val streamHost = profile.streamHost
+        if (!streamHost.isNullOrEmpty() && !isValidHost(streamHost)) {
+            return illegalHost(streamHost)
         }
         val port = profile.port
         if (port <= 0 || port > 65535) {
@@ -116,6 +114,12 @@ object CheckProfile {
         errorTextId = R.string.connection_error,
         errorText = failure.userMessageText().takeUnless { it is UiText.Raw && it.text.isBlank() },
         failure = failure
+    )
+
+    private fun illegalHost(detail: String) = ProfileCheckResult(
+        hasError = true,
+        errorTextId = R.string.illegal_host,
+        failure = EnigmaFailure.Unreachable(EnigmaFailure.UnreachableReason.IllegalHost, detail)
     )
 
     /**

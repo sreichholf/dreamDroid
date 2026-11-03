@@ -278,7 +278,7 @@ class BackupViewModelTest {
 
     @Test
     fun importTakesOnlyTheChosenParts() = runTest {
-        saved("Kitchen", "10.0.0.1", pass = "saved")
+        saved("Kitchen", "10.0.0.3", pass = "saved")
         val data = BackupData()
         data.addProfile(receiver("Kitchen", "10.0.0.3").apply { pass = "from-file" })
         data.addProfile(receiver("Cellar", "10.0.0.4"))
@@ -321,6 +321,67 @@ class BackupViewModelTest {
 
         viewModel.dismissImport()
         assertEquals(null, viewModel.importReview.value)
+        assertTrue(profiles.profiles().isEmpty())
+    }
+
+    @Test
+    fun anIllegalHostIsMarkedAndSkippedWhileTheOtherProfilesImport() = runTest {
+        val data = BackupData()
+        data.passwordsIncluded = true
+        data.addProfile(receiver("Kitchen", "10.0.0.3"))
+        data.addProfile(receiver("Attacker", "receiver.local@attacker.example"))
+        documents.files[URI] = GsonBuilder().create().toJson(data)
+        val viewModel = viewModel()
+
+        viewModel.importFrom(URI)
+        val review = viewModel.importReview.first { it != null }!!
+
+        assertEquals(
+            listOf(null, "receiver.local@attacker.example"),
+            review.profiles.map { it.illegalHost }
+        )
+        assertEquals(listOf(true, false), review.profiles.map { it.checked })
+        viewModel.setImportProfileChecked(1, true)
+        assertFalse(viewModel.importReview.value!!.profiles[1].checked)
+
+        viewModel.confirmImport()
+        viewModel.uiState.first { it.profiles.isNotEmpty() }
+
+        assertEquals(listOf("Kitchen"), profiles.profiles().map { it.name })
+    }
+
+    @Test
+    fun anIllegalStreamHostIsMarkedWithTheOffendingValue() = runTest {
+        val data = BackupData()
+        data.passwordsIncluded = true
+        data.addProfile(receiver("Kitchen", "10.0.0.3").apply { streamHost = "stream?probe=1" })
+        documents.files[URI] = GsonBuilder().create().toJson(data)
+        val viewModel = viewModel()
+
+        viewModel.importFrom(URI)
+        val review = viewModel.importReview.first { it != null }!!
+
+        assertEquals("stream?probe=1", review.profiles.single().illegalHost)
+        assertFalse(review.profiles.single().checked)
+        assertFalse(review.canImport)
+    }
+
+    @Test
+    fun aFileWithOnlyIllegalHostsImportsNothing() = runTest {
+        val data = BackupData()
+        data.passwordsIncluded = true
+        data.addProfile(receiver("Attacker", "receiver.local@attacker.example"))
+        documents.files[URI] = GsonBuilder().create().toJson(data)
+        val viewModel = viewModel()
+
+        viewModel.importFrom(URI)
+        val review = viewModel.importReview.first { it != null }!!
+
+        assertEquals(0, review.selectedProfiles)
+        assertFalse(review.canImport)
+        viewModel.confirmImport()
+
+        assertTrue(viewModel.importReview.value != null)
         assertTrue(profiles.profiles().isEmpty())
     }
 

@@ -117,6 +117,33 @@ class SetupAssistantViewModelTest {
     }
 
     @Test
+    fun anIllegalHostCannotBeSaved() = runTest {
+        val viewModel = viewModel(
+            SavedStateHandle(),
+            object : ProfileCheckRepository {
+                override suspend fun check(profile: Profile) = ProfileCheckResult()
+
+                override suspend fun checkReusingDeviceInfo(profile: Profile) = ProfileCheckResult()
+            }
+        )
+        viewModel.advance()
+        type(viewModel.host, "receiver.local@attacker.example")
+        viewModel.advance()
+        viewModel.advance()
+        viewModel.advance()
+        viewModel.uiState.first { it.checkResult != null }
+        viewModel.advance()
+        assertEquals(SetupStep.Name, viewModel.uiState.value.draft.step)
+
+        viewModel.advance()
+
+        assertEquals(UiText.Resource(R.string.illegal_host), viewModel.uiState.value.saveError)
+        assertEquals(SetupStep.Name, viewModel.uiState.value.draft.step)
+        assertTrue(profiles.profiles().isEmpty())
+        assertFalse(viewModel.uiState.value.finished)
+    }
+
+    @Test
     fun notAReceiverIsAnError() = runTest {
         // An HTTP error resolves its text through Resources, which the JVM only stubs.
         server.enqueue(MockResponse().setBody("<html>not a receiver</html>"))

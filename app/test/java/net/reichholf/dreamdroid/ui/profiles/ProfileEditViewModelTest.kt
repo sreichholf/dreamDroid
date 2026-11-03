@@ -101,6 +101,38 @@ class ProfileEditViewModelTest {
     }
 
     @Test
+    fun anIllegalHostIsAnErrorUntilTheHostChanges() = runBlocking<Unit> {
+        val viewModel = viewModel(SavedStateHandle())
+        type(viewModel.fields.name, "box")
+        type(viewModel.fields.host, "receiver.local@attacker.example")
+
+        viewModel.save()
+
+        assertEquals(UiText.Resource(R.string.illegal_host), viewModel.uiState.value.hostError)
+        type(viewModel.fields.host, "10.0.0.3")
+        assertNull(viewModel.uiState.value.hostError)
+        assertTrue(profiles.profiles().isEmpty())
+        assertNull(viewModel.uiState.value.finished)
+    }
+
+    @Test
+    fun anIllegalStreamHostIsAnErrorOnTheStreamHostField() = runBlocking<Unit> {
+        val viewModel = viewModel(SavedStateHandle())
+        type(viewModel.fields.name, "box")
+        type(viewModel.fields.host, "10.0.0.1")
+        type(viewModel.fields.streamHost, "stream.local/path")
+
+        viewModel.save()
+
+        assertNull(viewModel.uiState.value.hostError)
+        assertEquals(
+            UiText.Resource(R.string.illegal_host),
+            viewModel.uiState.value.streamHostError
+        )
+        assertTrue(profiles.profiles().isEmpty())
+    }
+
+    @Test
     fun httpsMovesThePort() {
         val viewModel = viewModel(SavedStateHandle())
 

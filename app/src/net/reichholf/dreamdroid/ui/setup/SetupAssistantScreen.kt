@@ -392,7 +392,8 @@ fun SetupAssistantScreen(
                                     )
 
                                     SetupStep.Name -> NameStep(
-                                        profileName = viewModel.profileName.state
+                                        profileName = viewModel.profileName.state,
+                                        error = state.saveError?.asString()
                                     )
 
                                     SetupStep.Import -> RestoreStep(
@@ -772,7 +773,7 @@ private fun SignInStep(
 }
 
 @Composable
-private fun NameStep(profileName: TextFieldState) {
+private fun NameStep(profileName: TextFieldState, error: String?) {
     Text(
         text = stringResource(R.string.setup_name_body),
         style = MaterialTheme.typography.bodyLarge
@@ -786,6 +787,15 @@ private fun NameStep(profileName: TextFieldState) {
             .fillMaxWidth()
             .keepInViewWhenFocused()
     )
+    if (error != null) {
+        Spacer(Modifier.height(8.dp))
+        Text(
+            text = error,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.error,
+            modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite }
+        )
+    }
 }
 
 @Composable

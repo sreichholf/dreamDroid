@@ -65,17 +65,39 @@ fun ImportReviewBody(
             }
         ) {
             review.profiles.forEach { profile ->
+                val enabled = profile.illegalHost == null
                 ListItem(
                     leadingContent = {
-                        Checkbox(checked = profile.checked, onCheckedChange = null)
+                        Checkbox(
+                            checked = profile.checked,
+                            onCheckedChange = null,
+                            enabled = enabled
+                        )
                     },
                     headlineContent = { Text(profile.name.ifEmpty { profile.host }) },
-                    supportingContent = if (profile.name.isNotEmpty() &&
-                        profile.host.isNotEmpty()
-                    ) {
-                        { Text(profile.host) }
-                    } else {
-                        null
+                    supportingContent = when {
+                        profile.illegalHost != null -> {
+                            {
+                                val illegalHost = profile.illegalHost
+                                Text(
+                                    text = if (illegalHost.isNullOrEmpty()) {
+                                        stringResource(R.string.backup_import_no_host)
+                                    } else {
+                                        stringResource(
+                                            R.string.backup_import_illegal_host,
+                                            illegalHost
+                                        )
+                                    },
+                                    color = MaterialTheme.colorScheme.error
+                                )
+                            }
+                        }
+
+                        profile.name.isNotEmpty() && profile.host.isNotEmpty() -> {
+                            { Text(profile.host) }
+                        }
+
+                        else -> null
                     },
                     trailingContent = if (profile.replaces) {
                         { LabelBadge(stringResource(R.string.backup_import_replaces)) }
@@ -85,6 +107,7 @@ fun ImportReviewBody(
                     colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                     modifier = Modifier.toggleable(
                         value = profile.checked,
+                        enabled = enabled,
                         role = Role.Checkbox,
                         onValueChange = { onProfileCheckedChange(profile.index, it) }
                     )

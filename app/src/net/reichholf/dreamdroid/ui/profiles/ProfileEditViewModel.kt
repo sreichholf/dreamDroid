@@ -15,6 +15,7 @@ import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.ProfileRepository
+import net.reichholf.dreamdroid.helpers.isValidHost
 import net.reichholf.dreamdroid.ui.nav.ProfileEdit
 import net.reichholf.dreamdroid.ui.text.UiText
 
@@ -26,6 +27,7 @@ import net.reichholf.dreamdroid.ui.text.UiText
 data class ProfileEditUiState(
     val form: ProfileForm? = null,
     val hostError: UiText? = null,
+    val streamHostError: UiText? = null,
     val savedName: String = "",
     val canDelete: Boolean = false,
     val finished: UiText? = null
@@ -47,7 +49,7 @@ class ProfileEditViewModel @Inject constructor(
     val uiState: StateFlow<ProfileEditUiState> = _uiState.asStateFlow()
 
     val fields = ProfileTextFields(viewModelScope, savedStateHandle) {
-        _uiState.update { it.copy(hostError = null) }
+        _uiState.update { it.copy(hostError = null, streamHostError = null) }
     }
 
     private var profile: Profile = Profile.getDefault()
@@ -82,11 +84,20 @@ class ProfileEditViewModel @Inject constructor(
 
     fun save() {
         val form = _uiState.value.form ?: return
-        if (fields.host.text.isBlank()) {
-            _uiState.update { it.copy(hostError = UiText.Resource(R.string.host_empty)) }
+        fields.applyTo(profile, form)
+        if (!isValidHost(profile.host)) {
+            val message = if (profile.host.isNullOrBlank()) {
+                R.string.host_empty
+            } else {
+                R.string.illegal_host
+            }
+            _uiState.update { it.copy(hostError = UiText.Resource(message)) }
             return
         }
-        fields.applyTo(profile, form)
+        if (!profile.streamHost.isNullOrEmpty() && !isValidHost(profile.streamHost)) {
+            _uiState.update { it.copy(streamHostError = UiText.Resource(R.string.illegal_host)) }
+            return
+        }
         if (profile.streamHost == null) {
             profile.streamHost = ""
         }

@@ -44,7 +44,7 @@ class BackupPasswordPolicyTest {
     }
 
     @Test
-    fun anEmptyIncomingPasswordKeepsTheSavedOne() {
+    fun anEmptyIncomingPasswordKeepsTheSavedOneOfTheSameReceiver() {
         val incoming = profile(name = "Box", pass = "", encoderPass = "new-enc")
         val existing = profile(name = "Box", pass = "old-pass", encoderPass = "old-enc")
         val inserted = profileToInsert(incoming, existing, passwordsIncluded = true)
@@ -53,7 +53,48 @@ class BackupPasswordPolicyTest {
     }
 
     @Test
-    fun explicitFalseKeepsExistingPassword() {
+    fun anEmptyIncomingPasswordIsNotCarriedToAnotherReceiver() {
+        val incoming = profile(name = "Box", pass = "", encoderPass = "", host = "10.0.0.2")
+        val existing = profile(name = "Box", pass = "old-pass", encoderPass = "old-enc")
+        val inserted = profileToInsert(incoming, existing, passwordsIncluded = true)
+        assertEquals("", inserted.pass)
+        assertEquals("", inserted.encoderPass)
+    }
+
+    @Test
+    fun aChangedStreamHostIsAnotherReceiver() {
+        val incoming = profile(name = "Box", pass = "", encoderPass = "")
+        incoming.streamHost = "10.0.0.2"
+        val existing = profile(name = "Box", pass = "old-pass", encoderPass = "old-enc")
+        val inserted = profileToInsert(incoming, existing, passwordsIncluded = true)
+        assertEquals("", inserted.pass)
+        assertEquals("", inserted.encoderPass)
+    }
+
+    @Test
+    fun explicitFalseKeepsThePasswordOfTheSameReceiver() {
+        val incoming = profile(
+            name = "Box",
+            pass = "from-file",
+            encoderPass = "from-file-enc",
+            host = "10.0.0.1"
+        )
+        val existing = profile(
+            name = "Box",
+            pass = "kept",
+            encoderPass = "kept-enc",
+            host = "10.0.0.1"
+        )
+        val inserted = profileToInsert(incoming, existing, passwordsIncluded = false)
+        assertEquals("kept", inserted.pass)
+        assertEquals("kept-enc", inserted.encoderPass)
+        assertEquals("10.0.0.1", inserted.host)
+        assertEquals("kept", existing.pass)
+        assertEquals("kept-enc", existing.encoderPass)
+    }
+
+    @Test
+    fun explicitFalseClearsThePasswordOfAnotherReceiver() {
         val incoming = profile(
             name = "Box",
             pass = "from-file",
@@ -67,8 +108,8 @@ class BackupPasswordPolicyTest {
             host = "10.0.0.1"
         )
         val inserted = profileToInsert(incoming, existing, passwordsIncluded = false)
-        assertEquals("kept", inserted.pass)
-        assertEquals("kept-enc", inserted.encoderPass)
+        assertEquals("", inserted.pass)
+        assertEquals("", inserted.encoderPass)
         assertEquals("10.0.0.8", inserted.host)
         assertEquals("kept", existing.pass)
         assertEquals("kept-enc", existing.encoderPass)

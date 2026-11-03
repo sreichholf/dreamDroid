@@ -150,6 +150,7 @@ fun TvProfilesHost(
                 form = form,
                 fields = viewModel.fields,
                 hostError = uiState.hostError?.asString(),
+                streamHostError = uiState.streamHostError?.asString(),
                 onFormChange = viewModel::onFormChange,
                 onSslChange = viewModel::onSslChange,
                 saveLabel = stringResource(R.string.save),

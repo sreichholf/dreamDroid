@@ -47,7 +47,8 @@ class ImportBackupDialogTest {
             .assertIsOn()
             .assertIsEnabled()
         composeRule.onNodeWithText(
-            "Passwords in the file replace the saved ones; a profile without one keeps its own."
+            "Passwords in the file replace the saved ones; a profile without one keeps the " +
+                "saved password only when it still points at the same receiver."
         )
             .assertIsDisplayed()
         composeRule.onNode(hasText("App settings") and isToggleable())
@@ -68,10 +69,36 @@ class ImportBackupDialogTest {
             .assertIsOff()
             .assertIsNotEnabled()
         composeRule.onNodeWithText(
-            "Profiles already on the device keep their passwords; new ones have none."
+            "A profile keeps its saved password only when it still points at the same " +
+                "receiver; new profiles have none."
         )
             .assertIsDisplayed()
         composeRule.onNode(hasText("Import") and hasClickAction()).assertIsNotEnabled()
+    }
+
+    @Test
+    fun anIllegalHostRowIsOffDisabledAndExplainsWhy() {
+        setDialog(
+            review(passwordsAvailable = false, settingsAvailable = false).let { review ->
+                review.copy(
+                    profiles = listOf(
+                        review.profiles[0],
+                        review.profiles[1].copy(
+                            illegalHost = "receiver.local@attacker.example",
+                            checked = false
+                        )
+                    )
+                )
+            }
+        )
+
+        composeRule.onNode(hasText("Cellar") and isToggleable())
+            .assertIsOff()
+            .assertIsNotEnabled()
+        composeRule.onNodeWithText(
+            "Invalid host, not imported: receiver.local@attacker.example"
+        ).performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("1 of 2").assertIsDisplayed()
     }
 
     @Test

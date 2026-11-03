@@ -4,21 +4,26 @@ import androidx.lifecycle.SavedStateHandle
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.data.BackupDocuments
 import net.reichholf.dreamdroid.data.BackupRepository
 import net.reichholf.dreamdroid.data.ImportChoice
 import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.data.carriesPasswords
 import net.reichholf.dreamdroid.helpers.backup.BackupData
+import net.reichholf.dreamdroid.helpers.isValidHost
 
 /**
  * A profile in the backup being imported, by its [index] in the file. [replaces] marks a
- * name that is already saved, whose row the import overwrites.
+ * name that is already saved, whose row the import overwrites. [illegalHost] is the host
+ * value that keeps this profile out of the import, or null when both host fields are valid;
+ * such a profile is shown with the reason and cannot be checked.
  */
 data class ImportProfileToggle(
     val index: Int,
     val name: String,
     val host: String,
+    val illegalHost: String? = null,
     val replaces: Boolean = false,
     val checked: Boolean = true
 )
@@ -35,7 +40,7 @@ data class ImportReview(
     val includeSettings: Boolean
 ) {
     val selectedProfiles: Int
-        get() = profiles.count { it.checked }
+        get() = profiles.count { it.checked && it.illegalHost == null }
 
     /** Passwords come with a chosen profile only. */
     val passwordsSelectable: Boolean
@@ -50,7 +55,10 @@ data class ImportReview(
 
     val choice: ImportChoice
         get() = ImportChoice(
-            profiles = profiles.filter { it.checked }.map { it.index }.toSet(),
+            profiles = profiles
+                .filter { it.checked && it.illegalHost == null }
+                .map { it.index }
+                .toSet(),
             passwords = passwordsChecked,
             settings = includeSettings
         )
@@ -91,13 +99,21 @@ class BackupImport(
     fun setProfileChecked(index: Int, checked: Boolean) = update { review ->
         review.copy(
             profiles = review.profiles.map {
-                if (it.index == index) it.copy(checked = checked) else it
+                if (it.index == index) {
+                    it.copy(checked = checked && it.illegalHost == null)
+                } else {
+                    it
+                }
             }
         )
     }
 
     fun setAllProfilesChecked(checked: Boolean) = update { review ->
-        review.copy(profiles = review.profiles.map { it.copy(checked = checked) })
+        review.copy(
+            profiles = review.profiles.map {
+                it.copy(checked = checked && it.illegalHost == null)
+            }
+        )
     }
 
     fun setPasswords(include: Boolean) = update { review ->
@@ -140,12 +156,14 @@ class BackupImport(
         handle[KEY_CONTENT] = content
         _review.value = ImportReview(
             profiles = backup.profiles.mapIndexed { index, profile ->
+                val illegalHost = profile.illegalHost()
                 ImportProfileToggle(
                     index = index,
                     name = profile.name.orEmpty(),
                     host = profile.host.orEmpty(),
+                    illegalHost = illegalHost,
                     replaces = profile.name.orEmpty() in savedNames,
-                    checked = index !in excluded
+                    checked = illegalHost == null && index !in excluded
                 )
             },
             passwordsAvailable = passwordsAvailable,
@@ -175,4 +193,13 @@ class BackupImport(
         /** A backup is a few KB; a larger file would not fit the saved state. */
         const val MAX_CONTENT_CHARS = 64 * 1024
     }
+}
+
+/** The host value that makes this profile unimportable, or null when both fields are valid. */
+private fun Profile.illegalHost(): String? {
+    if (!isValidHost(host)) {
+        return host.orEmpty()
+    }
+    val stream = streamHost
+    return stream?.takeIf { it.isNotEmpty() && !isValidHost(it) }
 }
