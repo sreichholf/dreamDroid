@@ -75,6 +75,31 @@ class ImportBackupDialogTest {
     }
 
     @Test
+    fun anIllegalHostRowIsOffDisabledAndExplainsWhy() {
+        setDialog(
+            review(passwordsAvailable = false, settingsAvailable = false).let { review ->
+                review.copy(
+                    profiles = listOf(
+                        review.profiles[0],
+                        review.profiles[1].copy(
+                            illegalHost = "receiver.local@attacker.example",
+                            checked = false
+                        )
+                    )
+                )
+            }
+        )
+
+        composeRule.onNode(hasText("Cellar") and isToggleable())
+            .assertIsOff()
+            .assertIsNotEnabled()
+        composeRule.onNodeWithText(
+            "Invalid host, not imported: receiver.local@attacker.example"
+        ).performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("1 of 2").assertIsDisplayed()
+    }
+
+    @Test
     fun rowsAndButtonsReportToTheCaller() {
         val events = mutableListOf<String>()
         setDialog(review(passwordsAvailable = true, settingsAvailable = true), events)

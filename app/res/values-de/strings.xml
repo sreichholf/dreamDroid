@@ -353,6 +353,8 @@
     <string name="backup_export_successful">Export erfolgreich</string>
     <string name="backup_import">Import</string>
     <string name="backup_import_successful">Import erfolgreich</string>
+    <string name="backup_import_no_host">Kein Host, nicht importiert</string>
+    <string name="backup_import_illegal_host">Ungültiger Host, nicht importiert: %1$s</string>
     <string name="backup_profiles">Profile</string>
     <string name="licenses">Lizenzen</string>
     <string name="no_tracks">Keine Tonspuren verfügbar!</string>

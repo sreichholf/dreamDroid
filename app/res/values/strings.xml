@@ -424,6 +424,8 @@
     <string name="backup_import_choose">Choose file</string>
     <string name="backup_import_title">Import backup</string>
     <string name="backup_import_no_profiles">No profiles in this file</string>
+    <string name="backup_import_no_host">No host, not imported</string>
+    <string name="backup_import_illegal_host">Invalid host, not imported: %1$s</string>
     <string name="backup_import_replaces">Replaces saved</string>
     <string name="backup_import_also">Also import</string>
     <string name="backup_import_passwords_on">Passwords in the file replace the saved ones; a profile without one keeps its own.</string>

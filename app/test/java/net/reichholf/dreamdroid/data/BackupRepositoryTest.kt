@@ -141,12 +141,13 @@ class BackupRepositoryTest {
     }
 
     @Test
-    fun aChosenProfileWithAnIllegalHostRejectsTheWholeImport() = runBlocking<Unit> {
+    fun aDirectCallerWithAnIllegalHostIsRefused() = runBlocking<Unit> {
         saved("Living Room", "10.0.0.1").also {
             it.pass = "secret"
             profiles.save(it)
         }
         val data = BackupData()
+        data.passwordsIncluded = true
         data.addProfile(receiver("Kitchen", "10.0.0.2"))
         data.addProfile(receiver("Living Room", "receiver.local@attacker.example"))
         data.addGenericSetting(GenericSetting("import_probe", "from-backup", "String"))
@@ -164,8 +165,9 @@ class BackupRepositoryTest {
     }
 
     @Test
-    fun aChosenProfileWithAnIllegalStreamHostRejectsTheWholeImport() = runBlocking<Unit> {
+    fun aDirectCallerWithAnIllegalStreamHostIsRefused() = runBlocking<Unit> {
         val data = BackupData()
+        data.passwordsIncluded = true
         data.addProfile(receiver("Kitchen", "10.0.0.2").apply { streamHost = "stream?probe=1" })
         val backup = checkNotNull(backups.parse(json(data)))
 
@@ -206,7 +208,22 @@ class BackupRepositoryTest {
     }
 
     @Test
-    fun importWithoutPasswordsKeepsTheSavedOnes() = runBlocking<Unit> {
+    fun importWithoutPasswordsKeepsTheSavedOnesOfTheSameReceiver() = runBlocking<Unit> {
+        saved("Living Room", "10.0.0.1").also {
+            it.pass = "secret"
+            profiles.save(it)
+        }
+        val data = BackupData()
+        data.passwordsIncluded = false
+        data.addProfile(receiver("Living Room", "10.0.0.1"))
+
+        importAll(json(data))
+
+        assertEquals("secret", profiles.profiles().single().pass)
+    }
+
+    @Test
+    fun importWithoutPasswordsClearsTheSavedOnesOfAnotherReceiver() = runBlocking<Unit> {
         saved("Living Room", "10.0.0.1").also {
             it.pass = "secret"
             profiles.save(it)
@@ -217,7 +234,7 @@ class BackupRepositoryTest {
 
         importAll(json(data))
 
-        assertEquals("secret", profiles.profiles().single().pass)
+        assertEquals("", profiles.profiles().single().pass)
     }
 
     @Test
@@ -253,7 +270,7 @@ class BackupRepositoryTest {
         }
         val data = BackupData()
         data.passwordsIncluded = true
-        data.addProfile(receiver("Living Room", "10.0.0.2").apply { pass = "from-file" })
+        data.addProfile(receiver("Living Room", "10.0.0.1").apply { pass = "from-file" })
         data.addProfile(receiver("Kitchen", "10.0.0.3").apply { pass = "from-file" })
         val backup = checkNotNull(backups.parse(json(data)))
 

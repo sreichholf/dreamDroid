@@ -53,6 +53,37 @@ class ProfileRepositoryTest {
     }
 
     @Test
+    fun aLegacyUserInfoHostOnASavedRowIsSplitOnLoad() = runBlocking<Unit> {
+        val row = profile(1, "upuser@box.local").apply { user = "" }
+        val store = MemoryProfileStore(listOf(row))
+        val repo = ProfileRepository(store, WebIfCapabilitiesRepository())
+
+        repo.loadCurrent()
+
+        assertEquals("box.local", row.host)
+        assertEquals("upuser", row.user)
+        assertEquals("box.local", repo.current.value!!.host)
+        assertEquals("upuser", store.profile(1)!!.user)
+    }
+
+    @Test
+    fun aLegacyUserInfoHostInThe1xSettingsIsSplitOnImport() = runBlocking<Unit> {
+        val store = MemoryProfileStore(emptyList())
+        store.legacy = Profile.getDefault().apply {
+            host = "upuser@box.local"
+            user = ""
+        }
+        val repo = ProfileRepository(store, WebIfCapabilitiesRepository())
+
+        repo.loadCurrent()
+
+        val imported = repo.current.value!!
+        assertEquals("box.local", imported.host)
+        assertEquals("upuser", imported.user)
+        assertEquals("box.local", store.profile(imported.id!!)!!.host)
+    }
+
+    @Test
     fun switchingProfileEmitsOnceAndClearsCaches() = runBlocking<Unit> {
         val first = profile(1, "living-room")
         val second = profile(2, "bedroom")
@@ -391,5 +422,7 @@ private class MemoryProfileStore(
 
     override fun piconDefaults(): PiconSeed = picons
 
-    override fun legacyProfile(): Profile = Profile.getDefault()
+    var legacy: Profile = Profile.getDefault()
+
+    override fun legacyProfile(): Profile = legacy
 }

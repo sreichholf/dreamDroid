@@ -20,6 +20,7 @@ import net.reichholf.dreamdroid.enigma.VpsMode
 import net.reichholf.dreamdroid.helpers.backup.BackupData
 import net.reichholf.dreamdroid.helpers.backup.GenericSetting
 import net.reichholf.dreamdroid.helpers.isValidHost
+import net.reichholf.dreamdroid.helpers.splitLegacyUserInfo
 
 /**
  * Backup files: every stored preference and the saved profiles, as Gson JSON. Profile
@@ -75,6 +76,9 @@ class BackupRepository @Inject constructor(
      * cancelled. The file's active profile id names a row of the device that wrote it, so it
      * is not copied with the settings: when the settings come along and that profile is
      * imported, its row here becomes the active one.
+     *
+     * An illegal host is refused here as a last resort. The import review marks such a
+     * profile and cannot select it, so only a direct caller reaches this check.
      *
      * @return false when a chosen profile has an illegal host or the profiles could not be
      * written. Nothing is changed then.
@@ -153,28 +157,36 @@ val BackupData.carriesPasswords: Boolean
  * Profile row to insert.
  *
  * A null [passwordsIncluded] is a legacy file and counts as included, so [incoming] passwords
- * replace the saved ones; an empty incoming password keeps the [existing] one. False keeps
- * [existing] receiver passwords, or stores empty passwords when the name is new.
+ * replace the saved ones; an empty incoming password keeps the [existing] one of the same
+ * receiver. False keeps [existing] receiver passwords, or stores empty passwords when the
+ * name is new.
+ *
+ * A saved password belongs to the receiver it was entered for, so it is only carried over
+ * when the host and the effective stream host are unchanged. A profile that moves to another
+ * receiver must bring its own password in the file.
  */
 internal fun profileToInsert(
     incoming: Profile,
     existing: Profile?,
     passwordsIncluded: Boolean?
 ): Profile {
+    val sameReceiver = existing?.takeIf {
+        it.host == incoming.host && it.streamHostOrHost == incoming.streamHostOrHost
+    }
     if (passwordsIncluded != false) {
-        if (existing != null) {
+        if (sameReceiver != null) {
             if (incoming.pass.isNullOrEmpty()) {
-                incoming.pass = existing.pass
+                incoming.pass = sameReceiver.pass
             }
             if (incoming.encoderPass.isNullOrEmpty()) {
-                incoming.encoderPass = existing.encoderPass
+                incoming.encoderPass = sameReceiver.encoderPass
             }
         }
         return incoming
     }
-    if (existing != null) {
-        incoming.pass = existing.pass
-        incoming.encoderPass = existing.encoderPass
+    if (sameReceiver != null) {
+        incoming.pass = sameReceiver.pass
+        incoming.encoderPass = sameReceiver.encoderPass
     } else {
         incoming.pass = ""
         incoming.encoderPass = ""
@@ -223,6 +235,11 @@ internal fun parseBackupImport(content: String?): BackupData? {
     } catch (e: JsonParseException) {
         null
     } ?: return null
+    // A 1.15 file (no passwordsIncluded) may hold `user@host` in the host field; 2.0 keeps
+    // that user beside the host. A 2.0 file cannot carry the prefix, so it stays rejected.
+    if (backupData.passwordsIncluded == null) {
+        backupData.profiles.forEach { it.splitLegacyUserInfo() }
+    }
     if (!settingsAreImportable(backupData.settings)) {
         return null
     }

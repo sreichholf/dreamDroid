@@ -20,6 +20,7 @@ import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.enigma.DeviceInfo
 import net.reichholf.dreamdroid.enigma.ReceiverFlavor
+import net.reichholf.dreamdroid.helpers.splitLegacyUserInfo
 import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.room.PiconSeed
 import net.reichholf.dreamdroid.ui.setup.matchesSeededDemo
@@ -302,6 +303,7 @@ class ProfileRepository @Inject constructor(
      * single-receiver settings of dreamDroid 1.x when there are no profiles yet.
      */
     suspend fun loadCurrent(): Unit = writes.withLock {
+        splitLegacyUserInfoOnSavedRows()
         val profileId = store.activeId()
         val active = current.value
         if (active != null && profileId > 0 && active.id == profileId) {
@@ -310,6 +312,7 @@ class ProfileRepository @Inject constructor(
         soleSeededDemo(store.profiles())?.let { store.delete(it) }
         if (store.profiles().isEmpty()) {
             val candidate = store.legacyProfile().also(::applyDefaultPiconSettings)
+            candidate.splitLegacyUserInfo()
             if (!candidate.matchesSeededDemo()) {
                 val newId = store.add(candidate).toInt()
                 setCurrentLocked(newId, forceEvent = true)
@@ -324,6 +327,19 @@ class ProfileRepository @Inject constructor(
             return@withLock
         }
         clearCurrent()
+    }
+
+    /**
+     * Splits a 1.x `user@host` on every saved row once, before anything connects with it. A
+     * 1.15 upgrade migrates its Room rows in place, so no import path sees them; this pass
+     * runs before [current] is published. It only writes rows that still carry the prefix.
+     */
+    private suspend fun splitLegacyUserInfoOnSavedRows() {
+        for (profile in store.profiles()) {
+            if (profile.splitLegacyUserInfo()) {
+                store.update(profile)
+            }
+        }
     }
 
     /**

@@ -182,6 +182,16 @@ class BackupImportParseTest {
     }
 
     @Test
+    fun a115UserInfoHostBecomesTheUser() {
+        val json = """{"mProfiles":[{"name":"Old","host":"upuser@10.0.0.2","user":""}]}"""
+
+        val profile = checkNotNull(parseBackupImport(json)).profiles.single()
+
+        assertEquals("10.0.0.2", profile.host)
+        assertEquals("upuser", profile.user)
+    }
+
+    @Test
     fun documentWithOtherShortKeysIsNotTakenForA115Backup() {
         assertTrue(checkNotNull(parseBackupImport("""{"b":[{"zz":1}]}""")).profiles.isEmpty())
     }
