@@ -44,6 +44,7 @@ fun ProfileEditScreen(
     form: ProfileForm,
     fields: ProfileTextFields,
     hostError: String?,
+    streamHostError: String?,
     onFormChange: (ProfileForm) -> Unit,
     onSslChange: (Boolean) -> Unit,
     saveLabel: String,
@@ -186,7 +187,9 @@ fun ProfileEditScreen(
             EditFormSection(title = stringResource(R.string.streaming)) {
                 EditOutlinedTextField(
                     state = fields.streamHost.state,
-                    label = stringResource(R.string.stream_host_long)
+                    label = stringResource(R.string.stream_host_long),
+                    isError = streamHostError != null,
+                    supportingText = streamHostError
                 )
                 EditSwitchRow(
                     checked = form.zapAndStream,

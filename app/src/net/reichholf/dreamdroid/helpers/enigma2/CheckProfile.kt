@@ -17,6 +17,7 @@ import net.reichholf.dreamdroid.enigma.ReceiverApi
 import net.reichholf.dreamdroid.enigma.ReceiverDetector
 import net.reichholf.dreamdroid.enigma.ReceiverFlavor
 import net.reichholf.dreamdroid.enigma.WebIfCapabilities
+import net.reichholf.dreamdroid.helpers.isValidHost
 import net.reichholf.dreamdroid.ui.text.UiText
 
 object CheckProfile {
@@ -48,7 +49,7 @@ object CheckProfile {
         capabilities: WebIfCapabilitiesRepository
     ): ProfileCheckResult {
         val host = profile.host ?: return ProfileCheckResult()
-        if (host.contains(" ")) {
+        if (!isValidHost(host)) {
             return ProfileCheckResult(
                 hasError = true,
                 errorTextId = R.string.illegal_host,

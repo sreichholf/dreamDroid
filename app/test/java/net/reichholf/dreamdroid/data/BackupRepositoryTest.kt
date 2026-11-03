@@ -141,6 +141,44 @@ class BackupRepositoryTest {
     }
 
     @Test
+    fun aChosenProfileWithAnIllegalHostRejectsTheWholeImport() = runBlocking<Unit> {
+        saved("Living Room", "10.0.0.1").also {
+            it.pass = "secret"
+            profiles.save(it)
+        }
+        val data = BackupData()
+        data.addProfile(receiver("Kitchen", "10.0.0.2"))
+        data.addProfile(receiver("Living Room", "receiver.local@attacker.example"))
+        data.addGenericSetting(GenericSetting("import_probe", "from-backup", "String"))
+        val backup = checkNotNull(backups.parse(json(data)))
+
+        val imported = backups.importBackup(
+            backup,
+            ImportChoice(profiles = setOf(0, 1), passwords = true, settings = true)
+        )
+
+        assertFalse(imported)
+        assertEquals("10.0.0.1", profiles.profiles().single().host)
+        assertEquals("secret", profiles.profiles().single().pass)
+        assertNull(preferences.getString("import_probe", null))
+    }
+
+    @Test
+    fun aChosenProfileWithAnIllegalStreamHostRejectsTheWholeImport() = runBlocking<Unit> {
+        val data = BackupData()
+        data.addProfile(receiver("Kitchen", "10.0.0.2").apply { streamHost = "stream?probe=1" })
+        val backup = checkNotNull(backups.parse(json(data)))
+
+        assertFalse(
+            backups.importBackup(
+                backup,
+                ImportChoice(profiles = setOf(0), passwords = true, settings = false)
+            )
+        )
+        assertTrue(profiles.profiles().isEmpty())
+    }
+
+    @Test
     fun importDoesNotReplaceADifferentlyNamedProfile() = runBlocking<Unit> {
         val kitchen = saved("Kitchen", "10.0.0.1")
         val data = BackupData()

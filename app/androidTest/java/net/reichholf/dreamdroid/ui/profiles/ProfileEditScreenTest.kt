@@ -321,6 +321,18 @@ class ProfileEditScreenTest {
     }
 
     @Test
+    fun streamHostErrorShowsUnderTheStreamHostField() {
+        show(Profile.getDefault().apply { host = "10.0.0.1" })
+        composeRule.setContent {
+            DreamDroidTheme {
+                EditableScreen(streamHostError = "Illegal host")
+            }
+        }
+
+        composeRule.onNodeWithText("Illegal host").performScrollTo().assertIsDisplayed()
+    }
+
+    @Test
     fun enablingAllCertificatesShowsWarningAndCancelLeavesOff() {
         show(Profile.getDefault())
         composeRule.setContent {
@@ -549,11 +561,16 @@ class ProfileEditScreenTest {
 
     /** The screen with its state hoisted here, as a ViewModel would hold it. */
     @Composable
-    private fun EditableScreen(showSaveFab: Boolean = true, hostError: String? = null) {
+    private fun EditableScreen(
+        showSaveFab: Boolean = true,
+        hostError: String? = null,
+        streamHostError: String? = null
+    ) {
         ProfileEditScreen(
             form = form,
             fields = fields,
             hostError = hostError,
+            streamHostError = streamHostError,
             onFormChange = { form = it },
             onSslChange = {
                 form = form.copy(ssl = it)

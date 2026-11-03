@@ -5,6 +5,7 @@
 * FIX: Player - Sendungsinfo und Senderliste fehlten bei Streams aus dem Zap-Raster oder vom aktuellen Sender
 * FIX: Player - Aufnahmen begannen nach dem Verlassen der App von vorne
 * FIX: Player - ein Stream, der nicht startet, meldet den Fehler statt die Bedienung tot zu lassen
+* FIX: Ungültige Hostnamen in Profilen werden abgelehnt
 * UPD: Picon-Sync meldet teilweise Downloads
 * FIX: Picon-Sync meldete Erfolg, obwohl nichts heruntergeladen wurde
 * FIX: Picon-Sync hängt nicht mehr bei blockierter Verbindung

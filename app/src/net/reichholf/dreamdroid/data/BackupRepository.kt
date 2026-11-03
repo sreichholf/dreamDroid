@@ -19,6 +19,7 @@ import net.reichholf.dreamdroid.StreamMode
 import net.reichholf.dreamdroid.enigma.VpsMode
 import net.reichholf.dreamdroid.helpers.backup.BackupData
 import net.reichholf.dreamdroid.helpers.backup.GenericSetting
+import net.reichholf.dreamdroid.helpers.isValidHost
 
 /**
  * Backup files: every stored preference and the saved profiles, as Gson JSON. Profile
@@ -75,7 +76,8 @@ class BackupRepository @Inject constructor(
      * is not copied with the settings: when the settings come along and that profile is
      * imported, its row here becomes the active one.
      *
-     * @return false when the profiles could not be written. Nothing is changed then.
+     * @return false when a chosen profile has an illegal host or the profiles could not be
+     * written. Nothing is changed then.
      */
     suspend fun importBackup(backup: BackupData, choice: ImportChoice): Boolean =
         withContext(Dispatchers.IO + NonCancellable) {
@@ -86,6 +88,14 @@ class BackupRepository @Inject constructor(
                 ?.value
                 ?.toIntOrNull()
             val chosen = backup.profiles.filterIndexed { index, _ -> index in choice.profiles }
+            val illegalHost = chosen.any { profile ->
+                !isValidHost(profile.host) ||
+                    (!profile.streamHost.isNullOrEmpty() && !isValidHost(profile.streamHost))
+            }
+            if (illegalHost) {
+                Log.e(TAG, "Import rejected: a chosen profile has an illegal host")
+                return@withContext false
+            }
             val activeRow = chosen.indexOfFirst { activeInFile != null && it.id == activeInFile }
             val rows = try {
                 val saved = profiles.profiles()

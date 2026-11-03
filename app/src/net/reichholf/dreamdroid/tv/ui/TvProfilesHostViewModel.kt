@@ -15,6 +15,7 @@ import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.ProfileRepository
+import net.reichholf.dreamdroid.helpers.isValidHost
 import net.reichholf.dreamdroid.ui.profiles.ProfileForm
 import net.reichholf.dreamdroid.ui.profiles.ProfileListItem
 import net.reichholf.dreamdroid.ui.profiles.ProfileTextFields
@@ -30,6 +31,7 @@ data class TvProfilesUiState(
     val profiles: List<ProfileListItem> = emptyList(),
     val form: ProfileForm? = null,
     val hostError: UiText? = null,
+    val streamHostError: UiText? = null,
     val event: TvProfilesEvent? = null
 )
 
@@ -45,7 +47,7 @@ class TvProfilesHostViewModel @Inject constructor(private val profiles: ProfileR
 
     /** The open draft's typed fields; filled again each time an editor opens. */
     val fields = ProfileTextFields(viewModelScope) {
-        _uiState.update { it.copy(hostError = null) }
+        _uiState.update { it.copy(hostError = null, streamHostError = null) }
     }
 
     private var loaded: List<Profile> = emptyList()
@@ -72,7 +74,14 @@ class TvProfilesHostViewModel @Inject constructor(private val profiles: ProfileR
         editJob?.cancel()
         editJob = null
         editing = null
-        _uiState.update { it.copy(page = TvProfilesPage.List, form = null, hostError = null) }
+        _uiState.update {
+            it.copy(
+                page = TvProfilesPage.List,
+                form = null,
+                hostError = null,
+                streamHostError = null
+            )
+        }
         reload()
     }
 
@@ -85,7 +94,8 @@ class TvProfilesHostViewModel @Inject constructor(private val profiles: ProfileR
             it.copy(
                 page = TvProfilesPage.BouquetVisibility(profileId),
                 form = null,
-                hostError = null
+                hostError = null,
+                streamHostError = null
             )
         }
     }
@@ -141,16 +151,30 @@ class TvProfilesHostViewModel @Inject constructor(private val profiles: ProfileR
     fun save() {
         val profile = editing ?: return
         val form = _uiState.value.form ?: return
-        if (fields.host.text.isBlank()) {
+        fields.applyTo(profile, form)
+        if (!isValidHost(profile.host)) {
+            val message = if (profile.host.isNullOrBlank()) {
+                R.string.host_empty
+            } else {
+                R.string.illegal_host
+            }
             _uiState.update {
                 it.copy(
-                    hostError = UiText.Resource(R.string.host_empty),
+                    hostError = UiText.Resource(message),
                     event = TvProfilesEvent.Save(saved = false, currentProfile = false)
                 )
             }
             return
         }
-        fields.applyTo(profile, form)
+        if (!profile.streamHost.isNullOrEmpty() && !isValidHost(profile.streamHost)) {
+            _uiState.update {
+                it.copy(
+                    streamHostError = UiText.Resource(R.string.illegal_host),
+                    event = TvProfilesEvent.Save(saved = false, currentProfile = false)
+                )
+            }
+            return
+        }
         if (profile.streamHost == null) {
             profile.streamHost = ""
         }
@@ -193,7 +217,12 @@ class TvProfilesHostViewModel @Inject constructor(private val profiles: ProfileR
         editing = profile
         fields.fill(profile)
         _uiState.update {
-            it.copy(page = page, form = ProfileForm.from(profile), hostError = null)
+            it.copy(
+                page = page,
+                form = ProfileForm.from(profile),
+                hostError = null,
+                streamHostError = null
+            )
         }
     }
 }
