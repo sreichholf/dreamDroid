@@ -299,32 +299,52 @@ class ProfileRepository @Inject constructor(
     }
 
     /**
+     * Imports the pre-Room profile database [source], then reads the remembered active
+     * profile; see [awaitLoaded]. The rows go in through one transaction, so a failed
+     * import leaves Room as it was and the next start retries. The 1.x settings are
+     * consumed only once the leftover is settled, and a retryable failure does not build a
+     * profile from them, so it cannot block the retry.
+     */
+    suspend fun loadCurrent(source: LegacyProfileSource): LegacyImportResult = writes.withLock {
+        val result = LegacyProfileImport(store).run(source, store.piconDefaults())
+        loadCurrentLocked(allowLegacyProfile = !result.retryable)
+        if (result.complete) {
+            store.consumeLegacyProfileSettings()
+        }
+        result
+    }
+
+    /**
      * Reads the remembered active profile at process start; see [awaitLoaded]. Imports the
      * single-receiver settings of dreamDroid 1.x when there are no profiles yet.
      */
     suspend fun loadCurrent(): Unit = writes.withLock {
         splitLegacyUserInfoOnSavedRows()
+        loadCurrentLocked(allowLegacyProfile = true)
+    }
+
+    private suspend fun loadCurrentLocked(allowLegacyProfile: Boolean) {
         val profileId = store.activeId()
         val active = current.value
         if (active != null && profileId > 0 && active.id == profileId) {
-            return@withLock
+            return
         }
         soleSeededDemo(store.profiles())?.let { store.delete(it) }
-        if (store.profiles().isEmpty()) {
+        if (allowLegacyProfile && store.profiles().isEmpty()) {
             val candidate = store.legacyProfile().also(::applyDefaultPiconSettings)
             candidate.splitLegacyUserInfo()
             if (!candidate.matchesSeededDemo()) {
                 val newId = store.add(candidate).toInt()
                 setCurrentLocked(newId, forceEvent = true)
-                return@withLock
+                return
             }
         }
         if (profileId > 0 && setCurrentLocked(profileId, forceEvent = false)) {
-            return@withLock
+            return
         }
         val first = store.profiles().firstOrNull()?.id
         if (first != null && setCurrentLocked(first, forceEvent = false)) {
-            return@withLock
+            return
         }
         clearCurrent()
     }
@@ -453,6 +473,12 @@ interface ProfileStore {
 
     /** The single-receiver settings of dreamDroid 1.x, as an unsaved profile. */
     fun legacyProfile(): Profile
+
+    /**
+     * Removes the 1.x single-receiver settings, so a later start cannot build a profile
+     * from them again.
+     */
+    fun consumeLegacyProfileSettings()
 }
 
 /**
@@ -500,6 +526,8 @@ class RoomProfileStore @Inject constructor(
     override fun xmlDebug(): Boolean = preferences.getBoolean(DreamDroid.PREFS_KEY_XML_DEBUG, false)
 
     override fun piconDefaults(): PiconSeed = PiconSeed.from(preferences)
+
+    override fun consumeLegacyProfileSettings() = LegacyProfileSettings.consume(preferences)
 
     override fun legacyProfile(): Profile {
         val sp = preferences

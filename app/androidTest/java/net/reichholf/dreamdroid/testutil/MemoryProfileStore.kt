@@ -51,6 +51,8 @@ class MemoryProfileStore(rows: List<Profile> = emptyList()) : ProfileStore {
         PiconSeed(online = false, onlineUseName = false, onlinePath = Profile.DEFAULT_PICON_PATH)
 
     override fun legacyProfile(): Profile = Profile.getDefault()
+
+    override fun consumeLegacyProfileSettings() = Unit
 }
 
 fun memoryProfiles(vararg rows: Profile): ProfileRepository =

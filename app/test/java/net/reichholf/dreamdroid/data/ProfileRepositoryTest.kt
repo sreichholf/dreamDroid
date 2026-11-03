@@ -425,4 +425,6 @@ private class MemoryProfileStore(
     var legacy: Profile = Profile.getDefault()
 
     override fun legacyProfile(): Profile = legacy
+
+    override fun consumeLegacyProfileSettings() = Unit
 }

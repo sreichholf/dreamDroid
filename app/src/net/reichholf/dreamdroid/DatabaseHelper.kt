@@ -14,7 +14,7 @@ import android.util.Log
 import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import net.reichholf.dreamdroid.room.PiconSeed
+import net.reichholf.dreamdroid.data.LegacyProfileSource
 
 /**
  * Pre-Room `dreamdroid` SQLite. Read-only profile import for Play 1.x upgrades and
@@ -61,10 +61,24 @@ object DatabaseHelper {
     fun databaseFile(context: Context): File = context.getDatabasePath(DATABASE_NAME)
 
     /**
+     * The leftover file for [net.reichholf.dreamdroid.data.LegacyProfileImport], which
+     * copies its rows into Room and deletes it only after that transaction committed.
+     */
+    fun source(context: Context): LegacyProfileSource = LegacyDatabaseSource(
+        context.applicationContext
+    )
+
+    /**
      * Profiles from an existing leftover file. Empty if the file is missing or
      * unreadable. Does not create `dreamdroid`.
      */
-    fun readProfiles(context: Context): List<Profile> {
+    fun readProfiles(context: Context): List<Profile> = readProfilesOrNull(context).orEmpty()
+
+    /**
+     * Profiles from an existing leftover file, or null when the file exists but cannot be
+     * read. Does not create `dreamdroid`.
+     */
+    fun readProfilesOrNull(context: Context): List<Profile>? {
         val file = databaseFile(context)
         if (!file.exists()) {
             return emptyList()
@@ -79,49 +93,18 @@ object DatabaseHelper {
             }
         } catch (e: SQLiteException) {
             Log.e(LOG_TAG, "readProfiles: cannot open leftover $DATABASE_NAME", e)
-            emptyList()
+            null
         }
     }
 
-    /**
-     * When Room has no profiles, copy leftover rows in and delete the file.
-     * No-op if Room already has rows or the leftover file is missing.
-     * Deletes an existing leftover after a successful open, including 0 rows
-     * (empty file created by the old [SQLiteOpenHelper] path).
-     *
-     * The file has no online picon settings, so each row gets [picons]: the global ones the
-     * user had, as Room's 12->13 migration gives to rows it already holds.
-     */
-    suspend fun migrateIntoRoomIfNeeded(
-        context: Context,
-        dao: Profile.ProfileDao,
-        picons: PiconSeed
-    ): Int = withContext(Dispatchers.IO) {
-        if (dao.getProfiles().isNotEmpty()) {
-            return@withContext 0
+    private class LegacyDatabaseSource(private val context: Context) : LegacyProfileSource {
+        override suspend fun read(): List<Profile>? = withContext(Dispatchers.IO) {
+            DatabaseHelper.readProfilesOrNull(context)
         }
-        val file = databaseFile(context)
-        if (!file.exists()) {
-            return@withContext 0
+
+        override suspend fun delete(): Boolean = withContext(Dispatchers.IO) {
+            context.deleteDatabase(DATABASE_NAME)
         }
-        val profiles = try {
-            SQLiteDatabase.openDatabase(
-                file.absolutePath,
-                null,
-                SQLiteDatabase.OPEN_READONLY
-            ).use { db ->
-                readProfiles(db)
-            }
-        } catch (e: SQLiteException) {
-            Log.e(LOG_TAG, "migrateIntoRoomIfNeeded: leftover unreadable", e)
-            return@withContext 0
-        }
-        for (profile in profiles) {
-            picons.applyTo(profile)
-            profile.id = dao.addProfile(profile).toInt()
-        }
-        context.deleteDatabase(DATABASE_NAME)
-        profiles.size
     }
 
     private fun readProfiles(db: SQLiteDatabase): List<Profile> {
