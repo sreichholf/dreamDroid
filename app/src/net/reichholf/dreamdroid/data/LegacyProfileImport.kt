@@ -13,13 +13,21 @@ import net.reichholf.dreamdroid.room.PiconSeed
 interface LegacyProfileSource {
     /**
      * Profiles in the leftover file. Empty when it is missing or has no rows; null when it
-     * exists but cannot be read, which the import settles by deleting it.
+     * exists but is permanently unreadable (corrupt), which the import settles by deleting
+     * it. Throws [LegacyProfileReadException] when it cannot be read right now (locked,
+     * I/O error): the import keeps it and the next start retries.
      */
     suspend fun read(): List<Profile>?
 
     /** Deletes the leftover file. True when it is gone afterwards. */
     suspend fun delete(): Boolean
 }
+
+/**
+ * The leftover exists but could not be read now. A later start retries instead of deleting
+ * it, so a temporary lock or I/O error cannot throw away the user's 1.x profiles.
+ */
+class LegacyProfileReadException(cause: Throwable) : Exception(cause)
 
 /** Outcome of [LegacyProfileImport.run]. */
 data class LegacyImportResult(
@@ -48,7 +56,16 @@ data class LegacyImportResult(
  */
 class LegacyProfileImport(private val store: ProfileStore) {
     suspend fun run(source: LegacyProfileSource, picons: PiconSeed): LegacyImportResult {
-        val rows = readOrNull(source) ?: return dropUnreadable(source)
+        val rows = try {
+            source.read()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            // Not knowing what the file holds is not a reason to delete it: a lock or an
+            // I/O error may clear up, and Room may still be empty.
+            Log.e(DreamDroid.LOG_TAG, "Cannot read the leftover profile database, keeping it", e)
+            return LegacyImportResult(0, complete = false, retryable = true)
+        } ?: return dropUnreadable(source)
         val imported = try {
             store.transaction { importMissing(rows, picons) }
         } catch (e: CancellationException) {
@@ -89,22 +106,12 @@ class LegacyProfileImport(private val store: ProfileStore) {
     }
 
     /**
-     * A leftover that cannot be read cannot be imported on a later start either. Deleting
-     * it lets the 1.x settings settle, so their receiver password stops outliving the
-     * import.
+     * A leftover that is corrupt cannot be imported on a later start either. Deleting it
+     * lets the 1.x settings settle, so their receiver password stops outliving the import.
      */
     private suspend fun dropUnreadable(source: LegacyProfileSource): LegacyImportResult {
         delete(source)
         return LegacyImportResult(0, complete = true)
-    }
-
-    private suspend fun readOrNull(source: LegacyProfileSource): List<Profile>? = try {
-        source.read()
-    } catch (e: CancellationException) {
-        throw e
-    } catch (e: Exception) {
-        Log.e(DreamDroid.LOG_TAG, "Cannot read the leftover profile database", e)
-        null
     }
 
     private suspend fun delete(source: LegacyProfileSource) {
