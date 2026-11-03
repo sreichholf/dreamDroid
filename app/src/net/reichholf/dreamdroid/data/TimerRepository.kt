@@ -74,7 +74,18 @@ class TimerRepository @Inject constructor(
      * and nothing to ask, so the list says so instead of failing to parse.
      */
     fun timers(forceRefresh: Boolean = false): Flow<TimerListResult> = flow {
-        if (profiles.current.value == null) {
+        emitAll(timers(profiles.current.value?.id, forceRefresh))
+    }
+
+    /**
+     * The timers of [profileId], read [cacheFirstLoad] from that profile's Room snapshot,
+     * which a live `/web/timerlist` replaces. The profile is resolved by the captured id, so
+     * a caller that started under one profile does not paint another profile's timers after
+     * a switch. [TimerListResult.Failed] without a profile.
+     */
+    fun timers(profileId: Int?, forceRefresh: Boolean = false): Flow<TimerListResult> = flow {
+        val id = profileId
+        if (id == null) {
             emit(TimerListResult.Failed(UiText.Resource(R.string.no_profile_body)))
             return@flow
         }
@@ -82,19 +93,18 @@ class TimerRepository @Inject constructor(
             cacheFirstLoad(
                 sessions,
                 forceRefresh,
-                cached = { snapshot() },
+                cached = { snapshot(id) },
                 fetch = checked@{
-                    val profile = profiles.current.value
+                    val profile = profiles.byId(id)
                         ?: return@checked EnigmaResponse(null)
-                    val profileId = profile.id
                     clients.forProfile(profile, vpsPlugin = vpsPlugin(profile)).timers()
                         .also { response ->
                             val live = response.value
-                            if (live != null && profileId != null) {
+                            if (live != null) {
                                 database.timerDao().replaceSnapshot(
-                                    profileId,
+                                    id,
                                     live.mapIndexed { index, timer ->
-                                        timer.toListEntity(profileId, index)
+                                        timer.toListEntity(id, index)
                                     }
                                 )
                             }
@@ -209,6 +219,11 @@ class TimerRepository @Inject constructor(
      */
     suspend fun snapshot(): List<Timer>? = snapshot(profiles.current.value?.id)
 
+    /** The last timer list the receiver sent for [profileId], or null if none. */
+    suspend fun snapshot(profileId: Int?): List<Timer>? = profileId?.let { id ->
+        database.timerDao().snapshot(id)?.map { it.toTimer() }
+    }
+
     private suspend fun hasVpsPlugin(profile: Profile): Boolean {
         if (!profile.vpsEnabled) {
             return false
@@ -230,8 +245,4 @@ class TimerRepository @Inject constructor(
     /** The VPS plugin for one request's client; a request that finds it gone marks it absent. */
     private suspend fun vpsPlugin(profile: Profile): VpsPlugin =
         VpsPlugin(hasVpsPlugin(profile)) { plugins.markVpsAbsent(profile) }
-
-    private suspend fun snapshot(profileId: Int?): List<Timer>? = profileId?.let { id ->
-        database.timerDao().snapshot(id)?.map { it.toTimer() }
-    }
 }

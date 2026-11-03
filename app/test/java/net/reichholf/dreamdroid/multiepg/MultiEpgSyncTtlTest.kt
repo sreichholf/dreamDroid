@@ -30,7 +30,7 @@ class MultiEpgSyncTtlTest {
         val fetchedStarts = mutableListOf<Long>()
         val sync = MultiEpgSync(
             dao = db.epgDao(),
-            fetch = { _, time, _ ->
+            fetch = { _, _, time, _ ->
                 fetchedStarts += time
                 listOf(
                     Event(
@@ -67,7 +67,7 @@ class MultiEpgSyncTtlTest {
         val fetchedStarts = mutableListOf<Long>()
         val sync = MultiEpgSync(
             dao = db.epgDao(),
-            fetch = { _, time, _ ->
+            fetch = { _, _, time, _ ->
                 fetchedStarts += time
                 listOf(
                     Event(

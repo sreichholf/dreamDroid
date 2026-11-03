@@ -42,9 +42,12 @@ import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.simpleResult
 import net.reichholf.dreamdroid.testutil.loadWebFixture
 import net.reichholf.dreamdroid.ui.text.UiText
 import okhttp3.HttpUrl
+import okhttp3.mockwebserver.MockResponse
+import okhttp3.mockwebserver.MockWebServer
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -64,6 +67,39 @@ class TimerRepositoryTest {
     @AfterEach
     fun tearDown() {
         receiver.shutdown()
+    }
+
+    @Test
+    fun timersResolveTheProfileTheyWereAskedFor() = runBlocking {
+        val profiles = receiver.profiles.repository
+        val profileA = profiles.current.value!!.apply { id = null }
+        profiles.save(profileA)
+        val idA = profileA.id!!
+        receiver.respond(TIMER_LIST, loadWebFixture("timerlist.xml"))
+
+        val serverB = MockWebServer()
+        serverB.enqueue(MockResponse().setBody(loadWebFixture("timerlist.xml")))
+        serverB.start()
+        try {
+            val profileB = Profile().apply {
+                name = "b"
+                host = serverB.hostName
+                port = serverB.port
+            }
+            profiles.save(profileB)
+            val idB = profileB.id!!
+
+            profiles.setCurrent(idB)
+            val result = repository.timers(idA, forceRefresh = true).last()
+
+            assertTrue(result is TimerListResult.Loaded)
+            assertEquals(1, receiver.requestsTo(TIMER_LIST).size)
+            assertEquals(0, serverB.requestCount)
+            assertNotNull(dao.snapshot(idA))
+            assertNull(dao.snapshot(idB))
+        } finally {
+            serverB.shutdown()
+        }
     }
 
     @Test

@@ -170,9 +170,10 @@ internal fun newMultiEpgGrid(
     sync = epg.multiEpgSync,
     scope = scope,
     profileId = { profiles.current.value?.id ?: -1 },
-    // The grid only asks for the timers once it decided to ask the receiver.
-    fetchTimers = {
-        when (val result = timers.timers(forceRefresh = true).last()) {
+    // The grid only asks for the timers once it decided to ask the receiver. Both the
+    // timers and the roster resolve the profile the load captured, not the current one.
+    fetchTimers = { profileId ->
+        when (val result = timers.timers(profileId, forceRefresh = true).last()) {
             is TimerListResult.Loaded -> result.timers
             is TimerListResult.Failed -> emptyList()
         }
@@ -187,7 +188,7 @@ internal fun newMultiEpgGrid(
         sessions.status.value.session == ConnectionStatus.Session.Offline
     },
     loadCachedRoster = services::cachedBouquetServices,
-    loadCachedTimers = { timers.snapshot() }
+    loadCachedTimers = { profileId -> timers.snapshot(profileId) }
 )
 
 /** Absent key reads as [MULTI_EPG_VISIBLE_MINUTES] and is not written back. */

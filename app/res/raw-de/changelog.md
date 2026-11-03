@@ -9,6 +9,7 @@
 * FIX: Aufnahmen in sehr großen Ordnern werden nicht geladen
 * FIX: Timer-Bereinigung mit aktivierter erweiterter Sicherheit fehlgeschlagen
 * FIX: Offline-Listen wurden durch eine unlesbare Receiver-Antwort gelöscht
+* FIX: MultiEPG speicherte nach einem Profilwechsel Programme eines anderen Profils
 
 ## 2.0.470
 * NEU: Bouquets pro Profil ausblenden
