@@ -6,11 +6,18 @@ import android.content.Context
 import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.test.platform.app.InstrumentationRegistry
+import androidx.work.ForegroundInfo
+import androidx.work.ForegroundUpdater
 import androidx.work.ListenableWorker
 import androidx.work.testing.TestListenableWorkerBuilder
+import com.google.common.util.concurrent.ListenableFuture
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import java.io.File
+import java.util.UUID
+import java.util.concurrent.ExecutionException
+import java.util.concurrent.Executor
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
 import net.reichholf.dreamdroid.Profile
@@ -144,12 +151,29 @@ class PiconSyncWorkerTest {
         assertNull(ftp.host)
     }
 
-    private fun runSync(): ListenableWorker.Result = runBlocking {
-        val worker = TestListenableWorkerBuilder
-            .from(context, PiconSyncWorker::class.java)
-            .build()
-        worker.doWork()
+    @Test
+    fun aRejectedForegroundStartFailsTheWorkWithoutSyncing() {
+        assertEquals(
+            ListenableWorker.Result.failure(),
+            runSync(RejectedForegroundUpdater())
+        )
+
+        assertNull("a rejected foreground start must not connect", ftp.host)
+        assertEquals(
+            context.getString(R.string.picon_sync_foreground_failed),
+            completionNotificationText()
+        )
     }
+
+    private fun runSync(foregroundUpdater: ForegroundUpdater? = null): ListenableWorker.Result =
+        runBlocking {
+            val builder = TestListenableWorkerBuilder
+                .from(context, PiconSyncWorker::class.java)
+            if (foregroundUpdater != null) {
+                builder.setForegroundUpdater(foregroundUpdater)
+            }
+            builder.build().doWork()
+        }
 
     /** The text of the completion notification the worker posts when it ends. */
     private fun completionNotificationText(): String? =
@@ -172,4 +196,30 @@ class PiconSyncWorkerTest {
 
         val ARD = byteArrayOf(0x89.toByte(), 0x50, 0x4E, 0x47, 1, 2, 3)
     }
+}
+
+/** Fails the foreground start the way Android 12+ rejects one from the background. */
+private class RejectedForegroundUpdater : ForegroundUpdater {
+    override fun setForegroundAsync(
+        context: Context,
+        id: UUID,
+        foregroundInfo: ForegroundInfo
+    ): ListenableFuture<Void> = FailedFuture(
+        IllegalStateException("foreground service start rejected")
+    )
+}
+
+/** An already-failed [ListenableFuture], so `await` throws instead of starting the service. */
+private class FailedFuture<T>(private val failure: Throwable) : ListenableFuture<T> {
+    override fun addListener(listener: Runnable, executor: Executor) = listener.run()
+
+    override fun cancel(mayInterruptIfRunning: Boolean): Boolean = false
+
+    override fun isCancelled(): Boolean = false
+
+    override fun isDone(): Boolean = true
+
+    override fun get(): T = throw ExecutionException(failure)
+
+    override fun get(timeout: Long, unit: TimeUnit): T = throw ExecutionException(failure)
 }

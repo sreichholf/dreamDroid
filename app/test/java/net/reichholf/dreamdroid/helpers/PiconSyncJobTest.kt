@@ -181,6 +181,7 @@ class PiconSyncJobTest {
 
         val result = runBlocking { job().run() }
 
+        assertNull(result.error, "skipping the symlink must not fail the whole sync")
         assertEquals(0, result.downloadedFiles)
         assertArrayEquals(EXISTING, outside.readBytes(), "a symlink must not be followed")
         outside.delete()

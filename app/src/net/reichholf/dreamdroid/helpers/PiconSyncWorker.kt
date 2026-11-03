@@ -19,6 +19,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
 import java.io.File
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.R
@@ -67,6 +68,8 @@ class PiconSyncWorker(appContext: Context, params: WorkerParameters) :
     private suspend fun startForeground(): Boolean = try {
         setForeground(createForegroundInfo(applicationContext.getString(R.string.connecting)))
         true
+    } catch (e: CancellationException) {
+        throw e
     } catch (e: Exception) {
         Log.e(TAG, "Could not start the picon sync foreground service", e)
         false
