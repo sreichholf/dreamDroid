@@ -44,26 +44,12 @@ class ProfileRepositoryTest {
             WebIfCapabilitiesRepository()
         )
 
-        repo.loadCurrent()
+        repo.loadCurrent(SettledLegacySource)
 
         val imported = repo.current.value!!
         assertTrue(imported.piconsOnline)
         assertTrue(imported.piconsOnlineUseName)
         assertEquals("/media/hdd/picon", imported.piconsOnlinePath)
-    }
-
-    @Test
-    fun aLegacyUserInfoHostOnASavedRowIsSplitOnLoad() = runBlocking<Unit> {
-        val row = profile(1, "upuser@box.local").apply { user = "" }
-        val store = MemoryProfileStore(listOf(row))
-        val repo = ProfileRepository(store, WebIfCapabilitiesRepository())
-
-        repo.loadCurrent()
-
-        assertEquals("box.local", row.host)
-        assertEquals("upuser", row.user)
-        assertEquals("box.local", repo.current.value!!.host)
-        assertEquals("upuser", store.profile(1)!!.user)
     }
 
     @Test
@@ -91,7 +77,7 @@ class ProfileRepositoryTest {
         }
         val repo = ProfileRepository(store, WebIfCapabilitiesRepository())
 
-        repo.loadCurrent()
+        repo.loadCurrent(SettledLegacySource)
 
         val imported = repo.current.value!!
         assertEquals("box.local", imported.host)
@@ -209,7 +195,7 @@ class ProfileRepositoryTest {
         assertEquals(2, store.remembered)
         assertEquals(2, repo.activeProfileId())
         val restarted = ProfileRepository(store, WebIfCapabilitiesRepository())
-        restarted.loadCurrent()
+        restarted.loadCurrent(SettledLegacySource)
         assertEquals(2, restarted.current.value!!.id)
     }
 
@@ -344,7 +330,7 @@ class ProfileRepositoryTest {
             )
         val waiter = async(start = CoroutineStart.UNDISPATCHED) { repo.awaitLoaded() }
 
-        repo.loadCurrent()
+        repo.loadCurrent(SettledLegacySource)
         yield()
         assertFalse(waiter.isCompleted)
         assertFalse(repo.isLoaded())
@@ -382,7 +368,7 @@ private fun upgradedRows(): List<Profile> = listOf(
     profile(2, "10.11.12.14").apply { user = "upuser" }
 )
 
-/** The leftover of a 1.15 install whose profiles the upgrade already moved to Room. */
+/** No pre-Room leftover: a fresh install, or one whose import already ran. */
 private object SettledLegacySource : LegacyProfileSource {
     override suspend fun read(): List<Profile> = emptyList()
 
