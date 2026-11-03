@@ -23,6 +23,7 @@
 * FIX: Aufnahmen mit HTTPS- oder eigenen Port-Profilen aus dem Einrichtungsassistenten spielten nicht ab
 * UPD: Einrichtungsassistent erklärt den Zugriff auf das lokale Netzwerk
 * FIX: Backup-Export ohne Passwörter enthielt alte Receiver-Passwörter
+* FIX: Profile fehlten nach dem Upgrade von 1.15
 
 ## 2.0.470
 * NEU: Bouquets pro Profil ausblenden
