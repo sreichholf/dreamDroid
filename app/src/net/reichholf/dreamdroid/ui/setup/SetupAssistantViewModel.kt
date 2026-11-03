@@ -23,7 +23,7 @@ import net.reichholf.dreamdroid.data.ProfileCheckRepository
 import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.data.ReceiverDiscovery
 import net.reichholf.dreamdroid.enigma.ProfileCheckResult
-import net.reichholf.dreamdroid.helpers.isValidHost
+import net.reichholf.dreamdroid.helpers.invalidHost
 import net.reichholf.dreamdroid.ui.backup.BackupImport
 import net.reichholf.dreamdroid.ui.backup.ImportReview
 import net.reichholf.dreamdroid.ui.text.SavedTextField
@@ -41,7 +41,7 @@ data class SetupAssistantUiState(
     val searched: Boolean = false,
     val checking: Boolean = false,
     val checkResult: ProfileCheckResult? = null,
-    val saveError: UiText? = null,
+    val hostError: UiText? = null,
     val restoring: Boolean = false,
     val saving: Boolean = false,
     val restoreError: UiText? = null,
@@ -192,6 +192,8 @@ class SetupAssistantViewModel @Inject constructor(
                     if (!state.draft.nameEdited) {
                         profileName.set(state.draft.suggestedName.ifBlank { host.text.trim() })
                     }
+                    // Name only carries the name; a host error stays on the host step.
+                    _uiState.update { it.copy(hostError = null) }
                     updateDraft { it.copy(step = SetupStep.Name) }
                 }
             }
@@ -333,10 +335,17 @@ class SetupAssistantViewModel @Inject constructor(
             return
         }
         val profile = toProfile(profileName.text.ifBlank { host.text.trim() })
-        if (!isValidHost(profile.host) ||
-            (!profile.streamHost.isNullOrEmpty() && !isValidHost(profile.streamHost))
-        ) {
-            _uiState.update { it.copy(saveError = UiText.Resource(R.string.illegal_host)) }
+        val invalid = profile.invalidHost()
+        if (invalid != null) {
+            val message = if (invalid.value.isBlank()) {
+                R.string.host_empty
+            } else {
+                R.string.illegal_host
+            }
+            // Name has no host field: the error and the wizard go back to the step that
+            // edits the host, where it can be fixed.
+            _uiState.update { it.copy(hostError = UiText.Resource(message)) }
+            updateDraft { it.copy(step = SetupStep.Connection) }
             return
         }
         saveJob = viewModelScope.launch {
@@ -381,7 +390,7 @@ class SetupAssistantViewModel @Inject constructor(
     private fun clearCheckResult() {
         checkJob?.cancel()
         checkJob = null
-        _uiState.update { it.copy(checkResult = null, checking = false, saveError = null) }
+        _uiState.update { it.copy(checkResult = null, checking = false, hostError = null) }
     }
 
     private fun reset() {

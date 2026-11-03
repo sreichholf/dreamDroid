@@ -3,6 +3,7 @@ package net.reichholf.dreamdroid.helpers
 import net.reichholf.dreamdroid.Profile
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
@@ -34,6 +35,46 @@ class HostValidationTest {
         assertFalse(isValidHost(" 10.0.0.1"))
         assertFalse(isValidHost("10.0.0.1 "))
         assertFalse(isValidHost("10.0 0.1"))
+    }
+
+    @Test
+    fun aProfileIsValidWhileBothHostsAreUsable() {
+        val profile = Profile.getDefault().apply { host = "10.0.0.2" }
+
+        assertNull(profile.invalidHost())
+
+        profile.streamHost = "10.0.0.3"
+        assertNull(profile.invalidHost())
+    }
+
+    @Test
+    fun theHostComesBeforeTheStreamHost() {
+        val profile = Profile.getDefault().apply {
+            host = "receiver.local@attacker.example"
+            streamHost = "stream.local/path"
+        }
+
+        assertEquals(
+            InvalidHost(HostField.Host, "receiver.local@attacker.example"),
+            profile.invalidHost()
+        )
+    }
+
+    @Test
+    fun aBlankHostIsReportedAsTheHostField() {
+        val profile = Profile.getDefault().apply { host = " " }
+
+        assertEquals(InvalidHost(HostField.Host, " "), profile.invalidHost())
+    }
+
+    @Test
+    fun anIllegalStreamHostIsReportedAsTheStreamField() {
+        val profile = Profile.getDefault().apply {
+            host = "10.0.0.2"
+            streamHost = "stream.local/path"
+        }
+
+        assertEquals(InvalidHost(HostField.StreamHost, "stream.local/path"), profile.invalidHost())
     }
 
     @Test

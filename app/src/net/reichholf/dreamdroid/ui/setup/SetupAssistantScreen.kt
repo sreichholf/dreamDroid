@@ -400,7 +400,8 @@ fun SetupAssistantScreen(
                                         host = viewModel.host.state,
                                         useHttps = draft.useHttps,
                                         onHttpsChange = viewModel::onHttpsChange,
-                                        port = viewModel.port.state
+                                        port = viewModel.port.state,
+                                        hostError = state.hostError?.asString()
                                     )
 
                                     SetupStep.SignIn -> SignInStep(
@@ -416,8 +417,7 @@ fun SetupAssistantScreen(
                                     )
 
                                     SetupStep.Name -> NameStep(
-                                        profileName = viewModel.profileName.state,
-                                        error = state.saveError?.asString()
+                                        profileName = viewModel.profileName.state
                                     )
 
                                     SetupStep.Import -> RestoreStep(
@@ -706,20 +706,27 @@ private fun ConnectionStep(
     host: TextFieldState,
     useHttps: Boolean,
     onHttpsChange: (Boolean) -> Unit,
-    port: TextFieldState
+    port: TextFieldState,
+    hostError: String?
 ) {
     Text(
         text = stringResource(R.string.setup_connection_body),
         style = MaterialTheme.typography.bodyLarge
     )
     Spacer(Modifier.height(16.dp))
+    val supporting: @Composable (() -> Unit)? = hostError?.let { message ->
+        { Text(message) }
+    }
     OutlinedTextField(
         state = host,
         label = { Text(stringResource(R.string.host_long)) },
         lineLimits = TextFieldLineLimits.SingleLine,
+        isError = hostError != null,
+        supportingText = supporting,
         modifier = Modifier
             .fillMaxWidth()
             .keepInViewWhenFocused()
+            .testTag("setup_connection_host")
     )
     Spacer(Modifier.height(12.dp))
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -808,7 +815,7 @@ private fun SignInStep(
 }
 
 @Composable
-private fun NameStep(profileName: TextFieldState, error: String?) {
+private fun NameStep(profileName: TextFieldState) {
     Text(
         text = stringResource(R.string.setup_name_body),
         style = MaterialTheme.typography.bodyLarge
@@ -822,15 +829,6 @@ private fun NameStep(profileName: TextFieldState, error: String?) {
             .fillMaxWidth()
             .keepInViewWhenFocused()
     )
-    if (error != null) {
-        Spacer(Modifier.height(8.dp))
-        Text(
-            text = error,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.error,
-            modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite }
-        )
-    }
 }
 
 @Composable

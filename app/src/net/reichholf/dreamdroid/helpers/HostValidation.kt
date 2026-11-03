@@ -18,6 +18,32 @@ fun isValidHost(host: String?): Boolean {
     return host.none { it.isWhitespace() || it in ILLEGAL_HOST_CHARS }
 }
 
+/** Which host field of a [Profile] a URL cannot carry. */
+enum class HostField {
+    Host,
+    StreamHost
+}
+
+/** The unusable [value] of [field], as the profile holds it. */
+data class InvalidHost(val field: HostField, val value: String)
+
+/**
+ * The first host of this profile that a URL authority cannot carry, or null when both can.
+ * [Profile.host] comes first, so a caller that shows a single message shows the field to fix
+ * first. An empty stream host is fine: the profile then streams from the receiver.
+ */
+fun Profile.invalidHost(): InvalidHost? {
+    if (!isValidHost(host)) {
+        return InvalidHost(HostField.Host, host.orEmpty())
+    }
+    val stream = streamHost
+    return if (stream.isNullOrEmpty() || isValidHost(stream)) {
+        null
+    } else {
+        InvalidHost(HostField.StreamHost, stream)
+    }
+}
+
 /**
  * Moves a 1.x `user@host` out of [Profile.host] and [Profile.streamHost], where 2.0 keeps
  * the login. 1.x built `scheme://<host>:<port>` from the host field, so the part before the

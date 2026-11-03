@@ -235,6 +235,53 @@ class SetupAssistantScreenTest {
     }
 
     @Test
+    fun anIllegalHostErrorShowsOnTheConnectionStepNotTheNameStep() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val illegalHost = context.getString(R.string.illegal_host)
+        val viewModel = model()
+        composeRule.setContent {
+            DreamDroidTheme {
+                SetupAssistantScreen(
+                    viewModel = viewModel,
+                    localNetworkGranted = true,
+                    onRequestLocalNetwork = {},
+                    onFinished = {},
+                    onLeave = {}
+                )
+            }
+        }
+        composeRule.mainClock.advanceTimeBy(2_000)
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("Start").assertIsEnabled().performClick()
+        composeRule.waitForIdle()
+        composeRule.onNodeWithTag("setup_address")
+            .performTextInput("receiver.local@attacker.example")
+        composeRule.onNodeWithText("Next").performClick()
+        composeRule.onNodeWithText("Next").performClick()
+        composeRule.onNodeWithText("Check connection").performClick()
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            viewModel.uiState.value.checkResult != null
+        }
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("Next").performClick()
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("Save").performClick()
+        composeRule.waitForIdle()
+
+        // The host is edited on Connection, so the error and the wizard land there.
+        assertEquals(SetupStep.Connection, viewModel.uiState.value.draft.step)
+        composeRule.onNodeWithText(illegalHost).performScrollTo().assertIsDisplayed()
+
+        composeRule.onNodeWithText("Next").performClick()
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("Next").performClick()
+        composeRule.waitForIdle()
+
+        assertEquals(SetupStep.Name, viewModel.uiState.value.draft.step)
+        composeRule.onNodeWithText(illegalHost).assertDoesNotExist()
+    }
+
+    @Test
     fun remountKeepsDraftAndInFlightCheckWithoutRerunning() {
         val gate = CompletableDeferred<ProfileCheckResult>()
         var searches = 0

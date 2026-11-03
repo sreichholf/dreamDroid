@@ -138,10 +138,17 @@ class SetupAssistantViewModelTest {
 
         viewModel.advance()
 
-        assertEquals(UiText.Resource(R.string.illegal_host), viewModel.uiState.value.saveError)
-        assertEquals(SetupStep.Name, viewModel.uiState.value.draft.step)
+        // Name has no host field: the error and the wizard go back to the host step.
+        assertEquals(SetupStep.Connection, viewModel.uiState.value.draft.step)
+        assertEquals(UiText.Resource(R.string.illegal_host), viewModel.uiState.value.hostError)
         assertTrue(profiles.profiles().isEmpty())
         assertFalse(viewModel.uiState.value.finished)
+
+        // Only the host step shows it; advancing to Name drops it.
+        viewModel.advance()
+        viewModel.advance()
+        assertEquals(SetupStep.Name, viewModel.uiState.value.draft.step)
+        assertEquals(null, viewModel.uiState.value.hostError)
     }
 
     @Test

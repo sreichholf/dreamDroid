@@ -4,14 +4,13 @@ import androidx.lifecycle.SavedStateHandle
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.data.BackupDocuments
 import net.reichholf.dreamdroid.data.BackupRepository
 import net.reichholf.dreamdroid.data.ImportChoice
 import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.data.carriesPasswords
 import net.reichholf.dreamdroid.helpers.backup.BackupData
-import net.reichholf.dreamdroid.helpers.isValidHost
+import net.reichholf.dreamdroid.helpers.invalidHost
 
 /**
  * A profile in the backup being imported, by its [index] in the file. [replaces] marks a
@@ -156,7 +155,7 @@ class BackupImport(
         handle[KEY_CONTENT] = content
         _review.value = ImportReview(
             profiles = backup.profiles.mapIndexed { index, profile ->
-                val illegalHost = profile.illegalHost()
+                val illegalHost = profile.invalidHost()?.value
                 ImportProfileToggle(
                     index = index,
                     name = profile.name.orEmpty(),
@@ -193,13 +192,4 @@ class BackupImport(
         /** A backup is a few KB; a larger file would not fit the saved state. */
         const val MAX_CONTENT_CHARS = 64 * 1024
     }
-}
-
-/** The host value that makes this profile unimportable, or null when both fields are valid. */
-private fun Profile.illegalHost(): String? {
-    if (!isValidHost(host)) {
-        return host.orEmpty()
-    }
-    val stream = streamHost
-    return stream?.takeIf { it.isNotEmpty() && !isValidHost(it) }
 }

@@ -19,7 +19,7 @@ import net.reichholf.dreamdroid.StreamMode
 import net.reichholf.dreamdroid.enigma.VpsMode
 import net.reichholf.dreamdroid.helpers.backup.BackupData
 import net.reichholf.dreamdroid.helpers.backup.GenericSetting
-import net.reichholf.dreamdroid.helpers.isValidHost
+import net.reichholf.dreamdroid.helpers.invalidHost
 import net.reichholf.dreamdroid.helpers.splitLegacyUserInfo
 
 /**
@@ -95,10 +95,7 @@ class BackupRepository @Inject constructor(
                 ?.value
                 ?.toIntOrNull()
             val chosen = backup.profiles.filterIndexed { index, _ -> index in choice.profiles }
-            val illegalHost = chosen.any { profile ->
-                !isValidHost(profile.host) ||
-                    (!profile.streamHost.isNullOrEmpty() && !isValidHost(profile.streamHost))
-            }
+            val illegalHost = chosen.any { it.invalidHost() != null }
             if (illegalHost) {
                 Log.e(TAG, "Import rejected: a chosen profile has an illegal host")
                 return@withContext false
