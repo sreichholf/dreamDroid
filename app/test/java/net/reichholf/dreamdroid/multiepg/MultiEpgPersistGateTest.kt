@@ -10,54 +10,68 @@ class MultiEpgPersistGateTest {
 
     @Test
     fun anEmptyTabStripNeverPersists() {
-        assertFalse(gate.persist(TAB))
-        assertFalse(gate.persist(FOLDER, TAB))
+        assertFalse(gate.persist(PROFILE, TAB))
+        assertFalse(gate.persist(PROFILE, FOLDER, TAB))
     }
 
     @Test
     fun aKnownTabIsItsOwnRoot() {
-        gate.knownTabRefs = listOf(TAB, OTHER_TAB)
+        gate.knowTabs(PROFILE, listOf(TAB, OTHER_TAB))
 
-        assertTrue(gate.persist(TAB))
-        assertTrue(gate.persist(OTHER_TAB))
+        assertTrue(gate.persist(PROFILE, TAB))
+        assertTrue(gate.persist(PROFILE, OTHER_TAB))
     }
 
     @Test
     fun aNestedFolderNeedsItsTabRoot() {
-        gate.knownTabRefs = listOf(TAB)
+        gate.knowTabs(PROFILE, listOf(TAB))
 
-        assertFalse(gate.persist(FOLDER), "a nested folder without a root fails closed")
-        assertTrue(gate.persist(FOLDER, TAB), "its tab makes the folder cacheable")
+        assertFalse(gate.persist(PROFILE, FOLDER), "a nested folder without a root fails closed")
+        assertTrue(gate.persist(PROFILE, FOLDER, TAB), "its tab makes the folder cacheable")
     }
 
     @Test
     fun anUnknownRootFailsClosed() {
-        gate.knownTabRefs = listOf(TAB)
+        gate.knowTabs(PROFILE, listOf(TAB))
 
-        assertFalse(gate.persist(FOLDER, OTHER_TAB))
-        assertFalse(gate.persist(FOLDER, ""))
-        assertFalse(gate.persist(FOLDER, "1:7:1:0:0:0:0:0:0:0:(null)"))
+        assertFalse(gate.persist(PROFILE, FOLDER, OTHER_TAB))
+        assertFalse(gate.persist(PROFILE, FOLDER, ""))
+        assertFalse(gate.persist(PROFILE, FOLDER, "1:7:1:0:0:0:0:0:0:0:(null)"))
     }
 
     @Test
     fun anUnknownRootFallsBackToTheRefWhenItIsATab() {
-        gate.knownTabRefs = listOf(TAB)
+        gate.knowTabs(PROFILE, listOf(TAB))
 
         // A 1.x default stores an aggregate parent; the tab itself is still cacheable.
-        assertTrue(gate.persist(TAB, "1:7:1:0:0:0:0:0:0:0:FROM BOUQUETS ORDER BY bouquet"))
+        assertTrue(gate.persist(PROFILE, TAB, "1:7:1:0:0:0:0:0:0:0:FROM BOUQUETS ORDER BY bouquet"))
     }
 
     @Test
     fun anExcludedRootOrRefNeverPersists() {
-        gate.knownTabRefs = listOf(TAB, FOLDER, EXCLUDED, PROVIDERS)
+        gate.knowTabs(PROFILE, listOf(TAB, FOLDER, EXCLUDED, PROVIDERS))
 
-        assertFalse(gate.persist(FOLDER, EXCLUDED), "a dedicated root is never a cache root")
-        assertFalse(gate.persist(EXCLUDED), "a dedicated root is never cacheable itself")
-        assertFalse(gate.persist(FOLDER, PROVIDERS))
-        assertFalse(gate.persist(PROVIDERS))
+        assertFalse(
+            gate.persist(PROFILE, FOLDER, EXCLUDED),
+            "a dedicated root is never a cache root"
+        )
+        assertFalse(gate.persist(PROFILE, EXCLUDED), "a dedicated root is never cacheable itself")
+        assertFalse(gate.persist(PROFILE, FOLDER, PROVIDERS))
+        assertFalse(gate.persist(PROFILE, PROVIDERS))
+    }
+
+    @Test
+    fun tabsOfAnotherProfileNeverPersist() {
+        gate.knowTabs(PROFILE, listOf(TAB))
+
+        assertFalse(gate.persist(OTHER_PROFILE, TAB))
+        gate.forget()
+        assertFalse(gate.persist(PROFILE, TAB))
     }
 
     private companion object {
+        const val PROFILE = 1
+        const val OTHER_PROFILE = 2
         const val TAB =
             "1:7:1:0:0:0:0:0:0:0:FROM BOUQUET \"userbouquet.favourites.tv\" ORDER BY bouquet"
         const val OTHER_TAB =

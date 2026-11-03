@@ -56,7 +56,11 @@ class EpgRepository @Inject constructor(
      * this repository before the pre-Room import runs.
      */
     val multiEpgSync: MultiEpgSync by lazy {
-        MultiEpgSync(dao = database.epgDao(), fetch = ::fetchEpgMulti)
+        MultiEpgSync(
+            dao = database.epgDao(),
+            fetch = ::fetchEpgMulti,
+            store = database.epgDao()::replaceChunkOfStoredProfile
+        )
     }
 
     /**
@@ -242,8 +246,8 @@ class EpgRepository @Inject constructor(
      * box never serves two bouquet dumps at once. The client is resolved by the captured id,
      * not by whichever profile is current when the request reaches the lock, so a switch
      * mid-load cannot store another profile's programmes under this profile's key. Throws
-     * [MultiEpgProfileGoneException] when that profile was deleted, so no chunk is written
-     * under its id.
+     * [MultiEpgProfileGoneException] when that profile was deleted before the request; one
+     * deleted during it is caught by [multiEpgSync]'s write, which needs the stored profile.
      */
     private suspend fun fetchEpgMulti(
         profileId: Int,

@@ -132,7 +132,7 @@ class EpgRepositoryTest {
     @Test
     fun withoutAProfileEpgAnswersNothingAndAsksNothing() = runBlocking {
         receiver.writeChunk(BOUQUET, NOW, listOf(event("News", NOW)))
-        receiver.profiles.repository.clearCurrent()
+        receiver.dropProfile()
 
         assertNull(repository.recordedProgramme(NEO, WILSBERG, MATCH_BEGIN, MATCH_END))
         assertNull(repository.cachedSearch("News"))

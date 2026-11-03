@@ -69,7 +69,8 @@ class MultiEpgGrid(
     private val fetchTimers: suspend (profileId: Int) -> List<Timer> = { _ -> emptyList() },
     private val loadBouquetServices: suspend (profileId: Int, bouquetRef: String) -> List<Service> =
         { _, _ -> emptyList() },
-    private val persistBouquet: (ref: String, tabRootRef: String?) -> Boolean = { _, _ -> true },
+    private val persistBouquet: (profileId: Int, ref: String, tabRootRef: String?) -> Boolean =
+        { _, _, _ -> true },
     private val shouldSkipReceiverHttp: (Boolean) -> Boolean = { false },
     private val isSessionOffline: () -> Boolean = { false },
     private val loadCachedRoster: suspend (Int, String) -> List<Service>? =
@@ -90,6 +91,9 @@ class MultiEpgGrid(
     private var queuedWarm: WarmTarget? = null
     private var windowJob: Job? = null
     private var tabRootRef: String? = null
+
+    /** The profile [replaceAndLoad] bound this grid to; every fetch, write and warm uses it. */
+    private var loadProfileId: Int = NO_PROFILE
     private val gridMutex = Mutex()
     private val eventsByWindow = ConcurrentHashMap<Long, List<Event>>()
     private var bouquetRoster: List<Service> = emptyList()
@@ -111,6 +115,7 @@ class MultiEpgGrid(
      */
     fun reset() {
         dropPainted()
+        loadProfileId = NO_PROFILE
         _state.update {
             MultiEpgGridState(
                 syncingCount = it.syncingCount,
@@ -123,10 +128,11 @@ class MultiEpgGrid(
      * Drop the painted grid immediately and load [bouquetRef] at [anchorSec].
      * [anchorSec] becomes the left clamp ("now") for this grid. [tabRootRef] is the hub tab
      * the bouquet was opened under, which decides whether the chunks persist; it stays with
-     * the session until the next [replaceAndLoad].
+     * the session until the next [replaceAndLoad], as does the profile active now.
      */
     fun replaceAndLoad(bouquetRef: String, anchorSec: Long, tabRootRef: String? = null) {
         this.tabRootRef = tabRootRef
+        loadProfileId = profileId()
         dropPainted()
         _state.update {
             it.copy(
@@ -207,6 +213,7 @@ class MultiEpgGrid(
             return
         }
         loadJob?.cancel()
+        val id = loadProfileId
         _state.update {
             it.copy(
                 errorMessage = null,
@@ -218,8 +225,7 @@ class MultiEpgGrid(
             beginSync()
             var timersDeferred: Deferred<List<Timer>>? = null
             try {
-                val id = profileId()
-                val persist = persistBouquet(ref, tabRootRef)
+                val persist = persistBouquet(id, ref, tabRootRef)
                 val peek = if (!forceRefresh) {
                     withContext(Dispatchers.IO) {
                         sync.peekChunk(id, ref, anchorSec)
@@ -389,7 +395,7 @@ class MultiEpgGrid(
      */
     private fun warmNextChunk(profileId: Int, anchor: Long) {
         val ref = bouquetRef.trim()
-        if (ref.isEmpty() || !persistBouquet(ref, tabRootRef) || isSessionOffline()) {
+        if (ref.isEmpty() || !persistBouquet(profileId, ref, tabRootRef) || isSessionOffline()) {
             return
         }
         val target = WarmTarget(
@@ -436,7 +442,7 @@ class MultiEpgGrid(
         job.start()
     }
 
-    private suspend fun attachWindow(unixSec: Long) {
+    private suspend fun attachWindow(id: Int, unixSec: Long) {
         val ref = bouquetRef.trim()
         if (ref.isEmpty()) {
             return
@@ -451,8 +457,7 @@ class MultiEpgGrid(
         if (already) {
             return
         }
-        val id = profileId()
-        val persist = persistBouquet(ref, tabRootRef)
+        val persist = persistBouquet(id, ref, tabRootRef)
         val peek = withContext(Dispatchers.IO) {
             sync.peekChunk(id, ref, unixSec)
         }
@@ -488,13 +493,14 @@ class MultiEpgGrid(
         if (want.isEmpty()) {
             return
         }
+        val id = loadProfileId
         val wantSet = want.toSet()
         val same = gridMutex.withLock { wantSet == eventsByWindow.keys.toSet() }
         if (same) {
             return
         }
         for (start in want) {
-            attachWindow(start)
+            attachWindow(id, start)
         }
         val painted = gridMutex.withLock {
             // Keep the last painted chunks when a wanted one could not be attached
@@ -512,7 +518,7 @@ class MultiEpgGrid(
             true
         }
         if (painted) {
-            warmNextChunk(profileId(), want.last())
+            warmNextChunk(id, want.last())
         }
     }
 
@@ -582,5 +588,8 @@ class MultiEpgGrid(
 
     companion object {
         private const val DEFAULT_VISIBLE_SECONDS: Long = 2L * 60L * 60L
+
+        /** Before the first [replaceAndLoad] and after [reset]; never a stored profile. */
+        private const val NO_PROFILE: Int = -1
     }
 }

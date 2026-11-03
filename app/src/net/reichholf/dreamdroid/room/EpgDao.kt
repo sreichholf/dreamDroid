@@ -48,6 +48,26 @@ interface EpgDao {
         upsertChunk(meta)
     }
 
+    @Query("SELECT EXISTS(SELECT 1 FROM profile WHERE _id = :profileId)")
+    suspend fun profileExists(profileId: Int): Boolean
+
+    /**
+     * [replaceChunk] when [meta]'s profile is still stored. Checked in the write's
+     * transaction: a profile deleted while its chunk was fetched gets no rows. Returns whether
+     * it wrote.
+     */
+    @Transaction
+    suspend fun replaceChunkOfStoredProfile(
+        meta: EpgChunkMetaEntity,
+        events: List<EpgEventEntity>
+    ): Boolean {
+        if (!profileExists(meta.profileId)) {
+            return false
+        }
+        replaceChunk(meta, events)
+        return true
+    }
+
     @Query(
         """
         SELECT * FROM epg_chunk

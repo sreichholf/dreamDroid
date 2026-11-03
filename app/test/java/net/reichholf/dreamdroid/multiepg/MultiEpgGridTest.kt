@@ -732,7 +732,7 @@ class MultiEpgGridTest {
             sync = sync,
             scope = this,
             profileId = { 1 },
-            persistBouquet = { _, _ -> false }
+            persistBouquet = { _, _, _ -> false }
         )
         grid.replaceAndLoad("bouquet-a", now)
         grid.awaitIdle()
@@ -1145,7 +1145,7 @@ class MultiEpgGridTest {
             sync = sync,
             scope = this,
             profileId = { 1 },
-            persistBouquet = { _, _ -> false },
+            persistBouquet = { _, _, _ -> false },
             shouldSkipReceiverHttp = { hasCache -> hasCache },
             loadBouquetServices = { _, _ ->
                 bouquetCalls.incrementAndGet()
@@ -1194,7 +1194,7 @@ class MultiEpgGridTest {
             sync = sync,
             scope = this,
             profileId = { 1 },
-            persistBouquet = { _, _ -> false },
+            persistBouquet = { _, _, _ -> false },
             isSessionOffline = { true },
             loadBouquetServices = { _, _ ->
                 bouquetCalls.incrementAndGet()
@@ -1236,7 +1236,7 @@ class MultiEpgGridTest {
             sync = sync,
             scope = this,
             profileId = { 1 },
-            persistBouquet = { _, _ -> false },
+            persistBouquet = { _, _, _ -> false },
             isSessionOffline = { true },
             loadBouquetServices = { _, _ ->
                 bouquetCalls.incrementAndGet()
@@ -1308,7 +1308,7 @@ class MultiEpgGridTest {
             sync = sync,
             scope = this,
             profileId = { 1 },
-            persistBouquet = { _, _ -> false },
+            persistBouquet = { _, _, _ -> false },
             isSessionOffline = { true },
             loadBouquetServices = { _, _ ->
                 throw EnigmaFailureException(
@@ -1356,7 +1356,7 @@ class MultiEpgGridTest {
             sync = sync,
             scope = this,
             profileId = { 1 },
-            persistBouquet = { _, _ -> false },
+            persistBouquet = { _, _, _ -> false },
             isSessionOffline = { true },
             loadBouquetServices = { _, _ ->
                 bouquetCalls.incrementAndGet()
@@ -1466,11 +1466,71 @@ class MultiEpgGridTest {
     }
 
     @Test
+    fun panAfterAProfileSwitchKeepsTheLoadsProfile() = runBlocking {
+        var current = 1
+        val t0 = MultiEpgWindows.CHUNK_SECONDS + 10L
+        val nextStart = MultiEpgWindows.chunkContaining(t0).endSec
+        val fetchProfiles = mutableListOf<Int>()
+        val sync = MultiEpgSync(
+            dao = db.epgDao(),
+            fetch = { profileId, _, time, _ ->
+                fetchProfiles.add(profileId)
+                listOf(programme(id = "e-$time", title = "T", start = time))
+            },
+            clockMs = { 1_000_000L },
+            ttlMs = 25L * 60L * 1000L
+        )
+        val grid = MultiEpgGrid(sync = sync, scope = this, profileId = { current })
+        grid.replaceAndLoad("bouquet-a", t0)
+        grid.awaitIdle()
+
+        // The pan and the warm after it belong to the load, not to the new profile.
+        current = 2
+        grid.onVisibleWindow(nextStart + 60L, nextStart + 3_600L)
+        grid.awaitIdle()
+
+        assertTrue(fetchProfiles.isNotEmpty())
+        assertTrue(fetchProfiles.all { it == 1 }, "fetched for $fetchProfiles")
+        assertTrue(nextStart in grid.loadedWindowStarts)
+        assertNotNull(db.epgDao().getChunk(1, "bouquet-a", nextStart))
+        assertFalse(db.epgDao().hasEvents(2))
+    }
+
+    @Test
+    fun tabsOfAnotherProfileDoNotPersistTheLoad() = runBlocking {
+        val t0 = MultiEpgWindows.CHUNK_SECONDS + 10L
+        val gate = MultiEpgPersistGate(emptySet())
+        // The tabs were read for profile 1; the load started after a switch to profile 2.
+        gate.knowTabs(1, listOf(BOUQUET))
+        val sync = MultiEpgSync(
+            dao = db.epgDao(),
+            fetch = { _, _, time, _ ->
+                listOf(programme(id = "e-$time", title = "T", start = time))
+            },
+            clockMs = { 1_000_000L },
+            ttlMs = 25L * 60L * 1000L
+        )
+        val grid = MultiEpgGrid(
+            sync = sync,
+            scope = this,
+            profileId = { 2 },
+            persistBouquet = gate::persist
+        )
+
+        grid.replaceAndLoad(BOUQUET, t0)
+        grid.awaitIdle()
+
+        assertEquals("T", titleOnFocusedChunk(grid, t0))
+        assertFalse(db.epgDao().hasEvents(2))
+        assertFalse(db.epgDao().hasEvents(1))
+    }
+
+    @Test
     fun aNestedFolderPersistsOnlyWithItsTabRoot() = runBlocking {
         val t0 = MultiEpgWindows.CHUNK_SECONDS + 10L
         val chunkStart = MultiEpgWindows.chunkContaining(t0).startSec
         val gate = MultiEpgPersistGate(emptySet())
-        gate.knownTabRefs = listOf(BOUQUET)
+        gate.knowTabs(1, listOf(BOUQUET))
         val sync = MultiEpgSync(
             dao = db.epgDao(),
             fetch = { _, _, time, _ ->

@@ -27,6 +27,7 @@ import okhttp3.mockwebserver.MockWebServer
 import okhttp3.mockwebserver.RecordedRequest
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertSame
@@ -233,13 +234,13 @@ class EpgRepositoryMultiEpgTest {
     @Test
     fun persistGateKnowsOnlyTheHubTabStrip() = runBlocking {
         val gate = repository.multiEpgPersistGate()
-        assertEquals(false, gate.persist(BOUQUET))
+        assertEquals(false, gate.persist(PROFILE_ID, BOUQUET))
 
         receiver.writeTabStrip(Service(BOUQUET, "Favourites"))
-        gate.knownTabRefs = receiver.services.hubTabStripRefs()
+        gate.knowTabs(PROFILE_ID, receiver.services.hubTabStripRefs(PROFILE_ID))
 
-        assertEquals(true, gate.persist(BOUQUET))
-        assertEquals(false, gate.persist(OTHER_BOUQUET))
+        assertEquals(true, gate.persist(PROFILE_ID, BOUQUET))
+        assertEquals(false, gate.persist(PROFILE_ID, OTHER_BOUQUET))
     }
 
     @Test
@@ -314,6 +315,26 @@ class EpgRepositoryMultiEpgTest {
         } finally {
             serverB.shutdown()
         }
+    }
+
+    @Test
+    fun aProfileDeletedDuringTheFetchGetsNoRows() = runBlocking {
+        val release = CountDownLatch(1)
+        receiver.answer = { request ->
+            release.await(5, TimeUnit.SECONDS)
+            routes(request)
+        }
+        val profiles = receiver.profiles.repository
+
+        val load = async(Dispatchers.IO) { sync.ensureChunk(PROFILE_ID, BOUQUET, NOW) }
+        receiver.awaitRequestsTo("/web/epgmulti", 1)
+        profiles.delete(profiles.current.value!!)
+        release.countDown()
+
+        assertTrue(load.await().isEmpty())
+        val dao = receiver.profiles.database.epgDao()
+        assertNull(dao.getChunk(PROFILE_ID, BOUQUET, chunk.startSec))
+        assertFalse(dao.hasEvents(PROFILE_ID))
     }
 
     @Test

@@ -63,7 +63,7 @@ class MultiEpgViewModel @Inject constructor(
     epg: EpgRepository,
     private val services: ServiceRepository,
     timers: TimerRepository,
-    profiles: ProfileRepository,
+    private val profiles: ProfileRepository,
     sessions: SessionConnectionHolder,
     settings: SettingsRepository
 ) : ViewModel() {
@@ -118,9 +118,10 @@ class MultiEpgViewModel @Inject constructor(
         val generation = ++loadGeneration
         inFlightKey = key
         loadJob?.cancel()
+        val profileId = profiles.current.value?.id
         loadJob = viewModelScope.launch {
             try {
-                persistGate.knownTabRefs = services.hubTabStripRefs()
+                persistGate.knowTabs(profileId, services.hubTabStripRefs(profileId))
                 if (generation != loadGeneration) {
                     return@launch
                 }
@@ -188,10 +189,7 @@ internal fun newMultiEpgGrid(
         }
     },
     loadBouquetServices = services::bouquetServices,
-    // Writes need the profile that asked for the rows; without one there is no id to key them by.
-    persistBouquet = { ref, tabRootRef ->
-        profiles.current.value != null && persistGate.persist(ref, tabRootRef)
-    },
+    persistBouquet = persistGate::persist,
     shouldSkipReceiverHttp = { hasCache ->
         sessions.status.value.shouldSkipReceiverHttp(hasCache)
     },

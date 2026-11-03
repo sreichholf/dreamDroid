@@ -11,13 +11,15 @@ import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.room.EpgChunkMetaEntity
 import net.reichholf.dreamdroid.room.EpgDao
+import net.reichholf.dreamdroid.room.EpgEventEntity
 
 /**
  * Windowed `/web/epgmulti` fetch with Room TTL cache and single-flight coalescing.
  * Never omits `endTime` — unbounded bouquet EPG is not allowed. [fetch] gets the profile
- * the caller bound the chunk to and the window as unix seconds;
- * [net.reichholf.dreamdroid.data.EpgRepository] owns the one instance per process and its
- * receiver fetch.
+ * the caller bound the chunk to and the window as unix seconds. [store] writes a fetched
+ * chunk and returns false when it did not, because its profile is gone;
+ * [net.reichholf.dreamdroid.data.EpgRepository] owns the one instance per process, its
+ * receiver fetch, and its write.
  */
 class MultiEpgSync(
     private val dao: EpgDao,
@@ -27,6 +29,11 @@ class MultiEpgSync(
         timeSec: Long,
         endTimeSec: Long
     ) -> List<Event>,
+    private val store: suspend (EpgChunkMetaEntity, List<EpgEventEntity>) -> Boolean =
+        { meta, events ->
+            dao.replaceChunk(meta, events)
+            true
+        },
     private val clockMs: () -> Long = { System.currentTimeMillis() },
     private val ttlMs: Long = MultiEpgWindows.DEFAULT_TTL_MS,
     private val farTtlMs: Long = MultiEpgWindows.FAR_TTL_MS,
@@ -212,10 +219,11 @@ class MultiEpgSync(
                 fetchedAtMs = clockMs()
             )
             withContext(Dispatchers.IO) {
-                dao.replaceChunk(meta, entities)
-                dao.pruneOlderThan(
-                    MultiEpgWindows.retentionCutoffSec(clockMs() / 1000L)
-                )
+                if (store(meta, entities)) {
+                    dao.pruneOlderThan(
+                        MultiEpgWindows.retentionCutoffSec(clockMs() / 1000L)
+                    )
+                }
             }
             deferred.complete(Unit)
         } catch (t: Throwable) {

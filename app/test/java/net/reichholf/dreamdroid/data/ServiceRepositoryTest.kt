@@ -228,7 +228,7 @@ class ServiceRepositoryTest {
     @Test
     fun withoutAProfileTheHubAnswersNothingAndAsksNothing() = runBlocking {
         writeStrip("TV", FAVOURITES to "Favourites")
-        receiver.profiles.repository.clearCurrent()
+        receiver.dropProfile()
 
         val cached = services.cachedBouquets()
         val bouquets = services.bouquets().last()
