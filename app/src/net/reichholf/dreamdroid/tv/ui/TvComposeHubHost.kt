@@ -48,6 +48,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
@@ -228,6 +229,13 @@ private val HubTopBarIconSize = 20.dp
  */
 internal val LocalTvHubTabNavigation = compositionLocalOf { false }
 
+/**
+ * The selected tab, the hub top bar's focus target. A form in the section below is a scrollable
+ * focus group: a D-pad Up from its first field has no target inside the group and clears focus
+ * instead of leaving it, so the field sends Up here explicitly.
+ */
+internal val LocalTvHubTopBarFocus = compositionLocalOf<FocusRequester?> { null }
+
 @Composable
 fun ComposeTvHubApp(
     activity: ComponentActivity,
@@ -373,8 +381,11 @@ fun ComposeTvHubApp(
         LaunchedEffect(overlayTarget, editorEvent, restoreHubFocus) {
             if (restoreHubFocus && overlayTarget == null && editorEvent == null) {
                 withFrameNanos {}
-                if (!serviceGridFocus.tryRequestFocus()) {
-                    liveTabFocus.tryRequestFocus()
+                if (
+                    !serviceGridFocus.restoreFocusedChild() &&
+                    !serviceGridFocus.requestFocus(FocusDirection.Enter)
+                ) {
+                    liveTabFocus.requestFocus()
                 }
                 restoreHubFocus = false
             }
@@ -455,22 +466,28 @@ fun ComposeTvHubChrome(
     }
     val liveContentFocus = if (continueWatching != null) continueWatchingFocus else gridFocus
     val liveTabFocusRequester = liveTabFocus ?: remember { FocusRequester() }
+    val selectedTabFocus = remember { FocusRequester() }
     var restoreFocusAfterOverlay by remember { mutableStateOf(false) }
     LaunchedEffect(showStreamUnavailable, restoreFocusAfterOverlay) {
-        if (restoreFocusAfterOverlay && !showStreamUnavailable) {
-            withFrameNanos {}
-            if (gridFocus?.tryRequestFocus() != true) {
-                liveTabFocusRequester.tryRequestFocus()
-            }
-            restoreFocusAfterOverlay = false
+        if (!restoreFocusAfterOverlay || showStreamUnavailable) {
+            return@LaunchedEffect
         }
+        // The overlay's trap cancels requests while it holds focus; it is gone by the next frame.
+        // The grid's focusRestorer gives focus back to the card that opened the overlay.
+        withFrameNanos {}
+        if (gridFocus?.restoreFocusedChild() != true &&
+            gridFocus?.requestFocus(FocusDirection.Enter) != true
+        ) {
+            liveTabFocusRequester.requestFocus()
+        }
+        restoreFocusAfterOverlay = false
     }
     var initialGridFocusDone by remember { mutableStateOf(false) }
     LaunchedEffect(selectedBouquet?.bouquet?.reference, liveContentFocus) {
         if (!initialGridFocusDone && liveContentFocus != null && !tabNavigation) {
             // The grid composes its cards during layout; wait for that frame.
             withFrameNanos {}
-            initialGridFocusDone = liveContentFocus.tryRequestFocus()
+            initialGridFocusDone = liveContentFocus.requestFocus(FocusDirection.Enter)
         }
     }
     // Back lands on Live TV's grid: its last focused card, else what the initial focus takes
@@ -483,8 +500,11 @@ fun ComposeTvHubChrome(
     LaunchedEffect(focusLiveAfterBack, section) {
         if (focusLiveAfterBack && section is HubSection.Live) {
             withFrameNanos {}
-            if (!gridFocusRequester.tryRequestFocus()) {
-                liveTabFocusRequester.tryRequestFocus()
+            if (
+                !gridFocusRequester.restoreFocusedChild() &&
+                !gridFocusRequester.requestFocus(FocusDirection.Enter)
+            ) {
+                liveTabFocusRequester.requestFocus()
             }
             // Cleared only now: the flag is this effect's key, so clearing it before the
             // frame restarted the effect and cancelled the request.
@@ -537,6 +557,7 @@ fun ComposeTvHubChrome(
                     onTabRowFocusChanged = { focused -> if (!focused) tabNavigation = false },
                     onOpenSettings = onOpenSettings,
                     liveTabFocus = liveTabFocusRequester,
+                    selectedTabFocus = selectedTabFocus,
                     profileName = profileName,
                     sessionChipLabel = sessionChipLabel,
                     onOpenProfiles = onOpenProfiles,
@@ -630,7 +651,10 @@ fun ComposeTvHubChrome(
                 // A tab switch leaves focus on the bar: content the new section composes
                 // skips its own focus request until focus leaves the tabs.
                 val sectionContent: @Composable () -> Unit = {
-                    CompositionLocalProvider(LocalTvHubTabNavigation provides tabNavigation) {
+                    CompositionLocalProvider(
+                        LocalTvHubTabNavigation provides tabNavigation,
+                        LocalTvHubTopBarFocus provides selectedTabFocus
+                    ) {
                         pane()
                     }
                 }
@@ -912,6 +936,7 @@ private fun HubTopBar(
     onTabRowFocusChanged: (Boolean) -> Unit,
     onOpenSettings: () -> Unit,
     liveTabFocus: FocusRequester,
+    selectedTabFocus: FocusRequester,
     profileName: String,
     sessionChipLabel: String?,
     onOpenProfiles: () -> Unit,
@@ -969,6 +994,13 @@ private fun HubTopBar(
                                 .then(
                                     if (tab == HubTab.Live) {
                                         Modifier.focusRequester(liveTabFocus)
+                                    } else {
+                                        Modifier
+                                    }
+                                )
+                                .then(
+                                    if (index == selectedIndex) {
+                                        Modifier.focusRequester(selectedTabFocus)
                                     } else {
                                         Modifier
                                     }

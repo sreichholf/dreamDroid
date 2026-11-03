@@ -215,11 +215,7 @@ internal fun TvMultiEpgEventDetail(
     var showNeedsReceiver by remember { mutableStateOf(false) }
     BackHandler(onBack = onDismiss)
     LaunchedEffect(event) {
-        try {
-            firstActionFocus.requestFocus()
-        } catch (_: IllegalStateException) {
-            // Overlay not attached yet.
-        }
+        firstActionFocus.requestFocus()
     }
     Box(
         modifier = Modifier

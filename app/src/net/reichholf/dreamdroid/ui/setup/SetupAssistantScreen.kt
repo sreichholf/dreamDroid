@@ -176,7 +176,7 @@ fun SetupAssistantScreen(
             targetValue = 1f,
             animationSpec = tween(durationMillis = INTRO_MOVE_MS, easing = FastOutSlowInEasing)
         )
-        runCatching { startFocus.requestFocus() }
+        startFocus.requestFocus()
     }
     val progress = intro.value
     val hostText = viewModel.host.state.text
@@ -184,8 +184,8 @@ fun SetupAssistantScreen(
     val signInReady = !draft.login || viewModel.user.state.text.isNotBlank()
     val signInChecked = checkResult != null && !checking
     val failed = checkResult?.hasError == true
-    // A running check, save or restore keeps the action enabled: a disabled button drops
-    // D-pad focus onto a text field, which opens the keyboard on TV.
+    // A running check, save or restore keeps the action enabled: the remote stays on the
+    // action that shows the progress instead of a dead control.
     val busy = (step == SetupStep.SignIn && checking) ||
         (step == SetupStep.Import && restoring) ||
         (step == SetupStep.Name && saving)
@@ -313,11 +313,11 @@ fun SetupAssistantScreen(
                                             val startAction = rememberRemoteFocus()
                                             val restoreAction = rememberRemoteFocus()
                                             val restoreFocus = remember { FocusRequester() }
-                                            // Both actions are disabled while the picked backup
-                                            // is read, which drops the remote's focus. When the
-                                            // read ends on Welcome, put it back on Restore. The
-                                            // outgoing content stays composed through the exit
-                                            // animation, so only a wizard still on Welcome counts.
+                                            // The read disables both actions; if that drops the
+                                            // remote's focus, put it back on Restore when the
+                                            // read ends on Welcome. The outgoing content stays
+                                            // composed through the exit animation, so only a
+                                            // wizard still on Welcome counts.
                                             var wasRestoring by remember {
                                                 mutableStateOf(restoring)
                                             }
@@ -325,9 +325,7 @@ fun SetupAssistantScreen(
                                                 if (wasRestoring && !restoring &&
                                                     step == SetupStep.Welcome
                                                 ) {
-                                                    runCatching {
-                                                        restoreFocus.requestFocus()
-                                                    }
+                                                    restoreFocus.requestFocus()
                                                 }
                                                 wasRestoring = restoring
                                             }
@@ -656,7 +654,7 @@ private fun FindStep(
                 host.text.toString() == receiver.host && portText == receiver.port.toString()
             if (index == 0 && remote && !firstResultClaimed && !addressEdited) {
                 LaunchedEffect(Unit) {
-                    runCatching { firstResult.requestFocus() }
+                    firstResult.requestFocus()
                     firstResultClaimed = true
                 }
             }

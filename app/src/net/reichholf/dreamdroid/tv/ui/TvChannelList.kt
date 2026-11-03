@@ -139,10 +139,7 @@ fun TvChannelList(
                 listState.layoutInfo.visibleItemsInfo.any { it.index == targetIndex }
             }.first { it }
             refocusPending = false
-            try {
-                targetRequester.requestFocus()
-            } catch (_: IllegalStateException) {
-            }
+            targetRequester.requestFocus()
         }
     }
     if (onScrollInProgress != null) {
@@ -552,10 +549,7 @@ fun ComposeView.bindTvChannelList(
     setOnFocusChangeListener { _, hasFocus ->
         if (hasFocus) {
             post {
-                try {
-                    targetFocus.requestFocus()
-                } catch (_: IllegalStateException) {
-                }
+                targetFocus.requestFocus()
             }
         }
     }

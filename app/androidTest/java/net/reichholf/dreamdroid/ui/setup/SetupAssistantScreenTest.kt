@@ -949,8 +949,9 @@ class SetupAssistantScreenTest {
         composeRule.runOnIdle { viewModel.restoreFrom(RESTORE_URI) }
         assertTrue(viewModel.uiState.value.restoring)
         composeRule.waitForIdle()
-        // Both Welcome actions are disabled while the read runs, so the button loses focus.
-        restore.assertIsNotEnabled().assertIsNotFocused()
+        // Both Welcome actions are disabled while the read runs. A disabled button has no
+        // Focused semantics, so only the end state shows where the remote is.
+        restore.assertIsNotEnabled()
 
         gate.complete(Unit)
         composeRule.waitUntil(timeoutMillis = 5_000) {

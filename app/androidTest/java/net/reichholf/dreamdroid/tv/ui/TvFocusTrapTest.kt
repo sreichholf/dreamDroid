@@ -24,11 +24,12 @@ import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.assertIsNotFocused
+import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.requestFocus
@@ -286,10 +287,21 @@ class TvFocusTrapTest {
             )
         }
         composeRule.waitForIdle()
-        val cards = composeRule.onAllNodesWithTag("hub_service_card")
-        cards[0].assertIsFocused()
-        cards[1].requestFocus()
-        cards[1].performKeyInput { pressKey(Key.DirectionCenter) }
+        // Cards are matched by name: the semantics tree does not promise the grid's item order.
+        val first = composeRule.onNode(
+            hasTestTag("hub_service_card") and hasText("Das Erste", substring = true)
+        )
+        val opener = composeRule.onNode(
+            hasTestTag("hub_service_card") and hasText("ZDF", substring = true)
+        )
+        // Let the hub's initial focus settle before moving it: it lands on the first card.
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            runCatching { first.assertIsFocused() }.isSuccess
+        }
+        opener.requestFocus()
+        composeRule.waitForIdle()
+        opener.assertIsFocused()
+        opener.performKeyInput { pressKey(Key.DirectionCenter) }
         composeRule.waitForIdle()
         composeRule.onNodeWithTag("hub_stream_unavailable").assertIsDisplayed()
 
@@ -298,13 +310,18 @@ class TvFocusTrapTest {
         ok.performKeyInput { pressKey(Key.DirectionDown) }
         composeRule.waitForIdle()
         ok.assertIsFocused()
-        cards[1].assertIsNotFocused()
+        opener.assertIsNotFocused()
 
-        ok.performClick()
-        composeRule.waitForIdle()
+        // OK on the remote: a TV Surface has no touch handling, so performClick would not close it.
+        ok.performKeyInput { pressKey(Key.DirectionCenter) }
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            composeRule.onAllNodesWithTag("hub_stream_unavailable").fetchSemanticsNodes().isEmpty()
+        }
 
-        cards[1].assertIsFocused()
-        cards[0].assertIsNotFocused()
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            runCatching { opener.assertIsFocused() }.isSuccess
+        }
+        first.assertIsNotFocused()
     }
 
     @Test

@@ -1047,11 +1047,7 @@ fun ComposeView.bindVideoOverlayScreen(
     setOnFocusChangeListener { _, hasFocus ->
         if (hasFocus) {
             post {
-                try {
-                    firstControlFocus.requestFocus()
-                } catch (_: IllegalStateException) {
-                    // Composition not ready yet.
-                }
+                firstControlFocus.requestFocus()
             }
         }
     }

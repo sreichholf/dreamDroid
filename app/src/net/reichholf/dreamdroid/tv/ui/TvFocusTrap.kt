@@ -30,6 +30,8 @@ internal fun Modifier.tvFocusTrap(): Modifier = focusProperties {
 /**
  * Requests [focus] once [overlayShown] turns false. A modal overlay cancels focus that would leave
  * it while it is composed, so the opener can only take focus back after the overlay is gone.
+ * A group (a list, a form) returns to the child that was focused last; a single target just takes
+ * focus.
  */
 @Composable
 internal fun RestoreFocusAfterOverlay(overlayShown: Boolean, focus: FocusRequester) {
@@ -39,14 +41,9 @@ internal fun RestoreFocusAfterOverlay(overlayShown: Boolean, focus: FocusRequest
         wasShown = overlayShown
         if (restore) {
             withFrameNanos {}
-            focus.tryRequestFocus()
+            if (!focus.restoreFocusedChild()) {
+                focus.requestFocus()
+            }
         }
     }
-}
-
-/** A focus request that may find its target out of the composition. */
-internal fun FocusRequester.tryRequestFocus(): Boolean = try {
-    requestFocus()
-} catch (_: IllegalStateException) {
-    false
 }

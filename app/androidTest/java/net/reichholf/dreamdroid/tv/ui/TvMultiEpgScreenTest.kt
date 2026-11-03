@@ -56,7 +56,6 @@ import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.requestFocus
@@ -534,10 +533,6 @@ class TvMultiEpgScreenTest {
         composeRule.waitForIdle()
         stream.performKeyInput { pressKey(Key.DirectionCenter) }
         composeRule.waitForIdle()
-        if (!streamed) {
-            stream.performClick()
-            composeRule.waitForIdle()
-        }
         assertEquals(true, streamed)
     }
 
@@ -592,10 +587,6 @@ class TvMultiEpgScreenTest {
         composeRule.waitForIdle()
         editTimer.performKeyInput { pressKey(Key.DirectionCenter) }
         composeRule.waitForIdle()
-        if (!edited) {
-            editTimer.performClick()
-            composeRule.waitForIdle()
-        }
         assertEquals(true, edited)
     }
 

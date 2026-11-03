@@ -11,7 +11,6 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.requestFocus
@@ -70,11 +69,11 @@ class TvServiceTimerOverlayTest {
                 }
             }
         }
-        dpadActivate("tv_service_timer_overlay_stream") { streamed }
+        dpadActivate("tv_service_timer_overlay_stream")
         assertEquals(true, streamed)
-        dpadActivate("tv_service_timer_overlay_set_timer") { setEvent != null }
+        dpadActivate("tv_service_timer_overlay_set_timer")
         assertEquals(service.now, setEvent)
-        dpadActivate("tv_service_timer_overlay_edit_timer") { editEvent != null }
+        dpadActivate("tv_service_timer_overlay_edit_timer")
         assertEquals(service.now, editEvent)
     }
 
@@ -96,10 +95,10 @@ class TvServiceTimerOverlayTest {
                 }
             }
         }
-        dpadActivate("tv_service_timer_overlay_next") { false }
-        dpadActivate("tv_service_timer_overlay_set_timer") { setEvent != null }
+        dpadActivate("tv_service_timer_overlay_next")
+        dpadActivate("tv_service_timer_overlay_set_timer")
         assertEquals(service.next, setEvent)
-        dpadActivate("tv_service_timer_overlay_edit_timer") { editEvent != null }
+        dpadActivate("tv_service_timer_overlay_edit_timer")
         assertEquals(service.next, editEvent)
     }
 
@@ -120,11 +119,7 @@ class TvServiceTimerOverlayTest {
                 }
             }
         }
-        dpadActivate("tv_service_timer_overlay_stream") {
-            composeRule.onAllNodesWithTag("tv_service_timer_overlay_needs_receiver")
-                .fetchSemanticsNodes()
-                .isNotEmpty()
-        }
+        dpadActivate("tv_service_timer_overlay_stream")
         assertEquals(false, streamed)
         composeRule.onNodeWithTag("tv_service_timer_overlay_needs_receiver").assertExists()
     }
@@ -146,11 +141,7 @@ class TvServiceTimerOverlayTest {
                 }
             }
         }
-        dpadActivate("tv_service_timer_overlay_set_timer") {
-            composeRule.onAllNodesWithTag("tv_service_timer_overlay_needs_receiver")
-                .fetchSemanticsNodes()
-                .isNotEmpty()
-        }
+        dpadActivate("tv_service_timer_overlay_set_timer")
         assertNull(setEvent)
         composeRule.onNodeWithTag("tv_service_timer_overlay_needs_receiver").assertExists()
     }
@@ -184,16 +175,12 @@ class TvServiceTimerOverlayTest {
             .assertCountEquals(0)
     }
 
-    private fun dpadActivate(tag: String, invoked: () -> Boolean) {
+    private fun dpadActivate(tag: String) {
         val node = composeRule.onNodeWithTag(tag)
         node.assertIsDisplayed().assertHasClickAction()
         node.requestFocus()
         node.performKeyInput { pressKey(Key.DirectionCenter) }
         composeRule.waitForIdle()
-        if (!invoked()) {
-            node.performClick()
-            composeRule.waitForIdle()
-        }
     }
 
     private fun demoService() = ServiceNowNext(

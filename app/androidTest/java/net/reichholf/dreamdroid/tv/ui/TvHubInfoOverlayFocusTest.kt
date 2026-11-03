@@ -4,6 +4,9 @@ import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsFocused
+import androidx.compose.ui.test.assertIsNotFocused
+import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
@@ -91,7 +94,10 @@ class TvHubInfoOverlayFocusTest {
             composeRule.onAllNodesWithTag("hub_service_card").fetchSemanticsNodes().isNotEmpty()
         }
 
-        val card = composeRule.onAllNodesWithTag("hub_service_card")[0]
+        // The second card: a fallback to the grid's first card must not pass this.
+        val card = composeRule.onNode(
+            hasTestTag("hub_service_card") and hasText("ZDF HD", substring = true)
+        )
         card.requestFocus()
         card.performKeyInput { pressKey(Key.Info) }
         composeRule.waitForIdle()
@@ -102,6 +108,9 @@ class TvHubInfoOverlayFocusTest {
 
         composeRule.onAllNodesWithTag("tv_service_timer_overlay").assertCountEquals(0)
         card.assertIsFocused()
+        composeRule.onNode(
+            hasTestTag("hub_service_card") and hasText("Das Erste HD", substring = true)
+        ).assertIsNotFocused()
     }
 
     private companion object {
