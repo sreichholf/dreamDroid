@@ -112,7 +112,7 @@ fun TvTimerServicePickScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .tvFocusTrap(firstRowFocus)
+            .tvFocusTrap()
             .testTag("tv_timer_service_pick")
     ) {
         if (rows.isEmpty()) {

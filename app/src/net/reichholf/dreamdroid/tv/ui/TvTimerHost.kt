@@ -129,15 +129,11 @@ fun TvTimerHostContent(
         }
 
         if (showNeedsReceiver) {
-            TvNeedsReceiverOverlay(
-                onDismiss = {
-                    showNeedsReceiver = false
-                    listFocus.requestFocus()
-                }
-            )
+            TvNeedsReceiverOverlay(onDismiss = { showNeedsReceiver = false })
         }
         IndeterminateProgressHost(
             uiState.progress?.let { IndeterminateProgressState(message = it.asString()) }
         )
     }
+    RestoreFocusAfterOverlay(overlayShown = showNeedsReceiver, focus = listFocus)
 }

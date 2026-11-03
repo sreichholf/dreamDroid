@@ -2,55 +2,47 @@ package net.reichholf.dreamdroid.tv.ui
 
 import androidx.compose.foundation.focusGroup
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.input.key.KeyEvent
-import androidx.compose.ui.input.key.KeyEventType
-import androidx.compose.ui.input.key.key
-import androidx.compose.ui.input.key.onKeyEvent
-import androidx.compose.ui.input.key.type
-import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.focus.focusProperties
 
 /**
- * Keeps D-pad focus inside a modal overlay.
+ * Keeps D-pad focus in a modal overlay.
  *
- * `focusGroup()` alone is not a trap: a direction key with no target inside the group moves
- * focus to the chrome behind it. This consumes such a key and moves focus itself, putting it
- * back on the previously focused child when the move left the group. Keys the focused child
- * consumes never reach this handler.
- *
- * [fallback] is the overlay's first action, used when the previously focused child is gone.
+ * A move that would leave the group is cancelled before focus changes, so the screen behind the
+ * overlay never takes focus or scrolls. [focusProperties] has to come before [focusGroup]: the
+ * properties apply to the focus target below them, the group.
+ */
+internal fun Modifier.tvFocusTrap(): Modifier = focusProperties {
+    onExit = { cancelFocusChange() }
+}.focusGroup()
+
+/**
+ * Requests [focus] once [overlayShown] turns false. A modal overlay cancels focus that would leave
+ * it while it is composed, so the opener can only take focus back after the overlay is gone.
  */
 @Composable
-internal fun Modifier.tvFocusTrap(fallback: FocusRequester): Modifier {
-    val focusManager = LocalFocusManager.current
-    val trapFocus = remember { FocusRequester() }
-    return this
-        .focusRequester(trapFocus)
-        .focusGroup()
-        .onKeyEvent { event ->
-            val direction = event.focusDirectionOrNull() ?: return@onKeyEvent false
-            if (event.type != KeyEventType.KeyDown) return@onKeyEvent false
-            trapFocus.saveFocusedChild()
-            focusManager.moveFocus(direction)
-            if (!trapFocus.saveFocusedChild() && !trapFocus.restoreFocusedChild()) {
-                if (!fallback.requestFocus()) {
-                    // Last resort: enter the group at its first focusable child.
-                    trapFocus.requestFocus()
-                }
-            }
-            true
+internal fun RestoreFocusAfterOverlay(overlayShown: Boolean, focus: FocusRequester) {
+    var wasShown by remember { mutableStateOf(false) }
+    LaunchedEffect(overlayShown) {
+        val restore = wasShown && !overlayShown
+        wasShown = overlayShown
+        if (restore) {
+            withFrameNanos {}
+            focus.tryRequestFocus()
         }
+    }
 }
 
-private fun KeyEvent.focusDirectionOrNull(): FocusDirection? = when (key) {
-    Key.DirectionUp -> FocusDirection.Up
-    Key.DirectionDown -> FocusDirection.Down
-    Key.DirectionLeft -> FocusDirection.Left
-    Key.DirectionRight -> FocusDirection.Right
-    else -> null
+/** A focus request that may find its target out of the composition. */
+internal fun FocusRequester.tryRequestFocus(): Boolean = try {
+    requestFocus()
+} catch (_: IllegalStateException) {
+    false
 }

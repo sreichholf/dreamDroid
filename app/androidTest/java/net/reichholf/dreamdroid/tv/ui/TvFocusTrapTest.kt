@@ -14,19 +14,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.input.InputMode
 import androidx.compose.ui.input.InputModeManager
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.platform.LocalInputModeManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.ExperimentalTestApi
-import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.assertIsNotFocused
-import androidx.compose.ui.test.hasAnyAncestor
-import androidx.compose.ui.test.hasTestTag
-import androidx.compose.ui.test.isFocused
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -50,9 +47,10 @@ import org.junit.Rule
 import org.junit.Test
 
 /**
- * D-pad focus must stay in a modal overlay and go back to the opener when it closes.
- * Keyboard input mode is required: a TV Surface focuses in touch mode too, so a test that
- * only requests focus would not prove the overlay traps a real D-pad move.
+ * D-pad focus must stay in a modal overlay and go back to the opener when it closes. The overlay
+ * cancels a move that would leave it, so the focused action does not change and the actions behind
+ * the overlay never take focus. Keyboard input mode is required: a TV Surface focuses in touch mode
+ * too, so a test that only requests focus would not prove the overlay traps a real D-pad move.
  */
 @OptIn(ExperimentalTestApi::class)
 class TvFocusTrapTest {
@@ -60,6 +58,9 @@ class TvFocusTrapTest {
     val composeRule = createAndroidComposeRule<ComponentActivity>()
 
     private lateinit var inputModeManager: InputModeManager
+
+    /** Focus the background reports; a cancelled move must never get there. */
+    private var backgroundFocusCount = 0
 
     @Test
     fun serviceTimerOverlayKeepsFocusAtItsLastAction() {
@@ -77,19 +78,51 @@ class TvFocusTrapTest {
         last.requestFocus()
         composeRule.waitForIdle()
         last.assertIsFocused()
+        backgroundFocusCount = 0
 
         last.performKeyInput { pressKey(Key.DirectionDown) }
         composeRule.waitForIdle()
 
-        assertFocusInside("tv_service_timer_overlay")
+        last.assertIsFocused()
+        assertBackgroundNeverFocused()
 
         val first = composeRule.onNodeWithTag("tv_service_timer_overlay_stream")
         first.requestFocus()
         composeRule.waitForIdle()
+        first.assertIsFocused()
+        backgroundFocusCount = 0
+
         first.performKeyInput { pressKey(Key.DirectionUp) }
         composeRule.waitForIdle()
 
-        assertFocusInside("tv_service_timer_overlay")
+        first.assertIsFocused()
+        assertBackgroundNeverFocused()
+    }
+
+    @Test
+    fun serviceTimerOverlayMovesBetweenItsActions() {
+        setTvContent {
+            BackgroundActions()
+            TvServiceTimerOverlay(
+                service = demoService(),
+                onDismiss = {},
+                onStream = {},
+                onSetTimer = {},
+                onEditTimer = {}
+            )
+        }
+        val first = composeRule.onNodeWithTag("tv_service_timer_overlay_stream")
+        first.requestFocus()
+        composeRule.waitForIdle()
+        first.assertIsFocused()
+        backgroundFocusCount = 0
+
+        first.performKeyInput { pressKey(Key.DirectionDown) }
+        composeRule.waitForIdle()
+
+        composeRule.onNodeWithTag("tv_service_timer_overlay_current").assertIsFocused()
+        first.assertIsNotFocused()
+        assertBackgroundNeverFocused()
     }
 
     @Test
@@ -102,6 +135,7 @@ class TvFocusTrapTest {
         ok.requestFocus()
         composeRule.waitForIdle()
         ok.assertIsFocused()
+        backgroundFocusCount = 0
 
         ok.performKeyInput { pressKey(Key.DirectionDown) }
         composeRule.waitForIdle()
@@ -109,7 +143,8 @@ class TvFocusTrapTest {
 
         ok.performKeyInput { pressKey(Key.DirectionUp) }
         composeRule.waitForIdle()
-        assertFocusInside("trap_needs_receiver")
+        ok.assertIsFocused()
+        assertBackgroundNeverFocused()
     }
 
     @Test
@@ -126,11 +161,13 @@ class TvFocusTrapTest {
         first.requestFocus()
         composeRule.waitForIdle()
         first.assertIsFocused()
+        backgroundFocusCount = 0
 
         first.performKeyInput { pressKey(Key.DirectionUp) }
         composeRule.waitForIdle()
 
-        assertFocusInside("tv_multi_epg_detail")
+        first.assertIsFocused()
+        assertBackgroundNeverFocused()
     }
 
     @Test
@@ -150,11 +187,13 @@ class TvFocusTrapTest {
         last.requestFocus()
         composeRule.waitForIdle()
         last.assertIsFocused()
+        backgroundFocusCount = 0
 
         last.performKeyInput { pressKey(Key.DirectionDown) }
         composeRule.waitForIdle()
 
-        assertFocusInside("tv_timer_service_pick")
+        last.assertIsFocused()
+        assertBackgroundNeverFocused()
     }
 
     @Test
@@ -181,11 +220,13 @@ class TvFocusTrapTest {
         title.requestFocus()
         composeRule.waitForIdle()
         title.assertIsFocused()
+        backgroundFocusCount = 0
 
         title.performKeyInput { pressKey(Key.DirectionUp) }
         composeRule.waitForIdle()
 
-        assertFocusInside("tv_timer_editor")
+        title.assertIsFocused()
+        assertBackgroundNeverFocused()
     }
 
     @Test
@@ -300,6 +341,7 @@ class TvFocusTrapTest {
     }
 
     private fun setTvContent(content: @Composable () -> Unit) {
+        backgroundFocusCount = 0
         composeRule.setContent {
             inputModeManager = LocalInputModeManager.current
             DreamDroidTvTheme {
@@ -312,11 +354,8 @@ class TvFocusTrapTest {
         composeRule.runOnIdle { assertEquals(InputMode.Keyboard, inputModeManager.inputMode) }
     }
 
-    private fun assertFocusInside(overlayTag: String) {
-        composeRule.onAllNodes(
-            isFocused() and hasAnyAncestor(hasTestTag(overlayTag)),
-            useUnmergedTree = true
-        ).assertCountEquals(1)
+    private fun assertBackgroundNeverFocused() {
+        assertEquals("focus landed behind the overlay", 0, backgroundFocusCount)
         composeRule.onNodeWithTag("trap_background_top").assertIsNotFocused()
         composeRule.onNodeWithTag("trap_background_bottom").assertIsNotFocused()
     }
@@ -343,6 +382,7 @@ class TvFocusTrapTest {
             modifier = modifier
                 .fillMaxWidth()
                 .height(48.dp)
+                .onFocusChanged { if (it.isFocused) backgroundFocusCount++ }
                 .clickable {}
         )
     }

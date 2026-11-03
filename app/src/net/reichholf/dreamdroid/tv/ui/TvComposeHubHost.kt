@@ -674,13 +674,6 @@ fun ComposeTvHubChrome(
     }
 }
 
-/** A focus request that may find its target out of the composition. */
-private fun FocusRequester.tryRequestFocus(): Boolean = try {
-    requestFocus()
-} catch (_: IllegalStateException) {
-    false
-}
-
 /** The section's title, the browse state, and its [content] below. */
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
@@ -867,7 +860,7 @@ fun TvNeedsReceiverOverlay(
         modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            .tvFocusTrap(okFocus)
+            .tvFocusTrap()
             .testTag(testTag),
         contentAlignment = Alignment.Center
     ) {

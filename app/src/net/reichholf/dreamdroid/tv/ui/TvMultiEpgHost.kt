@@ -218,7 +218,7 @@ internal fun TvMultiEpgEventDetail(
         modifier = Modifier
             .fillMaxSize()
             .background(PhoneMaterialTheme.colorScheme.background)
-            .tvFocusTrap(firstActionFocus)
+            .tvFocusTrap()
             .testTag("tv_multi_epg_detail")
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
@@ -293,14 +293,12 @@ internal fun TvMultiEpgEventDetail(
         }
         if (showNeedsReceiver) {
             TvNeedsReceiverOverlay(
-                onDismiss = {
-                    showNeedsReceiver = false
-                    firstActionFocus.requestFocus()
-                },
+                onDismiss = { showNeedsReceiver = false },
                 testTag = "tv_multi_epg_needs_receiver"
             )
         }
     }
+    RestoreFocusAfterOverlay(overlayShown = showNeedsReceiver, focus = firstActionFocus)
 }
 
 @OptIn(ExperimentalTvMaterial3Api::class)

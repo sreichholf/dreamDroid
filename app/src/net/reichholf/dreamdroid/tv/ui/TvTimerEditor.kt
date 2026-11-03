@@ -113,7 +113,7 @@ fun TvTimerEditorContent(
         }
     }
 
-    val trapModifier = if (trapFocus) Modifier.tvFocusTrap(initialFocus) else Modifier
+    val trapModifier = if (trapFocus) Modifier.tvFocusTrap() else Modifier
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -155,12 +155,8 @@ fun TvTimerEditorContent(
         }
 
         if (showNeedsReceiver) {
-            TvNeedsReceiverOverlay(
-                onDismiss = {
-                    showNeedsReceiver = false
-                    initialFocus.requestFocus()
-                }
-            )
+            TvNeedsReceiverOverlay(onDismiss = { showNeedsReceiver = false })
         }
     }
+    RestoreFocusAfterOverlay(overlayShown = showNeedsReceiver, focus = initialFocus)
 }

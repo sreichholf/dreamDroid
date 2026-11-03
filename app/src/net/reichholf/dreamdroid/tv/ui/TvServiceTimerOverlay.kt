@@ -65,7 +65,7 @@ fun TvServiceTimerOverlay(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .tvFocusTrap(firstActionFocus)
+            .tvFocusTrap()
             .testTag("tv_service_timer_overlay"),
         contentAlignment = Alignment.Center
     ) {
@@ -142,14 +142,12 @@ fun TvServiceTimerOverlay(
         }
         if (showNeedsReceiver) {
             TvNeedsReceiverOverlay(
-                onDismiss = {
-                    showNeedsReceiver = false
-                    firstActionFocus.requestFocus()
-                },
+                onDismiss = { showNeedsReceiver = false },
                 testTag = "tv_service_timer_overlay_needs_receiver"
             )
         }
     }
+    RestoreFocusAfterOverlay(overlayShown = showNeedsReceiver, focus = firstActionFocus)
 }
 
 private fun eventActionLabel(heading: String, event: Event): String {
