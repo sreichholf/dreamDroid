@@ -9,6 +9,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 
@@ -16,11 +17,14 @@ import androidx.compose.ui.focus.focusProperties
  * Keeps D-pad focus in a modal overlay.
  *
  * A move that would leave the group is cancelled before focus changes, so the screen behind the
- * overlay never takes focus or scrolls. [focusProperties] has to come before [focusGroup]: the
- * properties apply to the focus target below them, the group.
+ * overlay never takes focus or scrolls. A deliberate [FocusDirection.Exit] (clearFocus) still
+ * leaves, so a text field can be left with IME Done or Back. [focusProperties] has to come before
+ * [focusGroup]: the properties apply to the focus target below them, the group.
  */
 internal fun Modifier.tvFocusTrap(): Modifier = focusProperties {
-    onExit = { cancelFocusChange() }
+    // Exit is clearFocus(), which IME Done and Back on a TV field use to leave the field;
+    // cancelling it would keep the field focused and the keyboard open.
+    onExit = { if (requestedFocusDirection != FocusDirection.Exit) cancelFocusChange() }
 }.focusGroup()
 
 /**

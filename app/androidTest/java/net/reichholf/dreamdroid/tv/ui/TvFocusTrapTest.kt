@@ -230,6 +230,39 @@ class TvFocusTrapTest {
     }
 
     @Test
+    fun timerEditorFieldLeavesFocusOnBack() {
+        val event = demoEvent()
+        setTvContent {
+            BackgroundActions()
+            TvTimerEditorContent(
+                uiState = TimerEditUiState(
+                    timer = Timer.createByEvent(event),
+                    isCreate = true
+                ),
+                name = remember { TextFieldState(event.title) },
+                description = remember { TextFieldState("") },
+                actions = object : TimerFormActions {},
+                servicePickKey = tvTimerServicePickKey(null),
+                onServicePicked = {},
+                onSave = {},
+                onDismiss = {},
+                trapFocus = true
+            )
+        }
+        val title = composeRule.onNodeWithContentDescription("Title")
+        title.requestFocus()
+        composeRule.waitForIdle()
+        title.assertIsFocused()
+
+        // Back on a TV field clears its focus (clearFocusOnBack): the trap has to let
+        // clearFocus through, or the field and the keyboard could not be left.
+        title.performKeyInput { pressKey(Key.Back) }
+        composeRule.waitForIdle()
+
+        title.assertIsNotFocused()
+    }
+
+    @Test
     fun hubStreamOverlayKeepsFocusAndRestoresTheCard() {
         val bouquetRef = "1:7:1:0:0:0:0:0:0:0:Favourites"
         setTvContent {
