@@ -1,5 +1,6 @@
 package net.reichholf.dreamdroid.helpers
 
+import java.io.File
 import org.apache.commons.net.ftp.FTPReply
 
 /**
@@ -59,6 +60,19 @@ object PiconFtpSync {
     fun localFileAfterRetrieve(retrieveSucceeded: Boolean, replyCode: Int): LocalFile {
         val completed = retrieveSucceeded && FTPReply.isPositiveCompletion(replyCode)
         return if (completed) LocalFile.KEEP else LocalFile.DISCARD
+    }
+
+    /**
+     * [remoteName] when the sync may store it in the picon folder, null when it must skip
+     * the entry. The listing comes from the receiver, so it is not trusted: a path
+     * separator, `..` or an absolute path would put the file outside the folder.
+     */
+    fun localFileName(remoteName: String): String? {
+        if (remoteName.isEmpty()) return null
+        if (remoteName.contains('/') || remoteName.contains('\\')) return null
+        if (remoteName.contains("..")) return null
+        if (File(remoteName).isAbsolute) return null
+        return remoteName
     }
 
     private fun failure(summary: String, replyCode: Int, replyText: String?): String {

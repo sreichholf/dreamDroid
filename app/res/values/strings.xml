@@ -307,6 +307,7 @@
     <string name="picon_sync_finished">Successfully downloaded %s picons</string>
     <string name="picon_sync_partial">Downloaded %1$s of %2$s picons</string>
     <string name="picon_sync_failed">No picon could be downloaded</string>
+    <string name="picon_sync_foreground_failed">Picon sync could not start in the background</string>
     <string name="drawer_open">Open navigation drawer</string>
     <string name="enable_animations_long">Enable additional view animations</string>
     <string name="enable_animations">Enable animations</string>
