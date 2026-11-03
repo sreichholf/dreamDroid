@@ -469,19 +469,25 @@ fun ComposeTvHubChrome(
     val selectedTabFocus = remember { FocusRequester() }
     // The card the remote was on when an overlay took focus, so the overlay can give it back.
     val lastCardFocus = remember { FocusRequester() }
+    var cardFocused by remember { mutableStateOf(false) }
     var restoreFocusAfterOverlay by remember { mutableStateOf(false) }
     LaunchedEffect(showStreamUnavailable, restoreFocusAfterOverlay) {
         if (!restoreFocusAfterOverlay || showStreamUnavailable) {
             return@LaunchedEffect
         }
         // The overlay's focus trap is still composed in the frame that closes it and
-        // cancels the request, so retry until the card takes focus.
+        // cancels the request, so retry until the card actually holds focus again.
         repeat(8) {
             withFrameNanos {}
-            val restored = lastCardFocus.requestFocus() ||
+            if (cardFocused) {
+                restoreFocusAfterOverlay = false
+                return@LaunchedEffect
+            }
+            lastCardFocus.requestFocus() ||
                 gridFocus?.restoreFocusedChild() == true ||
                 gridFocus?.requestFocus(FocusDirection.Enter) == true
-            if (restored) {
+            withFrameNanos {}
+            if (cardFocused) {
                 restoreFocusAfterOverlay = false
                 return@LaunchedEffect
             }
@@ -596,6 +602,7 @@ fun ComposeTvHubChrome(
                                             onServiceClick = gatedServiceClick,
                                             focusRequester = gridFocusRequester,
                                             lastCardFocus = lastCardFocus,
+                                            onCardFocusChanged = { cardFocused = it },
                                             onServiceInfo = onServiceInfo?.let { callback ->
                                                 { service, bouquetRef ->
                                                     gridFocusRequester.saveFocusedChild()
@@ -1340,6 +1347,7 @@ fun HubServiceGrid(
     modifier: Modifier = Modifier,
     focusRequester: FocusRequester? = null,
     lastCardFocus: FocusRequester? = null,
+    onCardFocusChanged: ((Boolean) -> Unit)? = null,
     onServiceInfo: ((ServiceNowNext, String?) -> Unit)? = null,
     headerFocus: FocusRequester? = null,
     header: (@Composable (firstCardFocus: FocusRequester?) -> Unit)? = null
@@ -1415,8 +1423,13 @@ fun HubServiceGrid(
                             Modifier
                         }
                     ),
-                onFocused = if (lastCardFocus != null) {
-                    { lastFocusedIndex = index }
+                onFocusChanged = if (lastCardFocus != null) {
+                    { focused ->
+                        if (focused) {
+                            lastFocusedIndex = index
+                        }
+                        onCardFocusChanged?.invoke(focused)
+                    }
                 } else {
                     null
                 },
@@ -1436,6 +1449,7 @@ private fun HubBouquetServiceItem(
     onServiceClick: (ServiceNowNext, String?) -> Unit,
     modifier: Modifier = Modifier,
     onFocused: (() -> Unit)? = null,
+    onFocusChanged: ((Boolean) -> Unit)? = null,
     fillWidth: Boolean = false,
     contentExpanded: Boolean = true,
     onInfo: ((ServiceNowNext, String?) -> Unit)? = null
@@ -1452,6 +1466,7 @@ private fun HubBouquetServiceItem(
             onClick = { onServiceClick(service, bouquetRef) },
             modifier = modifier,
             onFocused = onFocused,
+            onFocusChanged = onFocusChanged,
             fillWidth = fillWidth,
             contentExpanded = contentExpanded,
             onInfo = onInfo?.let { info ->
@@ -1603,6 +1618,7 @@ private fun HubServiceCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     onFocused: (() -> Unit)? = null,
+    onFocusChanged: ((Boolean) -> Unit)? = null,
     fillWidth: Boolean = false,
     contentExpanded: Boolean = false,
     onInfo: (() -> Unit)? = null
@@ -1643,6 +1659,7 @@ private fun HubServiceCard(
                 if (focusState.isFocused) {
                     onFocused?.invoke()
                 }
+                onFocusChanged?.invoke(focusState.isFocused)
             }
             .onPreviewKeyEvent { keyEvent ->
                 if (onInfo == null) {
