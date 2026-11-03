@@ -28,7 +28,10 @@ on:
         default: false
 
 concurrency:
-  group: android-ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  # A PR's newer push supersedes its run. Each main push is its own group (by sha), so a
+  # burst of merges is not cancelled down to the last one: every merge gets its own result
+  # and a red main points at one PR. (A shared group keeps one pending run and drops the rest.)
+  group: android-ci-${{ github.workflow }}-${{ github.event.pull_request.number || (github.event_name == 'push' && github.sha) || github.ref }}
   cancel-in-progress: true
 
 permissions:
@@ -288,20 +291,19 @@ jobs:
           if-no-files-found: ignore
           retention-days: 14
 
+      # Only a green shard uploads coverage; the `coverage` job needs all three.
       - name: Collect shard coverage
-        if: always()
         run: |
           mkdir -p coverage-out
           find app/build -name '*.ec' -exec cp {} coverage-out/ \;
           echo "coverage files: $(ls -1 coverage-out | wc -l)"
 
       - name: Upload shard coverage
-        if: always()
         uses: actions/upload-artifact@v6
         with:
           name: instrumented-coverage-shard-${{ matrix.shard }}
           path: coverage-out/
-          if-no-files-found: ignore
+          if-no-files-found: error
           retention-days: 14
 
   # What the API 30 shards cannot reach: from API 37 the platform requires
@@ -393,10 +395,9 @@ jobs:
   # pulled off the device, and JacocoReport merges them (it takes a file collection).
   coverage:
     name: Instrumented coverage
+    # No `if`: runs only when every shard passed. A figure from a red suite does not compare
+    # with a green one, and a shard that died early leaves its classes at 0%.
     needs: androidTest
-    # Runs after a real emulator run, including a failed one, but not on PRs where the
-    # shards are skipped.
-    if: always() && needs.androidTest.result != 'skipped'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -414,10 +415,6 @@ jobs:
 
       - name: Report
         run: |
-          if ! compgen -G "app/coverage-in/**/*.ec" > /dev/null; then
-            echo "No shard coverage was uploaded; nothing to merge." >> "$GITHUB_STEP_SUMMARY"
-            exit 0
-          fi
           # The report needs the compiled classes, not the instrumented APK.
           ./gradlew --no-configuration-cache :app:instrumentedCoverageReport
           report=app/build/reports/instrumented-coverage/report.xml
