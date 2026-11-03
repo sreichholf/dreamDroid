@@ -80,6 +80,7 @@ class Upgrade115Test {
         assertNotNull("profile $SEEDED_ID missing after upgrade", p)
         p!!
         assertEquals(SEEDED_NAME, p.name)
+        // The seed stores the 1.x `upuser@10.11.12.13`; 2.0 must have split it.
         assertEquals("10.11.12.13", p.host)
         assertEquals("10.11.12.14", p.streamHost)
         assertEquals(8443, p.port)

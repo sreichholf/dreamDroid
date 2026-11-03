@@ -188,7 +188,7 @@ class BackupScreenTest {
 
     private companion object {
         const val PASSWORDS_EXCLUDED =
-            "Left out. On import, profiles already on the device keep their passwords; " +
-                "new ones have none."
+            "Left out. On import, a profile keeps its saved password only when it still " +
+                "points at the same receiver; new profiles have none."
     }
 }

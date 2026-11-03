@@ -2,6 +2,7 @@
 -- __TABLE__ is `profile` (1.15 Room v1, `dreambox`) or `profiles`
 -- (pre-Room SQLite v14, `dreamdroid`); both use these column names.
 -- Upgrade115Test asserts these values after the 2.0 install.
+-- The host carries the 1.x `user@host` form; 2.0 has to move the prefix out of the host.
 INSERT INTO __TABLE__ (
     _id, profile, host, streamhost, port, streamport, fileport,
     login, user, pass, ssl, trust_all_certs,
@@ -11,7 +12,7 @@ INSERT INTO __TABLE__ (
     encoder_user, encoder_pass, encoder_video_bitrate, encoder_audio_bitrate,
     ssid, defaultProfileOnNoWifi
 ) VALUES (
-    42, 'Upgrade Box', '10.11.12.13', '10.11.12.14', 8443, 8002, 8080,
+    42, 'Upgrade Box', 'upuser@10.11.12.13', '10.11.12.14', 8443, 8002, 8080,
     1, 'upuser', 'uppass', 1, 1,
     1, 1, 1, 1,
     '1:7:1:0:0:0:0:0:0:0:FROM BOUQUET "userbouquet.favourites.tv" ORDER BY bouquet',

@@ -353,6 +353,9 @@
     <string name="backup_export_successful">Export erfolgreich</string>
     <string name="backup_import">Import</string>
     <string name="backup_import_successful">Import erfolgreich</string>
+    <string name="backup_import_passwords_on">Passwörter aus der Datei ersetzen die gespeicherten; ein Profil ohne Passwort behält das gespeicherte nur, wenn es noch auf denselben Receiver zeigt.</string>
+    <string name="backup_import_passwords_off">Ein Profil behält sein gespeichertes Passwort nur, wenn es noch auf denselben Receiver zeigt; neue Profile haben keins.</string>
+    <string name="backup_passwords_excluded">Nicht enthalten. Beim Import behält ein Profil sein gespeichertes Passwort nur, wenn es noch auf denselben Receiver zeigt; neue Profile haben keins.</string>
     <string name="backup_import_no_host">Kein Host, nicht importiert</string>
     <string name="backup_import_illegal_host">Ungültiger Host, nicht importiert: %1$s</string>
     <string name="backup_profiles">Profile</string>
