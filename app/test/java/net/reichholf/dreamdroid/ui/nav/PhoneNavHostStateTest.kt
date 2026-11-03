@@ -1,6 +1,10 @@
 package net.reichholf.dreamdroid.ui.nav
 
 import androidx.lifecycle.SavedStateHandle
+import java.io.ByteArrayOutputStream
+import java.io.ObjectOutputStream
+import java.io.Serializable
+import net.reichholf.dreamdroid.Profile
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
@@ -54,6 +58,29 @@ class PhoneNavHostStateTest {
         first.remountEpg()
 
         assertEquals(2, PhoneNavHostState(handle).uiState.value.epgRemount)
+    }
+
+    @Test
+    fun theMountedProfileIsSavedWithoutItsPasswords() {
+        val handle = SavedStateHandle()
+        val profile = Profile().apply {
+            id = 1
+            host = "box"
+            pass = "receiver-secret"
+            encoderPass = "encoder-secret"
+        }
+
+        PhoneNavHostState(handle).remountEpgForProfile(profile)
+
+        val record = checkNotNull(handle.get<Serializable>(PhoneNavSavedKeys.EPG_PROFILE))
+        assertFalse(record is Profile)
+        val serialized = ByteArrayOutputStream().use { bytes ->
+            ObjectOutputStream(bytes).use { it.writeObject(record) }
+            bytes.toByteArray()
+        }
+        val text = String(serialized, Charsets.ISO_8859_1)
+        assertFalse(text.contains("receiver-secret"))
+        assertFalse(text.contains("encoder-secret"))
     }
 
     @Test

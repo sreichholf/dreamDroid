@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.updateAndGet
 import net.reichholf.dreamdroid.Profile
+import net.reichholf.dreamdroid.StreamMode
 import net.reichholf.dreamdroid.enigma.Timer
 
 internal const val PHONE_NAV_SCHEMA_KEY = "dreamdroid_nav_schema"
@@ -56,11 +57,63 @@ internal class PendingNavigations {
 }
 
 /**
- * The active profile the EPG was last mounted for, kept in saved state across process
- * death. A null [profile] records a check without an active profile; the value being
- * absent means no check has recorded one yet.
+ * The profile the EPG is mounted for, as it goes into saved state: the id and the
+ * connection settings [Profile.hasSameSettings] compares, without the passwords. Saved
+ * state outlives the process and must not carry a receiver password.
  */
-private class MountedEpgProfile(val profile: Profile?) : Serializable
+private data class MountedEpgProfile(
+    val id: Int?,
+    val host: String?,
+    val streamHostOrHost: String?,
+    val user: String?,
+    val login: Boolean,
+    val ssl: Boolean,
+    val simpleRemote: Boolean,
+    val port: Int,
+    val streamPort: Int,
+    val filePort: Int,
+    val streamLogin: Boolean,
+    val streamSsl: Boolean,
+    val fileSsl: Boolean,
+    val fileLogin: Boolean,
+    val zapAndStream: Boolean,
+    val streamMode: StreamMode,
+    val transcodePort: Int,
+    val encoderPort: Int,
+    val encoderPath: String?,
+    val encoderLogin: Boolean,
+    val encoderUser: String?,
+    val encoderVideoBitrate: Int,
+    val encoderAudioBitrate: Int
+) : Serializable {
+    companion object {
+        fun from(profile: Profile): MountedEpgProfile = MountedEpgProfile(
+            id = profile.id,
+            host = profile.host,
+            streamHostOrHost = profile.streamHostOrHost,
+            user = profile.user,
+            login = profile.login,
+            ssl = profile.ssl,
+            simpleRemote = profile.simpleRemote,
+            port = profile.port,
+            streamPort = profile.streamPort,
+            filePort = profile.filePort,
+            streamLogin = profile.streamLogin,
+            streamSsl = profile.streamSsl,
+            fileSsl = profile.fileSsl,
+            fileLogin = profile.fileLogin,
+            zapAndStream = profile.zapAndStream,
+            streamMode = profile.streamMode,
+            transcodePort = profile.transcodePort,
+            encoderPort = profile.encoderPort,
+            encoderPath = profile.encoderPath,
+            encoderLogin = profile.encoderLogin,
+            encoderUser = profile.encoderUser,
+            encoderVideoBitrate = profile.encoderVideoBitrate,
+            encoderAudioBitrate = profile.encoderAudioBitrate
+        )
+    }
+}
 
 /**
  * The phone navigation state that outlives the activity: the saved start route, the
@@ -154,25 +207,23 @@ class PhoneNavHostState @Inject constructor(private val savedStateHandle: SavedS
     }
 
     /**
-     * Remounts the EPG and MultiEPG only when [profile] differs from the one they were
-     * last mounted for, using the repository's [Profile.hasSameSettings] identity. The
-     * record is saved, so a process Android restores does not remount for the profile the
-     * EPG already shows. A profile check that finds the same receiver leaves the EPG's
-     * time, bouquet and scroll alone; a switch or edited connection settings still
-     * remount it.
+     * Remounts the EPG and MultiEPG only when [profile]'s id or connection settings differ
+     * from the ones they are mounted for; the passwords do not, so they stay out of saved
+     * state. Nothing recorded yet means the EPG is not mounted, or is mounting for
+     * [profile] right now, so the first check after a start only records the profile and
+     * leaves time, bouquet and scroll alone. A check without an active profile cannot tell
+     * what the EPG shows and changes nothing. The record is saved, so a process Android
+     * restores does not remount for the profile the EPG already shows.
      */
     fun remountEpgForProfile(profile: Profile?) {
-        val previous = mountedEpgProfile?.profile
-        val sameProfile = if (profile == null || previous == null) {
-            profile === previous
-        } else {
-            profile.hasSameSettings(previous)
+        if (profile == null) {
+            return
         }
-        val firstCheck = mountedEpgProfile == null
-        val record = MountedEpgProfile(profile)
+        val record = MountedEpgProfile.from(profile)
+        val previous = mountedEpgProfile
         mountedEpgProfile = record
         savedStateHandle[PhoneNavSavedKeys.EPG_PROFILE] = record
-        if (firstCheck || !sameProfile) {
+        if (previous != null && previous != record) {
             remountEpg()
         }
     }
