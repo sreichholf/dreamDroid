@@ -100,6 +100,49 @@ class VideoPlayerTest {
     }
 
     @Test
+    fun aResumeThatHasNotPlayedKeepsItsRequestedPosition() {
+        player.playUri(request(Engine.Vlc, live = false).copy(startPositionMs = POSITION_MS))
+
+        assertEquals(POSITION_MS, player.currentPositionMs())
+    }
+
+    @Test
+    fun thePositionFollowsTheEngineOnceItReportedOne() = scope.runTest {
+        player.playUri(request(Engine.Vlc, live = false))
+        runCurrent()
+        vlc.stateFlow.value = PlayerState(timeMs = POSITION_MS)
+        runCurrent()
+
+        assertEquals(POSITION_MS, player.currentPositionMs())
+    }
+
+    @Test
+    fun aResumeAppliesToTheFirstPlayOnly() = scope.runTest {
+        player.playUri(request(Engine.Vlc, live = false).copy(startPositionMs = POSITION_MS))
+        vlc.stateFlow.value = PlayerState(timeMs = POSITION_MS)
+        vlc.emit(PlayerEvent.Progress)
+        runCurrent()
+
+        vlc.emit(PlayerEvent.Ended)
+        player.play()
+
+        assertEquals(2, vlc.started.size)
+        assertEquals(listOf(POSITION_MS, 0L), vlc.started.map { it.startPositionMs })
+    }
+
+    @Test
+    fun aProgressWithoutATimeKeepsTheRequestedPosition() = scope.runTest {
+        player.playUri(request(Engine.Vlc, live = false).copy(startPositionMs = POSITION_MS))
+        // A position change before the first time report says nothing about the resume.
+        vlc.emit(PlayerEvent.Progress)
+
+        vlc.emit(PlayerEvent.NoVideo)
+
+        assertEquals(2, vlc.started.size)
+        assertEquals(POSITION_MS, vlc.started.last().startPositionMs)
+    }
+
+    @Test
     fun aRecordingThatSwitchesToSoftwareKeepsItsPosition() = scope.runTest {
         player.playUri(request(Engine.Vlc, live = false))
         runCurrent()

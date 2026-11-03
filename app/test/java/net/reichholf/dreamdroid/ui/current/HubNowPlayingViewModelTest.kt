@@ -34,6 +34,7 @@ import net.reichholf.dreamdroid.testutil.loadWebFixture
 import net.reichholf.dreamdroid.testutil.receiverApis
 import net.reichholf.dreamdroid.ui.text.UiText
 import okhttp3.mockwebserver.MockResponse
+import okhttp3.mockwebserver.RecordedRequest
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -55,7 +56,7 @@ class HubNowPlayingViewModelTest {
     @BeforeEach
     fun setUp() {
         Dispatchers.setMain(UnconfinedTestDispatcher())
-        receiver.answer = { MockResponse().setBody(loadWebFixture("getcurrent.xml")) }
+        receiver.answer = ::routes
         receiver.start()
     }
 
@@ -279,6 +280,7 @@ class HubNowPlayingViewModelTest {
         ReceiverRepository(receiverApis(profiles), profiles),
         profiles,
         lastStreams,
+        receiver.services,
         receiver.sessions,
         SettingsRepository(preferences)
     ).also { viewModels += it }
@@ -291,8 +293,17 @@ class HubNowPlayingViewModelTest {
 
     private fun getCurrentRequests(): Int = receiver.requestsTo(GET_CURRENT).size
 
+    /** The current service for `/web/getcurrent`, the bouquet for `/web/getservices`. */
+    private fun routes(request: RecordedRequest): MockResponse =
+        if (request.requestUrl?.encodedPath == GET_SERVICES) {
+            MockResponse().setBody(loadWebFixture("getservices.xml"))
+        } else {
+            MockResponse().setBody(loadWebFixture("getcurrent.xml"))
+        }
+
     private companion object {
         const val GET_CURRENT = "/web/getcurrent"
+        const val GET_SERVICES = "/web/getservices"
         const val REF = "1:0:1:6DCA:44D:1:C00000:0:0:0:"
         const val BOUQUET = EpgTestReceiver.BOUQUET
     }

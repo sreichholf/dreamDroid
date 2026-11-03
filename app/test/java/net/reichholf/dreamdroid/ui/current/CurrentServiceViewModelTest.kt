@@ -30,6 +30,7 @@ import net.reichholf.dreamdroid.testutil.loadWebFixture
 import net.reichholf.dreamdroid.testutil.receiverApis
 import net.reichholf.dreamdroid.ui.text.UiText
 import okhttp3.mockwebserver.MockResponse
+import okhttp3.mockwebserver.RecordedRequest
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -50,7 +51,7 @@ class CurrentServiceViewModelTest {
     @BeforeEach
     fun setUp() {
         Dispatchers.setMain(UnconfinedTestDispatcher())
-        receiver.answer = { MockResponse().setBody(loadWebFixture("getcurrent.xml")) }
+        receiver.answer = ::routes
         receiver.start()
     }
 
@@ -228,6 +229,27 @@ class CurrentServiceViewModelTest {
     }
 
     @Test
+    fun streamLeavesTheBouquetNullWhenTheChannelIsNotInTheProfileBouquet() = runBlocking<Unit> {
+        profiles.current.value!!.setDefaultRefValues(BOUQUET, "Favourites")
+        receiver.answer = { request ->
+            if (request.requestUrl?.encodedPath == GET_SERVICES) {
+                MockResponse().setBody(SERVICES_WITHOUT_THE_CHANNEL)
+            } else {
+                MockResponse().setBody(loadWebFixture("getcurrent.xml"))
+            }
+        }
+        val viewModel = viewModel()
+        viewModel.settled()
+
+        viewModel.stream()
+        val stream = withTimeout(5_000L) {
+            viewModel.uiState.first { it.stream != null }
+        }.stream
+
+        assertNull(stream?.bouquetRef)
+    }
+
+    @Test
     fun rejectedZapAndStreamShowsTheReceiverText() = runBlocking<Unit> {
         profiles.current.value!!.zapAndStream = true
         receiver.answer = { request ->
@@ -266,6 +288,7 @@ class CurrentServiceViewModelTest {
         ReceiverRepository(receiverApis(profiles), profiles),
         profiles,
         lastStreams,
+        receiver.services,
         receiver.sessions,
         SettingsRepository(preferences)
     ).also { viewModels += it }
@@ -273,10 +296,22 @@ class CurrentServiceViewModelTest {
     private suspend fun CurrentServiceViewModel.settled(): CurrentServiceUiState =
         withTimeout(5_000L) { uiState.first { it.ready && !it.refreshing } }
 
+    /** The current service for `/web/getcurrent`, the bouquet for `/web/getservices`. */
+    private fun routes(request: RecordedRequest): MockResponse =
+        if (request.requestUrl?.encodedPath == GET_SERVICES) {
+            MockResponse().setBody(loadWebFixture("getservices.xml"))
+        } else {
+            MockResponse().setBody(loadWebFixture("getcurrent.xml"))
+        }
+
     private companion object {
         val SAVED = CurrentService(service = Service("1:0:1:1", "Saved box"))
         const val REF = "1:0:1:6DCA:44D:1:C00000:0:0:0:"
         const val BOUQUET = EpgTestReceiver.BOUQUET
         const val LAST_STREAM_BOUQUET = "1:7:1:0:0:0:0:0:0:0:FROM BOUQUET \"last.tv\""
+        const val GET_SERVICES = "/web/getservices"
+        const val SERVICES_WITHOUT_THE_CHANNEL = "<e2servicelist><e2service>" +
+            "<e2servicereference>1:0:1:OTHER:1:C00000:0:0:0:</e2servicereference>" +
+            "<e2servicename>Other</e2servicename></e2service></e2servicelist>"
     }
 }

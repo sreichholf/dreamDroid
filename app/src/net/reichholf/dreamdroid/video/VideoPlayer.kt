@@ -141,6 +141,13 @@ class VideoPlayer(
 
     fun setPosition(position: Float) = engine.setPosition(position)
 
+    /**
+     * Where the stream is; see [playbackPositionMs]. Before the engine reports a time, this is
+     * the position the stream was asked to start at, so a resume survives a stop that early.
+     */
+    fun currentPositionMs(): Long =
+        playbackPositionMs(state.value.timeMs, request?.startPositionMs ?: 0L)
+
     fun slower() = engine.slower()
 
     fun audioTracks(): List<MediaTrack>? = engine.audioTracks()
@@ -191,6 +198,8 @@ class VideoPlayer(
             PlayerEvent.Progress -> {
                 stopStartWatch()
                 reconnect.onPlayed()
+                // A position the engine reports means the resume has been applied.
+                if (engine.state.value.timeMs > 0) consumeStartPosition()
             }
 
             is PlayerEvent.Failed -> {
@@ -208,11 +217,24 @@ class VideoPlayer(
 
             else -> Unit
         }
+        if (event == PlayerEvent.Ended) {
+            // A later play of the recording starts it from the beginning, not at the resume.
+            consumeStartPosition()
+        }
         if (event is PlayerEvent.Failed || event == PlayerEvent.Ended) {
             stopStartWatch()
             finished = true
         }
         listener?.invoke(event)
+    }
+
+    /**
+     * Spends the requested start position: it applies to the first start of a restored
+     * recording only, so a play after the stream ended does not resume where it left off.
+     */
+    private fun consumeStartPosition() {
+        val request = request ?: return
+        if (request.startPositionMs != 0L) this.request = request.copy(startPositionMs = 0L)
     }
 
     /**

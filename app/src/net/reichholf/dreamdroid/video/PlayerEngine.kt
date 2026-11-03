@@ -46,6 +46,13 @@ data class PlayRequest(
  */
 fun resumePositionMs(live: Boolean, timeMs: Long): Long = if (live) 0L else timeMs.coerceAtLeast(0L)
 
+/**
+ * Where a stream is for the next start: the engine's [timeMs] once it reported one, else the
+ * position it was asked to start at. A stop before the first frame must not lose a resume.
+ */
+fun playbackPositionMs(timeMs: Long, requestedMs: Long): Long =
+    if (timeMs > 0) timeMs else requestedMs.coerceAtLeast(0L)
+
 /** The decoder library that plays a stream in the integrated player. */
 enum class Engine(val prefValue: String) {
     /** libVLC: decodes in software what the device cannot, MPEG-2 and AC3 included. */

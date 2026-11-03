@@ -239,6 +239,8 @@ class VideoActivity :
 
     override fun onPause() {
         if (!tvStreamingRejected) {
+            // The screen can go off before the stream reports a time; keep the position now.
+            capturePosition()
             overlay?.hideOverlays()
             overlay?.onPause()
         }
@@ -307,7 +309,7 @@ class VideoActivity :
     private fun capturePosition() {
         if (!playerAttached) return
         val live = intent.hasExtra(VideoOverlayController.SERVICE_REFERENCE)
-        savedPositionMs = resumePositionMs(live, player.state.value.timeMs)
+        savedPositionMs = resumePositionMs(live, player.currentPositionMs())
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
