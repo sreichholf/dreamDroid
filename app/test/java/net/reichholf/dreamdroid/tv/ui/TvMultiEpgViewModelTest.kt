@@ -283,7 +283,10 @@ class TvMultiEpgViewModelTest {
         epgMultiBody = epgMultiAround(System.currentTimeMillis() / 1000L)
         val viewModel = viewModel()
         viewModel.onShown()
+        val collectors = viewModel.jobs()
         viewModel.open(BOUQUET, "Favourites")
+        // Drain the load and its prefetch, so requestsBefore is the settled request count.
+        viewModel.joinJobsSince(collectors)
         awaitState(viewModel) { it.grid.channels.isNotEmpty() && !it.grid.syncing }
         val requestsBefore = epgMultiTimes().size
 
@@ -308,9 +311,14 @@ class TvMultiEpgViewModelTest {
         assertEquals(BOUQUET, state.bouquetRef)
         assertEquals(BOUQUET, state.grid.bouquetRef)
         assertEquals(UiText.Raw("Favourites"), state.title)
+        val duringSwitch = epgMultiBouquets().drop(requestsBefore)
         assertTrue(
-            epgMultiTimes().size > requestsBefore,
+            duringSwitch.isNotEmpty(),
             "the switch must refetch the bouquet for the new profile"
+        )
+        assertTrue(
+            duringSwitch.all { it == BOUQUET },
+            "the switch must refetch only the hub's bouquet, got $duringSwitch"
         )
     }
 
@@ -319,7 +327,10 @@ class TvMultiEpgViewModelTest {
         epgMultiBody = epgMultiAround(System.currentTimeMillis() / 1000L)
         val viewModel = viewModel()
         viewModel.onShown()
+        val collectors = viewModel.jobs()
         viewModel.open(BOUQUET, "Favourites")
+        // Drain the load and its prefetch, so requestsBefore is the settled request count.
+        viewModel.joinJobsSince(collectors)
         awaitState(viewModel) { it.grid.channels.isNotEmpty() && !it.grid.syncing }
         val requestsBefore = epgMultiTimes().size
 
@@ -333,7 +344,8 @@ class TvMultiEpgViewModelTest {
             it.grid.channels.isEmpty() && it.bouquetRef.isEmpty()
         }
         assertEquals(listOf(OTHER_BOUQUET), waiting.bouquets.map { it.reference })
-        assertEquals(requestsBefore, epgMultiTimes().size, "the Guide must start no load here")
+        val duringSwitch = epgMultiBouquets().drop(requestsBefore)
+        assertTrue(duringSwitch.isEmpty(), "the Guide must start no load here, got $duringSwitch")
 
         // The hub reconciles to the new profile's only bouquet and hands it over: one load.
         viewModel.open(OTHER_BOUQUET, "Other")
@@ -378,6 +390,8 @@ class TvMultiEpgViewModelTest {
         assertEquals(collectors, viewModel.jobs())
         assertEquals(requestsBefore, epgMultiTimes().size)
         assertEquals(painted.grid.channels, viewModel.uiState.value.grid.channels)
+        val duringHidden = epgMultiBouquets().drop(requestsBefore)
+        assertTrue(duringHidden.isEmpty(), "a hidden Guide must start no load, got $duringHidden")
 
         // Back on screen, the hub's bouquet reloads under the new profile, once.
         viewModel.onShown()
